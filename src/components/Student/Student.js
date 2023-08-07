@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react'
-import {projectContext} from '../context/projects/ProjectState.js'
+import ProjectContext from '../context/projects/ProjectContext'
 import SideBar from '../SideBar'
 import { useNavigate } from 'react-router-dom'
 import SubmitProject from '../Project/SubmitProject.js'
@@ -8,13 +8,13 @@ const Student = (props) => {
   let history = useNavigate()
 
   // eslint-disable-next-line 
-  const { projects, getProject } = useContext(projectContext);
+  const { projects, getProject } = useContext(ProjectContext);
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
       getProject();
     } else {
-      history('/');
+      history('/student');
     }
     // eslint-disable-next-line
   }, []);

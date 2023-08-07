@@ -1,8 +1,8 @@
-// import projectContext from "./projectContext";
-import { useState, createContext } from "react";
+import ProjectContext from './ProjectContext';
+import { useState } from "react";
 
-export const projectContext = createContext();
 const ProjectState = (props) => {
+  
 
   const notesInitial = []
   const [projects, setProject] = useState(notesInitial)
@@ -50,11 +50,12 @@ const ProjectState = (props) => {
         headers: {
           'Content-Type': 'application/json',
           // eslint-disable-next-line
-          'Authorization': token
+          'authorization': token
         },
         body : JSON.stringify({title,desscription})
       });
       const json = await response.json()
+      console.log('Authorization token found')
       console.log(json)
 
       console.log("Adding a new note")
@@ -67,9 +68,9 @@ const ProjectState = (props) => {
 
 
   return (
-    <projectContext.Provider value={{ projects, getProject, createProject }}>
+    <ProjectContext.Provider value={{ projects, getProject, createProject }}>
       {props.children}
-    </projectContext.Provider>
+    </ProjectContext.Provider>
   )
 
 }

@@ -1,10 +1,10 @@
 import React, { useContext, useState } from 'react'
-import { projectContext } from '../context/projects/ProjectState.js'
+import ProjectContext from '../context/projects/ProjectContext'
 
 
 const SubmitProject = () => {
 // eslint-disable-next-line 
-    const {projects, createProject} = useContext(projectContext)
+    const {projects, createProject} = useContext(ProjectContext)
 
     const [text, setText] = useState({
         title:'',
