@@ -2,7 +2,6 @@ import './App.css';
 import React, { useState } from 'react'
 import StudentMain from './components/StudentMain';
 import Alert from './components/Alert';
-import ProjectState from './components/context/projects/ProjectState.js'
 
 const App = () => {
 
@@ -18,9 +17,7 @@ const App = () => {
   return (
     <>
     <Alert alert={alert} />
-    <ProjectState> {/* Wrap the StudentMain with ProjectState */}
         <StudentMain showAlert={showAlert} />
-      </ProjectState>
     </>
   )
 }

@@ -47,10 +47,9 @@ const ProjectState = (props) => {
       }
       const response = await fetch(`http://localhost:5000/project/submit`, {
         method: 'POST',
-        Headers: {
+        headers: {
           'Content-Type': 'application/json',
           // eslint-disable-next-line
-          // 'Authorization': `'Bearer ${token}'`
           'Authorization': token
         },
         body : JSON.stringify({title,desscription})

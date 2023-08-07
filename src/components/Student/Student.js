@@ -14,7 +14,7 @@ const Student = (props) => {
     if (localStorage.getItem('token')) {
       getProject();
     } else {
-      history('/student');
+      history('/');
     }
     // eslint-disable-next-line
   }, []);
