@@ -1,5 +1,7 @@
-import ProjectContext from './ProjectContext';
-import { useState } from "react";
+// import ProjectContext from './ProjectContext';
+import { createContext, useState } from "react";
+
+const ProjectContext = createContext();
 
 const ProjectState = (props) => {
   
@@ -24,7 +26,7 @@ const ProjectState = (props) => {
           'Content-Type': 'application/json',
           // eslint-disable-next-line
           // 'Authorization': `'Bearer ${token}'`
-          'Authorization': token
+          'Authorization': `Bearer ${token}`
         }
       });
       const json = await response.json()
