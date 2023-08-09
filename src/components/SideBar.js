@@ -26,6 +26,12 @@ const SideBar = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.link2}`}>{props.title2}</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.link3}`}>{props.title3}</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.link4}`}>{props.title4}</Link>
+                            </li>
                             <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Dropdown

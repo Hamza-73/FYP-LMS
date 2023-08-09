@@ -6,8 +6,7 @@ const ProjectContext = createContext();
 const ProjectState = (props) => {
   
 
-  const notesInitial = []
-  const [projects, setProject] = useState(notesInitial)
+  const [projects, setProject] = useState([])
 
   // Get all Projects
   const getProject = async () => {

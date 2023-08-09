@@ -27,9 +27,11 @@ connection.once('open', () => {
 const User = require('./models/Student/User');
 const loginRoute = require('./routes/Student/Login');
 const projectRoute = require('./routes/Student/Project');
+const superRoute = require('./models/Supervisor/Supervisor')
 
 app.use('/login', loginRoute);
 app.use('/project', projectRoute);
+app.use('/supervisor', superRoute)
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

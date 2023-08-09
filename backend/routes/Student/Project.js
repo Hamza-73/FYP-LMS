@@ -9,8 +9,8 @@ router.use(authenticateUser);
 
 // Project submission route
 router.post('/submit', [
-  body('title', 'Title is required').notEmpty(),
-  body('description', 'Description is required').notEmpty(),
+  body('title', 'Title is required').exists(),
+  body('description', 'Description is required').exists(),
 ], async (req, res) => {
   const { title, description } = req.body;
   const studentId = req.user.id; 

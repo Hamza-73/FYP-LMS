@@ -11,7 +11,7 @@ const authenticateUser = (req, res, next) => {
   try {
     // Verify and decode the token
     const decoded = jwt.verify(token, JWT_KEY);
-    req.user = decoded.user; // Assuming the payload contains the user details
+    req.user = decoded; // Assuming the payload contains the user details
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Invalid token' });
