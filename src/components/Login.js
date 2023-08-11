@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import image from '../../images/gcu-login.jpg'
-import '../../css/login.css'
+import image from '../images/gcu-login.jpg'
+import '../css/login.css'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 
@@ -26,7 +26,7 @@ const Login = (props) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await fetch("http://localhost:5000/login/login", {
+        const response = await fetch(`http://localhost:5000${props.loginRoute}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -39,7 +39,7 @@ const Login = (props) => {
             // Save the auth token and redirect
             localStorage.setItem('token', json.token); 
             props.showAlert( `You've been loggen in`,'success')
-            history("/student");
+            history("/showproject");
         }else{
             props.showAlert( `Wrong credentials`,'danger')
         }
@@ -114,10 +114,10 @@ const Login = (props) => {
                     </div>
                 </div>
             </div>
-            <h1 className='text-center' style={{ "fontSize": "56px" }}>FYP COMMITTEE</h1>
+            <h1 className='text-center' style={{ "fontSize": "56px" }}>{props.mainHeading}</h1>
             <div className="container my-5 d-flex justify-content-between">
                 <div className="form my-2">
-                    <h1 className='text-center'>FYP PROCTORING</h1>
+                    <h1 className='text-center'>{props.formHeading}</h1>
                     <form className='my-3' onSubmit={handleSubmit}>
                         <div className="mb-3">
                             <label htmlFor="exampleInputusername1" className="form-label">Username</label>

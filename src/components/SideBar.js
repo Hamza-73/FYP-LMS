@@ -1,10 +1,10 @@
 import React from 'react'
-import {Link, useNavigate} from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import image1 from '../images/logo.ico'
 
 const SideBar = (props) => {
     let history = useNavigate()
-    const handleLogout = ()=>{
+    const handleLogout = () => {
         localStorage.removeItem('token')
         console.log('Logout successfully localStorage is :', localStorage.getItem('token'))
         history('/')
@@ -12,9 +12,9 @@ const SideBar = (props) => {
 
     return (
         <>
-            <nav className="navbar navbar-expand-lg bg-body-tertiary text-light">
+            <nav className="navbar navbar-expand-lg bg-body-tertiary text-dark">
                 <div className="container-fluid">
-                    <Link className="navbar-brand" to='/'><img src={image1} alt="" style={{"width":"60px"}} /></Link>
+                    <Link className="navbar-brand" to='/dashboard' ><img src={image1} alt="" style={{ "width": "60px", "cursor": "pointer" }} /></Link>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <span className="navbar-toggler-icon"></span>
                     </button>
@@ -32,9 +32,15 @@ const SideBar = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.link4}`}>{props.title4}</Link>
                             </li>
-                            <li className="nav-item dropdown">
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.link5}`}>{props.title5}</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.link6}`}>{props.title6}</Link>
+                            </li>
+                            {/* <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Dropdown
+                                    {props.title0}
                                 </Link>
                                 <ul className="dropdown-menu">
                                     <li><Link className="dropdown-item" to='/'>Action</Link></li>
@@ -45,11 +51,11 @@ const SideBar = (props) => {
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link disabled" aria-disabled="true">Disabled</Link>
-                            </li>
+                            </li> */}
                         </ul>
                         <form className="d-flex" role="search">
-                            <button className="btn btn-success">{props.username}</button>
-                                <button className="btn btn-warning btn-sm " type="button" onClick={handleLogout}>Logout</button>
+                            <h5>username</h5>
+                            <button className="btn btn-outline-danger mx-3" type="button" onClick={handleLogout}>Logout</button>
                         </form>
                     </div>
                 </div>
@@ -57,5 +63,10 @@ const SideBar = (props) => {
         </>
     )
 }
-
+SideBar.defaultProps = {
+    title5: "",
+    title6: "",
+    link5: "/",
+    link6: "/"
+}
 export default SideBar

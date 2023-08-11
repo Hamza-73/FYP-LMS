@@ -11,6 +11,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const mongoURI = 'mongodb://127.0.0.1:27017/lms';
+// const mongoURI = 'mongodb+srv://ameerhamza:passwordkyahai?@cluster0.tehlhzm.mongodb.net/FYP-LMS?retryWrites=true&w=majority';
+// const mongoURI = 'mongodb+srv://ameerhamza:passwordkyahai%3F@cluster0.tehlhzm.mongodb.net/FYP-LMS?retryWrites=true&w=majority';
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
@@ -22,12 +24,10 @@ connection.once('open', () => {
   console.log('MongoDB database connection established successfully');
 });
 
-// Replace this with actual user model and routes implementation
-// For this example, let's assume you have a User model and a login route
 const User = require('./models/Student/User');
 const loginRoute = require('./routes/Student/Login');
 const projectRoute = require('./routes/Student/Project');
-const superRoute = require('./models/Supervisor/Supervisor')
+const superRoute = require('./routes/Supervisor/Supervisor')
 
 app.use('/login', loginRoute);
 app.use('/project', projectRoute);

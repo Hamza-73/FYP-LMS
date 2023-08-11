@@ -2,7 +2,6 @@ import './App.css';
 import React, { useState } from 'react'
 import StudentMain from './components/StudentMain';
 import Alert from './components/Alert';
-import ProjectState from './components/context/projects/ProjectState.js';
 const App = () => {
 
   const [alert, setAlert] = useState(null)
@@ -16,10 +15,8 @@ const App = () => {
 
   return (
     <>
-    <ProjectState>
     <Alert alert={alert} />
     <StudentMain showAlert={showAlert} />
-    </ProjectState>
         
     </>
   )

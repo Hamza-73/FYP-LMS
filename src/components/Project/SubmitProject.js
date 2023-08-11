@@ -1,10 +1,34 @@
-import React, { useContext, useState } from 'react'
-import ProjectContext from '../context/projects/ProjectContext'
-
+import React, { useState } from 'react'
 
 const SubmitProject = () => {
 // eslint-disable-next-line 
-    const {projects, createProject} = useContext(ProjectContext)
+const [projects, setProject] = useState([])
+const createProject = async ({ title, description }) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found');
+        return;
+      }
+      const response = await axios.post("http://localhost:5000/project/submit", 
+        { title, description }, 
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'authorization': `Bearer ${token}`
+          }
+        }
+      );
+      const json = await response.data;
+
+      console.log("Adding a new note");
+      const note = json;
+      setProject((prevProjects) => [...prevProjects, note]);
+    } catch (error) {
+      alert('Some error occurred: ' + error.message);
+    }
+  }
+
 
     const [text, setText] = useState({
         title:'',

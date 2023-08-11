@@ -10,6 +10,7 @@ const userSchema = new Schema({
   rollNo: { type: String, required: true, unique: true },
   token: { type: String },
   supervisor: { type: Schema.Types.ObjectId, ref: 'Supervisor' }, // Reference to the Supervisor model
+  pendingRequests: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
 });
 
 module.exports = mongoose.model('User', userSchema);
