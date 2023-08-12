@@ -1,0 +1,200 @@
+const express = require('express');
+const router = express.Router();
+const Committee = require('../../models/Committee');
+const { body, validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const authenticateUser = require('../../middleware/auth')
+const JWT_KEY = 'hamzakhan1'
+const SharedRules = require('../../models/SharedRules')
+
+
+// Registration route
+router.post('/register', [
+    body('fname', 'First name should be atleast 4 characters').exists(),
+    body('lname', 'Last name Number cannot not be blank').exists(),
+    body('username', 'Enter a valid username').isLength({ min: 4 }),
+    body('department', 'Department cannot be left blank').exists(),
+    body('designation', 'Designation cannot be left blank').exists(),
+    body('password', 'Password must be atleast 4 characters').isLength({ min: 4 }),
+  ], async (req, res) => {
+    const { fname, lname, username,  department, designation, password, rules } = req.body;
+  
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+  
+    try {
+      // Check if the username already exists in the database
+      const existingUser = await Committee.findOne({ username });
+  
+      if (existingUser) {
+        res.status(409).json({ success: false, message: 'username already exists' });
+      } else {
+        // Create a new user if the username is unique
+        const newUser = new Committee({ fname, lname, username,  department, designation, password, rules });
+        await newUser.save();
+        const data = {
+          user: {
+            id: newUser.id
+          }
+        }
+        const token = jwt.sign(data, JWT_KEY)
+        res.json({ success: true, token, message: 'Registration successful' });
+      }
+    } catch (err) {
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  });
+  
+
+// Login route
+router.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+  
+    try {
+      // Find the user by username
+      const user = await Committee.findOne({ username });
+  
+      // Check if user exists and if the password matches
+      if (user && bcrypt.compare(password, user.password)) {
+        // Generate JWT token
+        const token = jwt.sign({ id: user.id }, JWT_KEY);
+  
+        // Save the token to the user's token field in the database
+        user.token = token;
+        await user.save();
+  
+        // Send the token in the response
+        res.json({ message: 'Login successful', success: true, token, user });
+      } else {
+        res.status(401).json({ success: false, message: 'Invalid username or password' });
+      }
+    } catch (err) {
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  });
+  
+  
+// // Define a route to add rules
+// router.post('/rules', async (req, res) => {
+//   try {
+//     const { username, rules } = req.body;
+
+//     const committee = await Committee.findOne({ username });
+//     if (!committee) {
+//       return res.status(404).json({ message: 'Committee member not found' });
+//     }
+
+//     // Loop through the provided rules and add them to the committee's rules
+//     rules.forEach(newRule => {
+//       const roleIndex = committee.rules.findIndex(r => r.role === newRule.role);
+//       if (roleIndex !== -1) {
+//         committee.rules[roleIndex].rules = newRule.rules;
+//       } else {
+//         committee.rules.push(newRule);
+//       }
+//     });
+
+//     await committee.save();
+
+//     res.json({ message: 'Rules added successfully', rules });
+//   } catch (error) {
+//     console.error(error); // Log the error for troubleshooting
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
+
+
+// router.use(authenticateUser);
+
+
+// // Define a route to get the rules
+// // Define a route to get all rules for a committee member
+// // Define a route to get rules of a committee member
+// router.get('/getrules', async (req, res) => {
+//   try {
+//     const username = req.query.username;
+
+//     // Find the committee member by username
+//     const committeeMember = await Committee.findOne({ username });
+
+//     if (!committeeMember) {
+//       return res.status(404).json({ message: 'Committee member not found' });
+//     }
+
+//     res.json({ rules: committeeMember.rules });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
+
+
+// Define a route to get shared rules for committee members
+router.get('/getrules', async (req, res) => {
+  try {
+    const sharedRules = await SharedRules.findOne();
+    if (!sharedRules) {
+      return res.status(404).json({ message: 'Shared rules not found' });
+    }
+
+    res.json({ rule: sharedRules.rule });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+// Define a route to update shared rules
+router.post('/addrules', async (req, res) => {
+  try {
+    const sharedRules = await SharedRules.findOne();
+    if (!sharedRules) {
+      return res.status(404).json({ message: 'Shared rules not found' });
+    }
+
+    sharedRules.rule = req.body.rule;
+    await sharedRules.save();
+
+    res.json({ message: 'Shared rules updated successfully', sharedRules });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+// Define a route to edit rules for a specific role
+router.put('/editrules/:role', async (req, res) => {
+  try {
+    const { role } = req.params;
+    const { rules } = req.body;
+
+    // Find the shared rules document
+    const sharedRules = await SharedRules.findOne();
+    if (!sharedRules) {
+      return res.status(404).json({ message: 'Shared rules not found' });
+    }
+
+    // Find the specific role's rules in the shared rules
+    const targetRule = sharedRules.rule.find(r => r.role === role);
+    if (!targetRule) {
+      return res.status(404).json({ message: 'Rules for the specified role not found' });
+    }
+
+    // Update the rules for the specified role
+    targetRule.rules = rules;
+
+    // Save the updated shared rules
+    await sharedRules.save();
+
+    res.json({ message: 'Rules for the specified role updated successfully', sharedRules });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+module.exports = router;

@@ -42,7 +42,7 @@ const Progress = (props) => {
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h1 className="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                <h1 className="modal-title fs-5" id="exampleModalLabel">Your Request</h1>
                                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div className="modal-body">
@@ -51,7 +51,6 @@ const Progress = (props) => {
                                         <div class="mb-3">
                                             <label for="exampleInputEmail163" class="form-label">Supervisor Name</label>
                                             <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
-                                            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
                                         </div>
                                         <div class="mb-3">
                                             <label for="exampleInputPassword331" class="form-label">Project Title</label>
@@ -72,7 +71,7 @@ const Progress = (props) => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" className="btn btn-danger">Save changes</button>
+                                <button type="button" className="btn btn-danger">Send Request</button>
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,42 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.container{
+    border-top: 0;
+    border-bottom: 0;
+    border: 1px solid rgb(187, 174, 174);
+    padding: 4px 30px;
+    margin-top: 20px
+}
+
+.upperpart{
+    width: 300px;
+}
+
+.mid{
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 70px;
+}
+.last{
+    margin-top: 50px ;
+}
+
+.review-box{
+    border: 1px solid rgb(187, 174, 174);
+    margin: 8px;
+    padding: 5px 20px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 20px;
+}
+.review-box a{
+    position: relative;
+    top: 30px;
+}
+.upload-btn{
+    position: relative;
+    left: 78%;
+}

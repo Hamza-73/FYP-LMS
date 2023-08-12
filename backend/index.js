@@ -24,14 +24,15 @@ connection.once('open', () => {
   console.log('MongoDB database connection established successfully');
 });
 
-const User = require('./models/Student/User');
 const loginRoute = require('./routes/Student/Login');
 const projectRoute = require('./routes/Student/Project');
 const superRoute = require('./routes/Supervisor/Supervisor')
+const committeeRoute = require('./routes/Committe/Committee')
 
 app.use('/login', loginRoute);
 app.use('/project', projectRoute);
 app.use('/supervisor', superRoute)
+app.use('/committee', committeeRoute)
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

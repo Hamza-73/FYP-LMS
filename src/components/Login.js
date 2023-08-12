@@ -39,7 +39,7 @@ const Login = (props) => {
             // Save the auth token and redirect
             localStorage.setItem('token', json.token); 
             props.showAlert( `You've been loggen in`,'success')
-            history("/showproject");
+            history("/dashboard");
         }else{
             props.showAlert( `Wrong credentials`,'danger')
         }
@@ -115,7 +115,7 @@ const Login = (props) => {
                 </div>
             </div>
             <h1 className='text-center' style={{ "fontSize": "56px" }}>{props.mainHeading}</h1>
-            <div className="container my-5 d-flex justify-content-between">
+            <div className="container my-5 d-flex justify-content-between" style={{borderLeft:"0", borderRight:"0"}}>
                 <div className="form my-2">
                     <h1 className='text-center'>{props.formHeading}</h1>
                     <form className='my-3' onSubmit={handleSubmit}>
