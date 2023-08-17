@@ -59,7 +59,6 @@ const ShowProject = (props) => {
       ) : (
         'No project to show'
       )}
-      
     </div>
   )
 }

@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Committee = require('../../models/Committee');
 const { body, validationResult } = require('express-validator');
@@ -75,61 +76,42 @@ router.post('/login', async (req, res) => {
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
+
+  //get all committee members
+  router.get('/get-members', async (req,res)=>{
+
+    try {
+      const members = await Committee.find();
+      res.json({success:true, members})
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+
+  });
   
+  //delete member
+  router.delete('/delete/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
   
-// // Define a route to add rules
-// router.post('/rules', async (req, res) => {
-//   try {
-//     const { username, rules } = req.body;
-
-//     const committee = await Committee.findOne({ username });
-//     if (!committee) {
-//       return res.status(404).json({ message: 'Committee member not found' });
-//     }
-
-//     // Loop through the provided rules and add them to the committee's rules
-//     rules.forEach(newRule => {
-//       const roleIndex = committee.rules.findIndex(r => r.role === newRule.role);
-//       if (roleIndex !== -1) {
-//         committee.rules[roleIndex].rules = newRule.rules;
-//       } else {
-//         committee.rules.push(newRule);
-//       }
-//     });
-
-//     await committee.save();
-
-//     res.json({ message: 'Rules added successfully', rules });
-//   } catch (error) {
-//     console.error(error); // Log the error for troubleshooting
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// });
-
-
-// router.use(authenticateUser);
-
-
-// // Define a route to get the rules
-// // Define a route to get all rules for a committee member
-// // Define a route to get rules of a committee member
-// router.get('/getrules', async (req, res) => {
-//   try {
-//     const username = req.query.username;
-
-//     // Find the committee member by username
-//     const committeeMember = await Committee.findOne({ username });
-
-//     if (!committeeMember) {
-//       return res.status(404).json({ message: 'Committee member not found' });
-//     }
-
-//     res.json({ rules: committeeMember.rules });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// });
-
+      // Check if the provided ID is a valid ObjectId
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid committee member ID' });
+      }
+  
+      const deletedMember = await Committee.findByIdAndDelete(id);
+  
+      if (!deletedMember) {
+        return res.status(404).json({ message: 'Committee member not found' });
+      }
+  
+      res.json({ message: 'Committee member deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting committee member:', error);
+      res.status(500).json({ message: 'Error deleting committee member', error });
+    }
+  });
+    
 
 // Define a route to get shared rules for committee members
 router.get('/getrules', async (req, res) => {
@@ -163,6 +145,29 @@ router.post('/addrules', async (req, res) => {
   }
 });
 
+// Define a route to fetch rules for a specific role
+router.get('/getrules/:role', async (req, res) => {
+  try {
+    const { role } = req.params;
+
+    // Find the shared rules document
+    const sharedRules = await SharedRules.findOne();
+    if (!sharedRules) {
+      return res.status(404).json({ message: 'Shared rules not found' });
+    }
+
+    // Find the specific role's rules in the shared rules
+    const targetRule = sharedRules.rule.find(r => r.role === role);
+    if (!targetRule) {
+      return res.status(404).json({ message: 'Rules for the specified role not found' });
+    }
+
+    res.json({ role, rules: targetRule.rules });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // Define a route to edit rules for a specific role
 router.put('/editrules/:role', async (req, res) => {
@@ -195,6 +200,24 @@ router.put('/editrules/:role', async (req, res) => {
   }
 });
 
+router.use(authenticateUser)
 
+//get my detail
+router.get('/detail', async (req, res) => {
+  try {
+    const studentId = req.user.id; // Get the authenticated user's ID from the token payload
+
+    const student = await Committee.findById(studentId);
+
+    if (!student) {
+      return res.status(404).json({ message: 'Member not found' });
+    }
+    // Return the student details
+    return res.json(student);
+  } catch (error) {
+    console.error('error is ', error)
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 
 module.exports = router;

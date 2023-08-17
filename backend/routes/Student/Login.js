@@ -1,10 +1,14 @@
 const express = require('express');
+const mongoose = require('mongoose')
 const router = express.Router();
 const User = require('../../models/Student/User');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const JWT_KEY = 'hamzakhan1'
+const authenticateUser = require('../../middleware/auth');
+const Supervisor = require('../../models/Supervisor/Supervisor');
+const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest')
 
 // Login route
 router.post('/login', async (req, res) => {
@@ -37,12 +41,16 @@ router.post('/login', async (req, res) => {
 // Registration route
 router.post('/register', [
   body('name', 'Name should be atleast 4 characters').isLength({ min: 4 }),
+  body('father', 'Father Name should be atleast 4 characters').isLength({ min: 4 }),
   body('username', 'Enter a valid username').isLength({ min: 4 }),
   body('password', 'Password must be atleast 4 characters').isLength({ min: 4 }),
   body('rollNo', 'Roll Number cannot not be blank').exists(),
   body('department', 'Department cannot be left blank').exists(),
+  body('batch', 'Batch cannot be left blank').exists(),
+  body('cnic', 'Cnic cannot be left blank').exists(),
+  body('semester', 'Semester cannot be left blank').exists(),
 ], async (req, res) => {
-  const { name, username, rollNo, department, password } = req.body;
+  const { name, father, username, rollNo, batch, cnic, semester, department, password } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -57,7 +65,7 @@ router.post('/register', [
       res.status(409).json({ success: false, message: 'username already exists' });
     } else {
       // Create a new user if the username is unique
-      const newUser = new User({ name, username, rollNo, department, password });
+      const newUser = new User({ name, father, username, rollNo, batch, cnic, semester, department, password });
       await newUser.save();
       const data = {
         user: {
@@ -70,6 +78,44 @@ router.post('/register', [
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
+});
+
+
+
+
+//delete Student
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the provided ID is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid Student ID' });
+    }
+
+    const deletedMember = await User.findByIdAndDelete(id);
+
+    if (!deletedMember) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    res.json({ message: 'Student deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting Student:', error);
+    res.status(500).json({ message: 'Error deleting Student', error });
+  }
+});
+
+//get all Supervisor
+router.get('/get-students', async (req, res) => {
+
+  try {
+    const members = await User.find();
+    res.json({ success: true, members })
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+
 });
 
 
@@ -111,8 +157,81 @@ router.get('/my-supervisor', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+router.use(authenticateUser);
+
+router.post('/add-project-request', async (req, res) => {
+  const { username, projectTitle, description, scope } = req.body;
+
+  try {
+    // Find the supervisor by username
+    const supervisor = await Supervisor.findOne({ username: username });
+    if (!supervisor) {
+      return res.status(404).json({ success: false, message: 'Supervisor not found' });
+    }
+
+    // Find the user who is making the request
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Check if the user's pendingRequests field is an array, if not initialize it as an array
+    if (!Array.isArray(user.pendingRequests)) {
+      user.pendingRequests = [];
+    }
+
+    console.log('Pending requests before:', user.pendingRequests);
+
+    
+// Check if the user has already sent a request to this supervisor
+const requestExists = user.pendingRequests.some(request => {
+  console.log('Current request supervisor:', request.supervisor);
+  console.log('Expected supervisor:', supervisor._id);
+  console.log('Is it equal:', request.supervisor.equals(supervisor._id));
+  return request.supervisor.equals(supervisor._id);
+});
+
+if (requestExists) {
+  return res.status(400).json({ success: false, message: 'Request already sent to this supervisor' });
+}
+
+// Create a new project request and add it to the user's pendingRequests
+const projectRequest = new ProjectRequest({
+  supervisor: supervisor, // Use the supervisor object directly here
+  projectTitle,
+  description,
+  scope,
+});
+user.pendingRequests.push(projectRequest);
+await user.save();
+
+res.json({ success: true, message: 'Project request sent to supervisor' });
+
+  } catch (err) {
+    console.error('Error adding project request:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
 
+//get my detail
+router.get('/student', async (req, res) => {
+  try {
+    const studentId = req.user.id; // Get the authenticated user's ID from the token payload
+
+    const student = await User.findById(studentId);
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Return the student details
+    return res.json(student);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 module.exports = router;

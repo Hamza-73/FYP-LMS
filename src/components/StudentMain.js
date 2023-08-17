@@ -16,7 +16,7 @@ const StudentMain = (props) => {
         <Routes>
           <Route path='/' exact element={<Login showAlert={props.showAlert} 
           formHeading='Student Login' mainHeading='FYP PROCTORING'
-          loginRoute='/login/login' />} />
+          loginRoute='/login/login' path='/dashboard' />} />
           <Route path='/forgotpassword' exact element={<ForgotPassword showAlert={props.showAlert} />} />
           <Route path='/dashboard'  element={<Dashboard/>} /> 
           <Route path='/progress'  element={<Progress/>} />

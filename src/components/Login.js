@@ -39,7 +39,7 @@ const Login = (props) => {
             // Save the auth token and redirect
             localStorage.setItem('token', json.token); 
             props.showAlert( `You've been loggen in`,'success')
-            history("/dashboard");
+            history(props.path);
         }else{
             props.showAlert( `Wrong credentials`,'danger')
         }
