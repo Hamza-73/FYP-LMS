@@ -6,7 +6,7 @@ const StudentList = (props) => {
 
   const history = useNavigate();
 
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
 
   const getMembers = async () => {
@@ -22,7 +22,7 @@ const StudentList = (props) => {
         }
       });
       const json = await response.data;
-      console.log(json); // Log the response data to see its structure
+      console.log('students are ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
       alert(`Some error occurred: ${error.message}`, 'danger');
@@ -41,7 +41,7 @@ const StudentList = (props) => {
     setSearchQuery(event.target.value);
   };
 
-
+  console.log('data is ', data)
 
   const members = [{
     name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
@@ -53,7 +53,8 @@ const StudentList = (props) => {
     name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
   },]
 
-  const filteredData = members.filter((member) =>
+  // const filteredData = Array.from(data.members).filter((member) =>
+    const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.rollNO.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,6 +90,15 @@ const StudentList = (props) => {
         localStorage.setItem('token', json.token);
         props.showAlert(`Account created successfully`, 'success')
         // history("/");
+        setData(prevData => ({
+          ...prevData,
+          members: [...prevData.members, {
+            name: register.name, father: register.father, username: register.username, department: register.department,
+            batch: register.batch, semester: register.semester, cnic: register.cnic, rollNo: register.rollNo,}]
+        }));
+
+        // Clear the register form fields
+        setRegister({ name: "", father: "", username: "", department: "", batch: "", semester: "", password: "", cnic: "", rollNo: "", });
       }
       else {
         props.showAlert(`Wrong credentials`, 'danger')
@@ -178,12 +188,12 @@ const StudentList = (props) => {
           />
         </div>
         {filteredData.length > 0 ? (
-          <table className="table table-hover">
+          <table className="table text-center table-hover">
             <thead>
-              <tr className='text-center'>
+              <tr >
                 <th scope="col">Name</th>
                 <th scope="col">Father</th>
-                <th scope="col">Roll #</th>
+                <th scope="col">Roll#</th>
                 <th scope="col">Batch</th>
                 <th scope="col">Username</th>
                 <th scope="col">Semester</th>
@@ -192,12 +202,12 @@ const StudentList = (props) => {
                 <th scope="col">Remove</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className='text-center'>
               {filteredData.map((val, key) => (
                 <tr key={key}>
                   <td>{val.name}</td>
                   <td>{val.father}</td>
-                  <td>{val.rollNO}</td>
+                  <td>{val.rollNo}</td>
                   <td>{val.batch}</td>
                   <td>{val.username}</td>
                   <td>{val.semester}</td>

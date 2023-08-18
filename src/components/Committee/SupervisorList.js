@@ -50,6 +50,7 @@ const SupervisorList = (props) => {
     name: 'Hamid',  department: "CS", designation: "President" , slots:"4"
   },]
 
+  // const filteredData = Array.from(data.members).filter((member) =>
   const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -58,14 +59,7 @@ const SupervisorList = (props) => {
   );
 
   const [register, setRegister] = useState({
-    name: "",
-    username: "",
-    department: "",
-    designation: "",
-    password: "",
-    slots:""
-
-  });
+    name: "",  username: "",  department: "",  designation: "",  password: "",  slots:""  });
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -75,7 +69,8 @@ const SupervisorList = (props) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ name: register.name, username: register.username, designation: register.designation, password: register.password, department: register.department, slots:register.slots })
+      body: JSON.stringify({ name: register.name, username: register.username, designation: register.designation,
+      password: register.password, department: register.department, slots:register.slots })
     });
     const json = await response.json()
     console.log(json);
@@ -83,7 +78,17 @@ const SupervisorList = (props) => {
       // Save the auth token and redirect
       localStorage.setItem('token', json.token);
       props.showAlert(`Account created successfully`, 'success')
-      // history("/");
+      // history("/"); 
+      setData(prevData => ({
+        ...prevData,
+        members: [...prevData.members, {
+          name: register.name, username: register.username, designation: register.designation,
+          password: register.password, department: register.department, slots:register.slots }]
+      }));
+
+      // Clear the register form fields
+      setRegister({ name: "",  username: "",  department: "",  designation: "",  password: "",  slots:""  });
+    
     }
     else {
       props.showAlert(`Wrong credentials`, 'danger')
@@ -91,10 +96,9 @@ const SupervisorList = (props) => {
     } catch (error) {
       props.showAlert('Internal Server Error', 'danger')
     }
-    
-
-
   }
+
+  console.log('supervisor is ', data)
 
   const handleChange1 = (e) => {
     setRegister({ ...register, [e.target.name]: e.target.value })

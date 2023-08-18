@@ -34,7 +34,7 @@ const CommitteeMember = (props) => {
       getMembers();
     } else {
       history('/')
-      props.showAlert('You need to login first','danger');
+      props.showAlert('You need to login first', 'danger');
     }
   }, []);
 
@@ -51,6 +51,7 @@ const CommitteeMember = (props) => {
     fname: 'Hamid', lname: "Tiwana", department: "CS", designation: "President"
   },]
 
+  // const filteredData =  Array.from(data.members).filter((member) =>
   const filteredData = members.filter((member) =>
     member.fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.lname.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -58,36 +59,49 @@ const CommitteeMember = (props) => {
     member.designation.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const [register, setRegister] = useState({fname: "",lname: "",username: "",department: "",designation: "",password: ""
+  const [register, setRegister] = useState({
+    fname: "", lname: "", username: "", department: "", designation: "", password: ""
   });
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/supervisor/create", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ fname: register.fname, lname: register.lname, username: register.username, designation: register.designation, password: register.password, department: register.department })
-    });
-    const json = await response.json()
-    console.log(json);
-    if (json.success) {
-      // Save the auth token and redirect
-      localStorage.setItem('token', json.token);
-      props.showAlert(`Account created successfully`, 'success')
-      // history("/");
-    }
-    else {
-      props.showAlert(`Wrong credentials`, 'danger')
-    }
+      const response = await fetch("http://localhost:5000/committee/register", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fname: register.fname, lname: register.lname, username: register.username,
+          designation: register.designation, password: register.password, department: register.department
+        })
+      });
+      const json = await response.json()
+      console.log(json);
+      if (json.success) {
+        // Save the auth token and redirect
+        localStorage.setItem('token', json.token);
+        props.showAlert(`Account created successfully`, 'success')
+        // history("/");
+
+        setData(prevData => ({
+          ...prevData,
+          members: [...prevData.members, {
+            fname: register.fname, lname: register.lname, username: register.username,
+            designation: register.designation, password: register.password, department: register.department
+          }]
+        }));
+
+        // Clear the register form fields
+        setRegister({ fname: "", lname: "", username: "", department: "", designation: "", password: "" });
+
+      }
+      else {
+        props.showAlert(`Wrong credentials`, 'danger')
+      }
     } catch (error) {
       props.showAlert('Internal Server Error', 'danger')
     }
-    
-
-
   }
 
   const handleChange1 = (e) => {
@@ -176,7 +190,7 @@ const CommitteeMember = (props) => {
                   <td>{val.fname + ' ' + val.lname}</td>
                   <td>{val.department}</td>
                   <td>{val.designation}</td>
-                  <td data-toggle="modal" data-target="#exampleModal" style={{cursor:"pointer"}}>Edit</td>
+                  <td data-toggle="modal" data-target="#exampleModal" style={{ cursor: "pointer" }}>Edit</td>
                   <td>Remove</td>
                 </tr>
               ))}

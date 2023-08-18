@@ -19,7 +19,7 @@ router.post('/register', [
     body('designation', 'Designation cannot be left blank').exists(),
     body('password', 'Password must be atleast 4 characters').isLength({ min: 4 }),
   ], async (req, res) => {
-    const { fname, lname, username,  department, designation, password, rules } = req.body;
+    const { fname, lname, username,  department, designation, password } = req.body;
   
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -34,7 +34,7 @@ router.post('/register', [
         res.status(409).json({ success: false, message: 'username already exists' });
       } else {
         // Create a new user if the username is unique
-        const newUser = new Committee({ fname, lname, username,  department, designation, password, rules });
+        const newUser = new Committee({ fname, lname, username,  department, designation, password });
         await newUser.save();
         const data = {
           user: {
