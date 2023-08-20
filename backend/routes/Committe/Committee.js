@@ -200,6 +200,25 @@ router.put('/editrules/:role', async (req, res) => {
   }
 });
 
+
+// Route to update student details
+router.put('/edit/:id', async (req, res) => {
+  const studentId = req.params.id;
+  const updatedDetails = req.body;
+
+  try {
+    const updatedStudent = await Committee.findByIdAndUpdate(studentId, updatedDetails, { new: true });
+    if (!updatedStudent) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.status(200).json(updatedStudent);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
 router.use(authenticateUser)
 
 //get my detail

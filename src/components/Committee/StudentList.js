@@ -1,13 +1,144 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Loading from '../Loading';
 
 const StudentList = (props) => {
-
   const history = useNavigate();
 
   const [data, setData] = useState({});
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+
+
+  
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5000/login/register", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: register.name, cnic: register.cnic, batch: register.batch, semester: register.semester,
+          username: register.username, rollNo: register.rollNo, password: register.password, department: register.department,
+          father: register.father
+        })
+      });
+      const json = await response.json()
+      console.log(json);
+      if (json.success) {
+        // Save the auth token and redirect
+        localStorage.setItem('token', json.token);
+        props.showAlert(`Account created successfully`, 'success')
+        // history("/");
+        setData(prevData => ({
+          ...prevData,
+          members: [...prevData.members, {
+            name: register.name, father: register.father, username: register.username, department: register.department,
+            batch: register.batch, semester: register.semester, cnic: register.cnic, rollNo: register.rollNo,
+          }]
+        }));
+
+        // Clear the register form fields
+        setRegister({ name: "", father: "", username: "", department: "", batch: "", semester: "", password: "", cnic: "", rollNo: "", });
+      }
+      else {
+        props.showAlert(`Wrong credentials`, 'danger')
+      }
+    } catch (error) {
+      props.showAlert('Internal Server Error', 'danger')
+    }
+  }
+
+
+  const openEditModal = (student) => {
+    setSelectedStudent(student);
+    setEditMode(true); // Set edit mode when opening the modal
+    setRegister({
+      name: student.name, father: student.father, username: student.username, department: student.department, batch: student.batch, semester: student.semester, cnic: student.cnic, rollNo: student.rollNo,
+    });
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    try {
+      console.log('selected Student is ', selectedStudent, ' type of ', typeof selectedStudent._id)
+      const id = selectedStudent._id;
+      console.log('id is ', id)
+
+      const response = await axios.put(`http://localhost:5000/login/edit/${id}`, // Assuming _id is the correct identifier for a student
+        {
+          name: register.name, father: register.father, username: register.username,
+          department: register.department, batch: register.batch, semester: register.semester,
+          cnic: register.cnic, rollNo: register.rollNo, password: register.password
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const updatedStudent = await response.data;
+      // console.log('updatedStudent is ', updatedStudent)
+      if (updatedStudent) {
+        setData((prevData) => ({
+          ...prevData,
+          members: prevData.members.map((member) =>
+            member._id === updatedStudent._id ? updatedStudent : member
+          ),
+        }));
+        console.log('updated student is ', updatedStudent)
+
+
+        setEditMode(false); // Disable edit mode after successful edit
+        setRegister({
+          name: '', father: '', username: '', department: '', batch: '', semester: '', password: '', cnic: '', rollNo: '',
+        });
+      }
+
+    } catch (error) {
+      console.log('Error:', error); // Log the error message
+      alert(`Some error occurred: ${error.message}`, 'danger');
+    }
+  };
+
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm('Are you sure you want to delete this student?');
+    if (confirmed) {
+
+      try {
+
+        console.log('id is ', id)
+        const response = await axios.delete(`http://localhost:5000/login/delete/${id}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          // Update the UI by removing the deleted student from the data
+          setData((prevData) => ({
+            ...prevData,
+            members: prevData.members.filter((member) => member._id !== id),
+          }));
+          props.showAlert('Student deleted successfully', 'success');
+        }
+
+      } catch (error) {
+        console.log('Error:', error); // Log the error message
+        alert(`Some error occurred: ${error.message}`, 'danger');
+      }
+    }
+  };
+
 
   const getMembers = async () => {
     try {
@@ -31,7 +162,17 @@ const StudentList = (props) => {
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
-      getMembers();
+      // Set loading to true when starting data fetch
+      setLoading(true);
+      getMembers()
+        .then(() => {
+          // Once data is fetched, set loading to false
+          setLoading(false);
+        })
+        .catch((error) => {
+          setLoading(false); // Handle error cases
+          console.error('Error fetching data:', error);
+        });
     } else {
       history('/');
     }
@@ -41,7 +182,7 @@ const StudentList = (props) => {
     setSearchQuery(event.target.value);
   };
 
-  console.log('data is ', data)
+  // console.log('data is ', data)
 
   const members = [{
     name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
@@ -69,45 +210,6 @@ const StudentList = (props) => {
     semester: "", password: "", cnic: "", rollNo: "",
   });
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch("http://localhost:5000/login/register", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: register.name, cnic: register.cnic, batch: register.batch, semester: register.semester,
-          username: register.username, rollNo: register.rollNo, password: register.password, department: register.department,
-          father: register.father
-        })
-      });
-      const json = await response.json()
-      console.log(json);
-      if (json.success) {
-        // Save the auth token and redirect
-        localStorage.setItem('token', json.token);
-        props.showAlert(`Account created successfully`, 'success')
-        // history("/");
-        setData(prevData => ({
-          ...prevData,
-          members: [...prevData.members, {
-            name: register.name, father: register.father, username: register.username, department: register.department,
-            batch: register.batch, semester: register.semester, cnic: register.cnic, rollNo: register.rollNo,}]
-        }));
-
-        // Clear the register form fields
-        setRegister({ name: "", father: "", username: "", department: "", batch: "", semester: "", password: "", cnic: "", rollNo: "", });
-      }
-      else {
-        props.showAlert(`Wrong credentials`, 'danger')
-      }
-    } catch (error) {
-      props.showAlert('Internal Server Error', 'danger')
-    }
-  }
-
   const handleChange1 = (e) => {
     setRegister({ ...register, [e.target.name]: e.target.value })
   }
@@ -125,7 +227,7 @@ const StudentList = (props) => {
                 <h5 className="modal-title" >Register</h5>
               </div>
               <div className="modal-body">
-                <form onSubmit={handleRegister}>
+                <form onSubmit={editMode ? handleEdit : handleRegister}>
 
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Name</label>
@@ -165,8 +267,15 @@ const StudentList = (props) => {
                   </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.name) || !(register.father) || !(register.username) || !(register.department) || !(register.rollNo)}>Register</button>
-                  </div>
+                    {editMode ? (
+                      <button type="submit" className="btn btn-primary">Save Changes</button>
+                    ) : (
+                      <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.name)
+                        || !(register.username) || !(register.department)
+                      }>
+                        Register
+                      </button>
+                    )}</div>
                 </form>
               </div>
 
@@ -176,6 +285,7 @@ const StudentList = (props) => {
       </div>
 
 
+      {loading ? (<Loading/>) : ( <>
       <div className='container'>
         <h3 className='text-center' style={{ borderBottom: "1px solid rgb(187, 174, 174)" }} >Student List</h3>
         <div className="mb-3">
@@ -212,8 +322,10 @@ const StudentList = (props) => {
                   <td>{val.username}</td>
                   <td>{val.semester}</td>
                   <td>{val.cnic}</td>
-                  <td>Edit</td>
-                  <td>Remove</td>
+                  <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                    Edit
+                  </td>
+                  <td style={{ cursor: "pointer" }} onClick={() => handleDelete(val._id)}>Remove</td>
                 </tr>
               ))}
             </tbody>
@@ -227,6 +339,7 @@ const StudentList = (props) => {
           Register
         </button>
       </div>
+      </> )}
     </>
   )
 }

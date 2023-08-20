@@ -1,68 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Loading from '../Loading';
 
 const CommitteeMember = (props) => {
-
   const history = useNavigate();
 
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const getMembers = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Authorization token not found', 'danger');
-        return;
-      }
-      const response = await axios.get("http://localhost:5000/committee/get-members", {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      const json = await response.data;
-      console.log(json); // Log the response data to see its structure
-      setData(json);
-    } catch (error) {
-      alert(`Some error occurred: ${error.message}`, 'danger');
-    }
-  }
-
-  useEffect(() => {
-    if (localStorage.getItem('token')) {
-      getMembers();
-    } else {
-      history('/')
-      props.showAlert('You need to login first', 'danger');
-    }
-  }, []);
-
-  const handleSearch = (event) => {
-    setSearchQuery(event.target.value);
-  };
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
 
-  const members = [{
-    fname: 'Sufyan', lname: "Tiwana", department: "CS", designation: "President"
-  }, {
-    fname: 'Hamza', lname: "Tiwana", department: "CSE", designation: "President"
-  }, {
-    fname: 'Hamid', lname: "Tiwana", department: "CS", designation: "President"
-  },]
-
-  // const filteredData =  Array.from(data.members).filter((member) =>
-  const filteredData = members.filter((member) =>
-    member.fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.lname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.designation.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const [register, setRegister] = useState({
-    fname: "", lname: "", username: "", department: "", designation: "", password: ""
-  });
-
+  
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -104,11 +55,156 @@ const CommitteeMember = (props) => {
     }
   }
 
+
+  const openEditModal = (student) => {
+    setSelectedStudent(student);
+    setEditMode(true); // Set edit mode when opening the modal
+    setRegister({
+      fname: student.fname, lname:student.lname, username: student.username, department: student.department,
+      designation: student.designation, slots: student.slots, password: student.password
+    });
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    try {
+      console.log('selected Student is ', selectedStudent, ' type of ', typeof selectedStudent._id)
+      const id = selectedStudent._id;
+      console.log('id is ', id)
+
+      const response = await axios.put(
+        `http://localhost:5000/committee/edit/${id}`, // Assuming _id is the correct identifier for a student
+        {
+          fname: register.fname, lname: register.lname, username: register.username,
+          designation: register.designation, password: register.password, department: register.department
+        },
+        {
+          // method:"PUT",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const updatedStudent = await response.data;
+      // console.log('updatedStudent is ', updatedStudent)
+      if (updatedStudent) {
+        setData((prevData) => ({
+          ...prevData,
+          members: prevData.members.map((member) =>
+            member._id === updatedStudent._id ? updatedStudent : member
+          ),
+        }));
+        console.log('updated student is ', updatedStudent)
+
+
+        setEditMode(false); // Disable edit mode after successful edit
+        setRegister({
+          fname: '', lname:'', username: '', department: '', designation: '', password: ''
+        });
+      }
+
+    } catch (error) {
+      console.log('Error:', error); // Log the error message
+      alert(`Some error occurred: ${error.message}`, 'danger');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm('Are you sure you want to delete?');
+    if (confirmed) {
+
+      try {
+
+        console.log('id is ', id)
+        const response = await axios.delete(`http://localhost:5000/committee/delete/${id}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          // Update the UI by removing the deleted student from the data
+          setData((prevData) => ({
+            ...prevData,
+            members: prevData.members.filter((member) => member._id !== id),
+          }));
+          props.showAlert('Student deleted successfully', 'success');
+        }
+
+      } catch (error) {
+        console.log('Error:', error); // Log the error message
+        alert(`Some error occurred: ${error.message}`, 'danger');
+      }
+    }
+  };
+
+
+  const getMembers = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/committee/get-members", {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await response.data;
+      console.log('students are ', json); // Log the response data to see its structure
+      setData(json);
+    } catch (error) {
+      alert(`Some error occurred: ${error.message}`, 'danger');
+    }
+  }
+
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      history('/');
+
+    } else {
+      // Set loading to true when starting data fetch
+      setLoading(true);
+      getMembers()
+        .then(() => {
+          // Once data is fetched, set loading to false
+          setLoading(false);
+        })
+        .catch((error) => {
+          setLoading(false); // Handle error cases
+          console.error('Error fetching data:', error);
+        });
+    }
+  }, []);
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  console.log('data is ', data)
+
+  const members = [{
+    fname: 'Sufyan', lname: "Tiwana", department: "CS", designation: "President"
+  }, {
+    fname: 'Hamza', lname: "Tiwana", department: "CSE", designation: "President"
+  }, {
+    fname: 'Hamid', lname: "Tiwana", department: "CS", designation: "President"
+  },]
+
+  // const filteredData =  Array.from(data.members).filter((member) =>
+  const filteredData = members.filter((member) =>
+    member.fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.lname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.designation.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const [register, setRegister] = useState({
+    fname: "", lname: "", username: "", department: "", designation: "", password: ""
+  });
+
   const handleChange1 = (e) => {
     setRegister({ ...register, [e.target.name]: e.target.value })
   }
-
-
 
   return (
 
@@ -123,14 +219,15 @@ const CommitteeMember = (props) => {
                 <h5 className="modal-title" >Register</h5>
               </div>
               <div className="modal-body">
-                <form onSubmit={handleRegister}>
+                <form onSubmit={editMode ? handleEdit : handleRegister}>
 
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">First Name</label>
-                    <input type="text" className="form-control" id="fname" name='fname' value={register.fname} onChange={handleChange1} />
-                  </div><div className="mb-3">
+                    <input type="text" className="form-control" id="name" name='fname' value={register.fname} onChange={handleChange1} />
+                  </div>
+                  <div className="mb-3">
                     <label htmlFor="name" className="form-label">Last Name</label>
-                    <input type="text" className="form-control" id="lname" name='lname' value={register.lname} onChange={handleChange1} />
+                    <input type="text" className="form-control" id="name" name='lname' value={register.lname} onChange={handleChange1} />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="exampleInputusername1" className="form-label">Username</label>
@@ -151,8 +248,15 @@ const CommitteeMember = (props) => {
                   </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.fname) || !(register.lname) || !(register.username) || !(register.department) || !(register.designation)}>Register</button>
-                  </div>
+                    {editMode ? (
+                      <button type="submit" className="btn btn-primary">Save Changes</button>
+                    ) : (
+                      <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.fname)|| !(register.lname)
+                        || !(register.username) || !(register.department)
+                      }>
+                        Register
+                      </button>
+                    )}</div>
                 </form>
               </div>
 
@@ -162,49 +266,53 @@ const CommitteeMember = (props) => {
       </div>
 
 
-      <div className='container'>
-        <h3 className='text-center' style={{ borderBottom: "1px solid rgb(187, 174, 174)" }} >FYP Committee Members</h3>
-        <div className="mb-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search by name, department, or designation"
-            value={searchQuery}
-            onChange={handleSearch}
-          />
-        </div>
-        {filteredData.length > 0 ? (
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Department</th>
-                <th scope="col">Designation</th>
-                <th scope="col">Edit</th>
-                <th scope="col">Remove</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((val, key) => (
-                <tr key={key}>
-                  <td>{val.fname + ' ' + val.lname}</td>
-                  <td>{val.department}</td>
-                  <td>{val.designation}</td>
-                  <td data-toggle="modal" data-target="#exampleModal" style={{ cursor: "pointer" }}>Edit</td>
-                  <td>Remove</td>
+      {loading ? (<Loading />) : (<>
+        <div className='container'>
+          <h3 className='text-center' style={{ borderBottom: "1px solid rgb(187, 174, 174)" }} >Committee Members</h3>
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by name, department, or designation"
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </div>
+          {filteredData.length > 0 ? (
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Department</th>
+                  <th scope="col">Designation</th>
+                  <th scope="col">Edit</th>
+                  <th scope="col">Remove</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <div>No matching members found.</div>
-        )}
-      </div>
-      <div className="d-grid gap-2 col-6 mx-auto my-4">
-        <button type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
-          Register
-        </button>
-      </div>
+              </thead>
+              <tbody>
+                {filteredData.map((val, key) => (
+                  <tr key={key}>
+                    <td>{val.fname + ' ' + val.lname}</td>
+                    <td>{val.department}</td>
+                    <td>{val.designation}</td>
+                    <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                    Edit
+                  </td>
+                  <td style={{ cursor: "pointer" }} onClick={() => handleDelete(val._id)}>Remove</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div>No matching members found.</div>
+          )}
+        </div>
+        <div className="d-grid gap-2 col-6 mx-auto my-4">
+          <button type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
+            Register
+          </button>
+        </div>
+      </>)}
     </>
   )
 }

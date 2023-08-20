@@ -81,8 +81,6 @@ router.post('/register', [
 });
 
 
-
-
 //delete Student
 router.delete('/delete/:id', async (req, res) => {
   try {
@@ -157,7 +155,7 @@ router.get('/my-supervisor', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-router.use(authenticateUser);
+// router.use(authenticateUser);
 
 router.post('/add-project-request', async (req, res) => {
   const { username, projectTitle, description, scope } = req.body;
@@ -233,5 +231,21 @@ router.get('/student', async (req, res) => {
   }
 });
 
+
+// Route to update student details
+router.put('/edit/:id', async (req, res) => {
+  const studentId = req.params.id;
+  const updatedDetails = req.body;
+
+  try {
+    const updatedStudent = await User.findByIdAndUpdate(studentId, updatedDetails, { new: true });
+    if (!updatedStudent) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.status(200).json(updatedStudent);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 module.exports = router;

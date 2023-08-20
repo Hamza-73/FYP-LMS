@@ -39,14 +39,14 @@ router.post('/create', [
   body('designation', 'Designation is required').exists(),
   body('password', 'Password is required').exists(),
 ], async (req, res) => {
-  const {name, designation, username, password, slots } = req.body;
+  const {name, designation, username, password, slots , department} = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
   try {
-    const supervisor = new Supervisor({name, designation, username, password, slots });
+    const supervisor = new Supervisor({ name, designation, username, password, slots , department });
     await supervisor.save();
     res.json({ success: true, supervisor });
   } catch (err) {
@@ -88,6 +88,25 @@ router.delete('/delete/:id', async (req, res) => {
     }
 
   });
+
+
+  
+// Route to update student details
+router.put('/edit/:id', async (req, res) => {
+  const studentId = req.params.id;
+  const updatedDetails = req.body;
+
+  try {
+    const updatedStudent = await Supervisor.findByIdAndUpdate(studentId, updatedDetails, { new: true });
+    if (!updatedStudent) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.status(200).json(updatedStudent);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 router.use(authenticateUser);
 // Add student to a supervisor's group using rollNo
@@ -264,5 +283,7 @@ router.post('/reject-project-request', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
+
 
 module.exports = router;
