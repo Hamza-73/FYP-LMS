@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import image1 from '../images/logo.ico'
+import axios from 'axios'
 
 const SideBar = (props) => {
     let history = useNavigate()
@@ -25,17 +26,18 @@ const SideBar = (props) => {
             method: "GET",
             headers: {
               'Content-Type': 'application/json',
-              'authorization': `Bearer ${token}` // Use the Bearer token scheme
+            Authorization : `Bearer ` + localStorage.getItem("token")
             },
           });
       
           if (!response.ok) {
-            console.log('error fetching detail')
+            console.log('error fetching detail', response)
+            
             return;
           }
       
           const json = await response.json();
-          console.log('Details', json);
+          console.log('I am side bar ', json);
           setUserData(json);
         } catch (err) {
           console.error(err);

@@ -219,10 +219,10 @@ router.put('/edit/:id', async (req, res) => {
 
 
 
-router.use(authenticateUser)
+// router.use(authenticateUser)
 
 //get my detail
-router.get('/detail', async (req, res) => {
+router.get('/detail', authenticateUser, async (req, res) => {
   try {
     const studentId = req.user.id; // Get the authenticated user's ID from the token payload
 

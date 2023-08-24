@@ -1,4 +1,3 @@
-// user.js (models/Student/User.js)
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -14,8 +13,12 @@ const userSchema = new Schema({
   department: { type: String, required: true },
   token: { type: String },
   supervisor: { type: Schema.Types.ObjectId, ref: 'Supervisor' }, // Reference to the Supervisor model
-  pendingRequests: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
-  group: { type: Schema.Types.ObjectId, ref: 'Group' }
+  group: { type: Schema.Types.ObjectId, ref: 'Group' },
+  pendingRequests: [{ type: Schema.Types.ObjectId, ref: 'ProjectRequest' }],
+  seenNotifications: { type: Array,  default: [], },
+  unseenNotifications: { type: Array, default: [], },
+  isMember : {type : Boolean, default:false},
+  marks : {type : Number, },
 });
 
 module.exports = mongoose.model('User', userSchema);

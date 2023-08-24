@@ -90,7 +90,6 @@ const Loading = () => {
           transform: rotate(360deg);
         }
       }
-      
   `;
 
     return (

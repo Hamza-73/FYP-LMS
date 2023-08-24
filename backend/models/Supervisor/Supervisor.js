@@ -1,4 +1,3 @@
-// supervisor.js (models/Supervisor.js)
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -7,9 +6,17 @@ const supervisorSchema = new Schema({
   username:{type: String, required: true},
   designation:{type: String, required: true},
   department:{type: String, required: true},
-  slots:{type: String, required: true},
+  slots:{type: Number, required: true},
   password:{type: String, required: true},
-  users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }], // Store group IDs here
+  projectRequest: [
+    {
+      project: { type: mongoose.Schema.Types.ObjectId, ref: 'ProjectRequest' },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    }
+  ],
+  seenNotifications: { type: Array, default: [] },
+  unseenNotifications: { type: Array, default: [] },
 });
 
 module.exports = mongoose.model('Supervisor', supervisorSchema);
