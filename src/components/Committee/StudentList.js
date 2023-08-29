@@ -6,7 +6,7 @@ import Loading from '../Loading';
 const StudentList = (props) => {
   const history = useNavigate();
 
-  const [data, setData] = useState({});
+  const [data, setData] = useState({members : []});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -184,18 +184,18 @@ const StudentList = (props) => {
 
   // console.log('data is ', data)
 
-  const members = [{
-    name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  }, {
-    name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  }, {
-    name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  }, {
-    name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  },]
+  // const members = [{
+  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
+  // }, {
+  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
+  // }, {
+  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
+  // }, {
+  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
+  // },]
 
-  // const filteredData = Array.from(data.members).filter((member) =>
-    const filteredData = members.filter((member) =>
+  const filteredData = Array.from(data.members).filter((member) =>
+    // const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.rollNO.toLowerCase().includes(searchQuery.toLowerCase()) ||

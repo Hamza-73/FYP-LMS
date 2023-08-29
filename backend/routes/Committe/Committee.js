@@ -173,6 +173,22 @@ router.get('/getrules/:role', async (req, res) => {
   }
 });
 
+// get committee member detail
+router.get('/detail', authenticateUser, async (req,res)=>{
+  const userId = req.user.id;
+  try {
+    console.log(userId)
+    const member = await Committee.findById(userId);
+    if(!member){
+      return res.status(404).json({ message: 'Member not found' });
+    }
+    return  res.send({success: true, member , user : userId});
+  } catch (error) {
+    console.error('Error fetching membetrs', err);
+    return res.status(404).json({ message: 'Internal server error' });
+  }
+});
+
 // Define a route to edit rules for a specific role
 router.put('/editrules/:role', async (req, res) => {
   try {

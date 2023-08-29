@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import Loading from '../Loading'
 
 const CumDashboard = (props) => {
 
     const history = useNavigate()
+
+    const [rules, setRules] = useState({rule:[]});
+    const [role, setRole] = useState({ role : '', rules:[]});
+    const [defineRole, setDefineRole] = useState('');
+    const [upRule, setUpRule] = useState('');
+    const [loading,setLoading] = useState(false);
 
     const getRules = async () => {
         try {
@@ -13,6 +20,7 @@ const CumDashboard = (props) => {
                 alert('Authorization token not found', 'danger');
                 return;
             }
+            setLoading(true); // Set loading to true before API call
             const response = await axios.get("http://localhost:5000/committee/getrules", {
                 headers: {
                     'Content-Type': 'application/json',
@@ -20,8 +28,9 @@ const CumDashboard = (props) => {
                 }
             });
             const json = await response.data;
-            console.log(json); // Log the response data to see its structure
+            console.log('json ',json); // Log the response data to see its structure
             setRules(json);
+            setLoading(false)
         } catch (error) {
             alert(`Some error occurred: ${error.message}`, 'danger');
             console.log('error', error)
@@ -37,8 +46,9 @@ const CumDashboard = (props) => {
                     'Content-Type': 'application/json'
                 }
             });
+            setLoading(true);
             const json = await response.data;
-            console.log('rules are ', json); // Log the response data to see its structure
+            console.log('json ', json); // Log the response data to see its structure
             setRole(json);
         } catch (error) {
             console.log('error', error)
@@ -48,6 +58,7 @@ const CumDashboard = (props) => {
     const editRule = async (role) => {
         console.log('get role is starting')
         try {
+            setLoading(true);
             const response = await axios.put(`http://localhost:5000/committee/editrules/${role}`,
                 {
                     rules: upRule.split(','), // Provide the new rules array here
@@ -64,6 +75,8 @@ const CumDashboard = (props) => {
             }
         } catch (error) {
             console.log('error', error)
+        } finally {
+            setLoading(false); // Set loading to false after API call
         }
     }
 
@@ -73,10 +86,6 @@ const CumDashboard = (props) => {
 
     }
 
-    const [rules, setRules] = useState([]);
-    const [role, setRole] = useState([]);
-    const [defineRole, setDefineRole] = useState();
-    const [upRule, setUpRule] = useState('')
 
     useEffect(() => {
         if (localStorage.getItem('token')) {
@@ -92,9 +101,25 @@ const CumDashboard = (props) => {
         return str.replace(/\b\w/g, (char) => char.toUpperCase());
     }
     const handleGetRole = async () => {
-        await getRole(defineRole);
-        console.log('rules are ', role.rules)
+        try{
+            console.log('Get role is called')
+            setLoading(true);
+            await getRole(defineRole);
+            console.log('rules are getroleshandle ' , role.role);
+            console.log('length of array is ', role.rules)
+             Array.from(role.rules).map((el)=>{
+                console.log('inside map', el)
+            });
+            console.log('array from');
+        }catch(err){
+            console.log('eror is ', err)
+            props.showAlert( `error ${err}`, 'danger')
+        } finally{
+            setLoading(false)
+        }
     };
+
+    console.log('rules us ', role)
     return (
         <div>
 
@@ -113,11 +138,11 @@ const CumDashboard = (props) => {
                                 <form>
                                     <div className="mb-3">
                                         <label for="role" className="form-label">Role</label>
-                                        <input type="text" className="form-control" id="role" aria-describedby="emailHelp" name='role' value={defineRole} onChange={(e) => setDefineRole(e.target.value)} />
+                                        <input type="text" className="form-control" id="role"  name='role' value={defineRole} onChange={(e) => setDefineRole(e.target.value)} />
                                     </div>
-                                    {/* {
-                                        role.length > 0 ? (
-                                            role.map((val, key) => (
+                                    {
+                                        !loading ? (
+                                            Array.from(role.rules).map((val, key) => (
                                                 <div className="mb-3" key={key}>
                                                     <label htmlFor="exampleInputPassword1" className="form-label">
                                                         Rules
@@ -125,23 +150,15 @@ const CumDashboard = (props) => {
                                                     <input
                                                         type="text"
                                                         className="form-control"
-                                                        value={val.rules.join(', ')} // Display joined rules
-                                                        readOnly
+                                                        value={val}
+                                                        
                                                     />
                                                 </div>
                                             ))
                                         ) : (
-                                            "No rules found"
+                                            "Loading......."
                                         )
-                                    } */}
-
-                                    <div className="mb-3">
-                                        <label htmlFor="">Edit Rule</label>
-                                        <input className='form-control' type="text" value={upRule} onChange={(e) => { setUpRule(e.target.value) }} />
-                                    </div>
-
-
-
+                                    }
 
                                 </form>
                             </div>
@@ -155,8 +172,8 @@ const CumDashboard = (props) => {
                 </div>
             </>
             <div className='my-2 mx-4'>
-                {/* {
-                    rules.rule.map((elm, index) => {
+                {
+                 !loading ?   rules.rule.map((elm, index) => {
                         return (
                             <div className="rules" key={index}>
                                 <h2>{capitalizeEveryWord(elm.role)}</h2>
@@ -167,8 +184,8 @@ const CumDashboard = (props) => {
                                 </ol>
                             </div>
                         );
-                    }) 
-                } */}
+                    }) : <Loading/>
+                }
             </div>
 
             <div className="edit">

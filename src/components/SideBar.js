@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import image1 from '../images/logo.ico'
 import axios from 'axios'
+import jwtDecode from 'jwt-decode';
 
 const SideBar = (props) => {
     let history = useNavigate()
@@ -17,6 +18,8 @@ const SideBar = (props) => {
         try {
           const token = localStorage.getItem('token');
           console.log(token)
+          const decodedToken = jwtDecode(token);
+          console.log('Decoded token is ', decodedToken)
           if (!token) {
             console.log('token not found')
             return;
@@ -25,23 +28,20 @@ const SideBar = (props) => {
           const response = await fetch("http://localhost:5000/committee/detail", {
             method: "GET",
             headers: {
-              'Content-Type': 'application/json',
-            Authorization : `Bearer ` + localStorage.getItem("token")
+                'Content-Type': 'application/json',
+                'authorization': `Bearer ${token}`
             },
           });
       
           if (!response.ok) {
             console.log('error fetching detail', response)
             
-            return;
           }
-      
           const json = await response.json();
           console.log('I am side bar ', json);
           setUserData(json);
         } catch (err) {
-          console.error(err);
-          alert('An error occurred: ' + err.message);
+          console.log('error is ', err);
         }
       }
       

@@ -6,7 +6,7 @@ import Loading from '../Loading';
 const SupervisorList = (props) => {
   const history = useNavigate();
 
-  const [data, setData] = useState({});
+  const [data, setData] = useState({members : []});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -187,16 +187,16 @@ const SupervisorList = (props) => {
 
   console.log('data is ', data)
 
-  const members = [{
-    name: 'Sufyan', department: "CS", designation: "President", slots: "4"
-  }, {
-    name: 'Hamza', department: "CSE", designation: "President", slots: "4"
-  }, {
-    name: 'Hamid', department: "CS", designation: "President", slots: "4"
-  },]
+  // const members = [{
+  //   name: 'Sufyan', department: "CS", designation: "President", slots: "4"
+  // }, {
+  //   name: 'Hamza', department: "CSE", designation: "President", slots: "4"
+  // }, {
+  //   name: 'Hamid', department: "CS", designation: "President", slots: "4"
+  // },]
 
-  // const filteredData = Array.from(data.members).filter((member) =>
-  const filteredData = members.filter((member) =>
+  const filteredData = Array.from(data.members).filter((member) =>
+  // const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.designation.toLowerCase().includes(searchQuery.toLowerCase()) ||
