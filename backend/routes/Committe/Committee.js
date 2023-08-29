@@ -2,7 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const Committee = require('../../models/Committee');
+const User = require('../../models/Student/User');
+const Group = require('../../models/GROUP/Group');
+const Supervisor = require('../../models/Supervisor/Supervisor')
 const { body, validationResult } = require('express-validator');
+const Viva = require('../../models/Viva/Viva')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authenticateUser = require('../../middleware/auth')
@@ -218,25 +222,23 @@ router.put('/edit/:id', async (req, res) => {
 });
 
 
+// give remarks to students
+router.put('/remarks/:groupId', async (req,res)=>{
+    const  { groupId } = req.params;
+    const {remarks} = req.body ;
+    try {
+      const group = await Group.findById(groupId);
+      if(!group){
+        return res.status(404).json({ message: 'Group not found' });
+      }
+      group.remarks = remarks ;
+      await group.save();
+      res.json({ message: `Remarks have been given to the group ${group.supervisor} , ${group.projects.map(el=>el.projectTitle)}`, remarks });
 
-// router.use(authenticateUser)
-
-//get my detail
-router.get('/detail', authenticateUser, async (req, res) => {
-  try {
-    const studentId = req.user.id; // Get the authenticated user's ID from the token payload
-
-    const student = await Committee.findById(studentId);
-
-    if (!student) {
-      return res.status(404).json({ message: 'Member not found' });
+    } catch (error) {
+      console.error('error giving marks', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
-    // Return the student details
-    return res.json(student);
-  } catch (error) {
-    console.error('error is ', error)
-    return res.status(500).json({ message: 'Server error' });
-  }
 });
 
 module.exports = router;

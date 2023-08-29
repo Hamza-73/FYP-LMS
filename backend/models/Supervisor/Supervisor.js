@@ -11,6 +11,7 @@ const supervisorSchema = new Schema({
   groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }], // Store group IDs here
   projectRequest: [
     {
+      isAccepted: {type : Boolean, default : false},
       project: { type: mongoose.Schema.Types.ObjectId, ref: 'ProjectRequest' },
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     }

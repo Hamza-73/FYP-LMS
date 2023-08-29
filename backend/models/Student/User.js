@@ -14,11 +14,15 @@ const userSchema = new Schema({
   token: { type: String },
   supervisor: { type: Schema.Types.ObjectId, ref: 'Supervisor' }, // Reference to the Supervisor model
   group: { type: Schema.Types.ObjectId, ref: 'Group' },
-  pendingRequests: [{ type: Schema.Types.ObjectId, ref: 'ProjectRequest' }],
+  pendingRequests: [{
+    projectId : { type: Schema.Types.ObjectId, ref: 'ProjectRequest' },
+    supervisor : { type: Schema.Types.ObjectId, ref: 'Supervisor' }
+ } ],
   seenNotifications: { type: Array,  default: [], },
   unseenNotifications: { type: Array, default: [], },
   isMember : {type : Boolean, default:false},
   marks : {type : Number, },
+  external : {type : Number, },
 });
 
 module.exports = mongoose.model('User', userSchema);
