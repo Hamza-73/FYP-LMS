@@ -6,14 +6,14 @@ import Loading from '../Loading';
 const StudentList = (props) => {
   const history = useNavigate();
 
-  const [data, setData] = useState({members : []});
+  const [data, setData] = useState({ members: [] });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
 
-  
+
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -285,61 +285,62 @@ const StudentList = (props) => {
       </div>
 
 
-      {loading ? (<Loading/>) : ( <>
-      <div className='container'>
-        <h3 className='text-center' style={{ borderBottom: "1px solid rgb(187, 174, 174)" }} >Student List</h3>
-        <div className="mb-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search...."
-            value={searchQuery}
-            onChange={handleSearch}
-          />
-        </div>
-        {filteredData.length > 0 ? (
-          <table className="table text-center table-hover">
-            <thead>
-              <tr >
-                <th scope="col">Name</th>
-                <th scope="col">Father</th>
-                <th scope="col">Roll#</th>
-                <th scope="col">Batch</th>
-                <th scope="col">Username</th>
-                <th scope="col">Semester</th>
-                <th scope="col">Cnic</th>
-                <th scope="col">Edit</th>
-                <th scope="col">Remove</th>
-              </tr>
-            </thead>
-            <tbody className='text-center'>
-              {filteredData.map((val, key) => (
-                <tr key={key}>
-                  <td>{val.name}</td>
-                  <td>{val.father}</td>
-                  <td>{val.rollNo}</td>
-                  <td>{val.batch}</td>
-                  <td>{val.username}</td>
-                  <td>{val.semester}</td>
-                  <td>{val.cnic}</td>
-                  <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                    Edit
-                  </td>
-                  <td style={{ cursor: "pointer" }} onClick={() => handleDelete(val._id)}>Remove</td>
+      {loading ? (<Loading />) : (<>
+        <div className='container'>
+          <h3 className='text-center' >Student List</h3>
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search...."
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </div>
+          {filteredData.length > 0 ? (
+            <table className="table text-center table-hover">
+              <thead>
+                <tr >
+                  <th scope="col">Name</th>
+                  <th scope="col">Father</th>
+                  <th scope="col">Roll#</th>
+                  <th scope="col">Batch</th>
+                  <th scope="col">Username</th>
+                  <th scope="col">Semester</th>
+                  <th scope="col">Cnic</th>
+                  <th scope="col">Edit</th>
+                  <th scope="col">Remove</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <div>No matching members found.</div>
-        )}
-      </div>
-      <div className="d-grid gap-2 col-6 mx-auto my-4">
-        <button type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
-          Register
-        </button>
-      </div>
-      </> )}
+              </thead>
+              <tbody className='text-center'>
+                {filteredData.map((val, key) => (
+                  <tr key={key}>
+                    <td>{val.name}</td>
+                    <td>{val.father}</td>
+                    <td>{val.rollNo}</td>
+                    <td>{val.batch}</td>
+                    <td>{val.username}</td>
+                    <td>{val.semester}</td>
+                    <td>{val.cnic}</td>
+                    <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </td>
+                    <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
+
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div>No matching members found.</div>
+          )}
+        </div>
+        <div className="d-grid gap-2 col-6 mx-auto my-4">
+          <button style={{background:"maroon"}} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
+            Register
+          </button>
+        </div>
+      </>)}
     </>
   )
 }

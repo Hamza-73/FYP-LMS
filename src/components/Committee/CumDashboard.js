@@ -7,11 +7,11 @@ const CumDashboard = (props) => {
 
     const history = useNavigate()
 
-    const [rules, setRules] = useState({rule:[]});
-    const [role, setRole] = useState({ role : '', rules:[]});
+    const [rules, setRules] = useState({ rule: [] });
+    const [role, setRole] = useState({ role: '', rules: [] });
     const [defineRole, setDefineRole] = useState('');
     const [upRule, setUpRule] = useState('');
-    const [loading,setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const getRules = async () => {
         try {
@@ -28,7 +28,7 @@ const CumDashboard = (props) => {
                 }
             });
             const json = await response.data;
-            console.log('json ',json); // Log the response data to see its structure
+            console.log('json ', json); // Log the response data to see its structure
             setRules(json);
             setLoading(false)
         } catch (error) {
@@ -101,20 +101,20 @@ const CumDashboard = (props) => {
         return str.replace(/\b\w/g, (char) => char.toUpperCase());
     }
     const handleGetRole = async () => {
-        try{
+        try {
             console.log('Get role is called')
             setLoading(true);
             await getRole(defineRole);
-            console.log('rules are getroleshandle ' , role.role);
+            console.log('rules are getroleshandle ', role.role);
             console.log('length of array is ', role.rules)
-             Array.from(role.rules).map((el)=>{
+            Array.from(role.rules).map((el) => {
                 console.log('inside map', el)
             });
             console.log('array from');
-        }catch(err){
+        } catch (err) {
             console.log('eror is ', err)
-            props.showAlert( `error ${err}`, 'danger')
-        } finally{
+            props.showAlert(`error ${err}`, 'danger')
+        } finally {
             setLoading(false)
         }
     };
@@ -122,10 +122,6 @@ const CumDashboard = (props) => {
     console.log('rules us ', role)
     return (
         <div>
-
-            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Launch demo modal
-            </button>
             <>
                 <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div className="modal-dialog">
@@ -138,7 +134,7 @@ const CumDashboard = (props) => {
                                 <form>
                                     <div className="mb-3">
                                         <label for="role" className="form-label">Role</label>
-                                        <input type="text" className="form-control" id="role"  name='role' value={defineRole} onChange={(e) => setDefineRole(e.target.value)} />
+                                        <input type="text" className="form-control" id="role" name='role' value={defineRole} onChange={(e) => setDefineRole(e.target.value)} />
                                     </div>
                                     {
                                         !loading ? (
@@ -151,13 +147,10 @@ const CumDashboard = (props) => {
                                                         type="text"
                                                         className="form-control"
                                                         value={val}
-                                                        
                                                     />
                                                 </div>
                                             ))
-                                        ) : (
-                                            "Loading......."
-                                        )
+                                        ) : ( "Loading......."  )
                                     }
 
                                 </form>
@@ -173,7 +166,7 @@ const CumDashboard = (props) => {
             </>
             <div className='my-2 mx-4'>
                 {
-                 !loading ?   rules.rule.map((elm, index) => {
+                    !loading ? rules.rule.map((elm, index) => {
                         return (
                             <div className="rules" key={index}>
                                 <h2>{capitalizeEveryWord(elm.role)}</h2>
@@ -184,12 +177,14 @@ const CumDashboard = (props) => {
                                 </ol>
                             </div>
                         );
-                    }) : <Loading/>
+                    }) : <Loading />
                 }
             </div>
 
-            <div className="edit">
-
+            <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
+                <button type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    Edit Rules
+                </button>
             </div>
 
         </div>

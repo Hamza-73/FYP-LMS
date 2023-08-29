@@ -267,7 +267,7 @@ const CommitteeMember = (props) => {
 
       {loading ? (<Loading />) : (<>
         <div className='container'>
-          <h3 className='text-center' style={{ borderBottom: "1px solid rgb(187, 174, 174)" }} >Committee Members</h3>
+          <h3 className='text-center'>Committee Members</h3>
           <div className="mb-3">
             <input
               type="text"
@@ -295,9 +295,9 @@ const CommitteeMember = (props) => {
                     <td>{val.department}</td>
                     <td>{val.designation}</td>
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                    Edit
+                    <i class="fa-solid fa-pen-to-square"></i>
                   </td>
-                  <td style={{ cursor: "pointer" }} onClick={() => handleDelete(val._id)}>Remove</td>
+                  <td  style={{ cursor:"pointer", color:"maroon", textAlign:"center", fontSize:"25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
                   </tr>
                 ))}
               </tbody>
@@ -307,7 +307,7 @@ const CommitteeMember = (props) => {
           )}
         </div>
         <div className="d-grid gap-2 col-6 mx-auto my-4">
-          <button type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
+          <button style={{background:"maroon"}} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
             Register
           </button>
         </div>

@@ -6,7 +6,7 @@ import Loading from '../Loading';
 const SupervisorList = (props) => {
   const history = useNavigate();
 
-  const [data, setData] = useState({members : []});
+  const [data, setData] = useState({ members: [] });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -56,8 +56,8 @@ const SupervisorList = (props) => {
     setSelectedStudent(student);
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
-      name: student.name,  username: student.username, department: student.department,
-      designation: student.designation, slots:student.slots, password:student.password
+      name: student.name, username: student.username, department: student.department,
+      designation: student.designation, slots: student.slots, password: student.password
     });
   };
 
@@ -74,12 +74,12 @@ const SupervisorList = (props) => {
         {
           name: register.name, username: register.username,
           department: register.department, designation: register.designation,
-          slots:register.slots, password: register.password
+          slots: register.slots, password: register.password
         },
         {
           // method:"PUT",
           headers: {
-            'Content-Type': 'application/json', 
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -98,7 +98,7 @@ const SupervisorList = (props) => {
 
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
-          name: '', username: '', department: '', designation: '', password: '', slots:''
+          name: '', username: '', department: '', designation: '', password: '', slots: ''
         });
       }
 
@@ -165,7 +165,7 @@ const SupervisorList = (props) => {
   useEffect(() => {
     if (!localStorage.getItem('token')) {
       history('/');
-      
+
     } else {
       // Set loading to true when starting data fetch
       setLoading(true);
@@ -196,7 +196,7 @@ const SupervisorList = (props) => {
   // },]
 
   const filteredData = Array.from(data.members).filter((member) =>
-  // const filteredData = members.filter((member) =>
+    // const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.designation.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -211,7 +211,7 @@ const SupervisorList = (props) => {
     setRegister({ ...register, [e.target.name]: e.target.value })
   }
 
-  
+
 
   return (
 
@@ -275,7 +275,7 @@ const SupervisorList = (props) => {
 
       {loading ? (<Loading />) : (<>
         <div className='container'>
-          <h3 className='text-center' style={{ borderBottom: "1px solid rgb(187, 174, 174)" }} >Supervisor List</h3>
+          <h3 className='text-center' >Supervisor List</h3>
           <div className="mb-3">
             <input
               type="text"
@@ -305,9 +305,10 @@ const SupervisorList = (props) => {
                     <td>{val.designation}</td>
                     <td>{val.slots}</td>
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                    Edit
-                  </td>
-                  <td style={{ cursor: "pointer" }} onClick={() => handleDelete(val._id)}>Remove</td>
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </td>
+                    <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
+
                   </tr>
                 ))}
               </tbody>
@@ -317,7 +318,7 @@ const SupervisorList = (props) => {
           )}
         </div>
         <div className="d-grid gap-2 col-6 mx-auto my-4">
-          <button type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
+          <button style={{background:"maroon"}} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
             Register
           </button>
         </div>
