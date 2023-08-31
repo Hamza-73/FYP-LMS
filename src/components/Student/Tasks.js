@@ -1,8 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import SideBar from '../SideBar'
 import '../../css/task.css'
+import axios from 'axios';
 
 const Tasks = (props) => {
+  const [file,setFile] = useState();
+  const upload = ()=>{
+    const formData = new FormData();
+    formData.append('file', file);
+    axios.put('http://localhost:5000/upload', formData).then(
+      res =>{}
+    ).catch(er=>console.log('error is ', er))
+  }
   return (
     <div>
       <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress' link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group' title5='Meeting' link5='meeting' username={props.username}
@@ -32,8 +41,8 @@ const Tasks = (props) => {
             <div>Task Submitted Late</div>
           </div>
           <div className="boxes d-flex justify-content-evenly">
-            <div>File Submission</div>
-            <div>Add Submission</div>
+            <input type="file" onChange={(e)=>{setFile(e.target.files[0])}} />
+            <div className='btn' type='button' onClick={upload}>Add Submission</div>
           </div>
         </div>
       </div>

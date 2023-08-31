@@ -11,7 +11,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authenticateUser = require('../../middleware/auth')
 const JWT_KEY = 'hamzakhan1'
-const SharedRules = require('../../models/SharedRules')
+const SharedRules = require('../../models/SharedRules');
+const moment = require('moment'); 
 
 
 // Schedule a viva for a specific group's project
@@ -29,6 +30,9 @@ router.post('/schedule-viva',  async (req, res) => {
       }
   
       console.log('Group is ', group)
+      if(!(group.isProp && group.isDoc)){
+        return res.status(500).json({success:false, message:`Documentation or Proposal is Pending`})
+      }
   
       // Iterate through each project within the group and schedule a viva for each project
   group.projects.forEach(async (project) => {
@@ -45,8 +49,9 @@ router.post('/schedule-viva',  async (req, res) => {
       })),
       vivaDate: new Date(vivaDate)
     });
-  
-    await viva.save();
+    group.viva = viva._id;
+      
+    await Prmise.all([ group.save(),  viva.save()]);
     console.log('Viva is ', viva)
     // Send notification to group users and supervisors about the scheduled viva
     const notificationMessage = `A viva has been scheduled for the project "${project.projectTitle}" on ${vivaDate}`;
@@ -109,5 +114,42 @@ router.post('/schedule-viva',  async (req, res) => {
       return res.status(500).json({ message: 'Server error' });
     }
   });
+
+  router.post('/dueDate', async (req, res) => {
+    try {
+      const { projectTitle, dueDate } = req.body;
+      const group = await Group.findOne({
+        'projects.projectTitle': projectTitle
+      });
+      if (!group) {
+        return res.status(500).json({ success: false, message: 'Group not found' });
+      }
+      // Parse the date in "DD-MM-YYYY" format and convert it to ISO format
+      const isoDueDate = moment(dueDate, 'DD-MM-YYYY').toISOString();
+  
+      group.propDate = isoDueDate;
+  
+      for (const grp of group.projects) {
+        console.log('projects is ', grp);
+        for (const studentId of grp.students) {
+          const stu = await User.findById(studentId.userId);
+          if (!stu) {
+            return res.status(500).json({ success: false, message: 'Student not found' });
+          }
+          console.log('Student is ', stu);
+          stu.propDate = isoDueDate;
+          await stu.save();
+        }
+      }
+  
+      await group.save();
+      return res.json({ success: true, message: 'Due Date is added' });
+  
+    } catch (error) {
+      console.error('error is ', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
 
 module.exports = router;

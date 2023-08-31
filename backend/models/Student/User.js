@@ -20,9 +20,12 @@ const userSchema = new Schema({
  } ],
   seenNotifications: { type: Array,  default: [], },
   unseenNotifications: { type: Array, default: [], },
-  isMember : {type : Boolean, default:false},
   marks : {type : Number, },
   external : {type : Number, },
+  isMember : {type : Boolean, default:false},
+  isDoc : {type:Boolean, default:false},
+  isProp : {type:Boolean, default:false},
+  propDate:{type : Date}
 });
 
 module.exports = mongoose.model('User', userSchema);

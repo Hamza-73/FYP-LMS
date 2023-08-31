@@ -164,15 +164,16 @@ const CumDashboard = (props) => {
                     </div>
                 </div>
             </>
-            <div className='my-2 mx-4'>
+            <div className='my-2 mx-4' style={{border:"none"}} >
                 {
                     !loading ? rules.rule.map((elm, index) => {
                         return (
                             <div className="rules" key={index}>
-                                <h2>{capitalizeEveryWord(elm.role)}</h2>
-                                <ol>
+                                <h3 style={{fontWeight:"600" , fontFamily:" 'Libre Baskerville', sans-serif"}}>{capitalizeEveryWord(elm.role)}</h3>
+                                <ol style={{paddingRight:"300px"}}>
                                     {elm.rules.map((rule, ruleIndex) => (
-                                        <li key={ruleIndex}>{rule}</li>
+                                        <li style={{  fontWeight:"450", fontSize:"18px",
+                                            fontFamily:"'ALEGREYA', sans-serif", }} key={ruleIndex}>{rule}</li>
                                     ))}
                                 </ol>
                             </div>
@@ -181,8 +182,8 @@ const CumDashboard = (props) => {
                 }
             </div>
 
-            <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
-                <button type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <div className='d-grid gap-2 d-md-flex justify-content-md-end' style={{position:"relative", right:"5.5rem", bottom:"2rem"}}>
+                <button style={{background:"maroon"}} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#exampleModal">
                     Edit Rules
                 </button>
             </div>

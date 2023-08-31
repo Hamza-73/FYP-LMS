@@ -257,4 +257,39 @@ router.put('/remarks/:groupId', async (req,res)=>{
     }
 });
 
+router.get('/groups', async (req, res) => {
+  try {
+    const groups = await Group.find();
+    if (!groups) {
+      return res.status(404).json({ message: 'Groups not found' });
+    }
+
+    const transformedGroups = [];
+    
+    groups.forEach((group) => {
+      const supervisorName = group.supervisor;
+      const remarks = group.remarks;
+      const projects = group.projects.map((project) => {
+        const projectTitle = project.projectTitle;
+        const students = project.students.map((student) => ({
+          name: student.name,
+          rollNo: student.rollNo,
+        }));
+        return { projectTitle, students };
+      });
+
+      transformedGroups.push({
+        supervisor: supervisorName,
+        remarks : remarks,
+        projects: projects,
+      });
+    });
+
+    res.json(transformedGroups);
+  } catch (error) {
+    console.error('Error fetching groups', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 module.exports = router;

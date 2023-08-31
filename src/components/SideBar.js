@@ -100,7 +100,7 @@ const SideBar = (props) => {
                         </ul>
                         <form className={`d-flex ${!localStorage.getItem('token') ? 'd-none' : ''} `} role="search">
                             <h5>{userData.username}</h5>
-                            <button className="btn btn-outline-danger mx-3" type="button" onClick={handleLogout}>Logout</button>
+                            <button style={{background:"maroon", color:"white"}} className="btn  mx-3" type="button" onClick={handleLogout}>Logout</button>
                         </form>
                     </div>
                 </div>

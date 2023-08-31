@@ -198,7 +198,7 @@ const StudentList = (props) => {
     // const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.rollNO.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.rollNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.father.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.cnic.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.semester.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -11,6 +11,45 @@ const Supervisor = require('../../models/Supervisor/Supervisor');
 const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 const Group = require('../../models/GROUP/Group');
 
+const multer = require('multer')
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// to upload file
+router.post('/proposal', upload.single('proposal'), authenticateUser, async (req, res) => {
+  try {
+
+    const user = await User.findById(req.user.id);
+    if(!user){
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const id = user.group;
+    const group = await Group.findOneAndUpdate(
+      {_id : id},
+      {
+        $set: {
+          proposal: {
+            data: req.file.buffer,
+            contentType: req.file.mimetype,
+          },
+        },
+      },
+      { new: true } // To get the updated group after the update
+    );
+
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found' });
+    }
+
+    await group.save();
+    res.status(200).json({ message: 'File uploaded successfully' });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Login route
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;

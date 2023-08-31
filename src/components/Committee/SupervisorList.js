@@ -199,8 +199,7 @@ const SupervisorList = (props) => {
     // const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.designation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.slots.toLowerCase().includes(searchQuery.toLowerCase())
+    member.designation.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const [register, setRegister] = useState({
