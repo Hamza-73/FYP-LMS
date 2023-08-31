@@ -14,7 +14,9 @@ const Tasks = (props) => {
   }
   return (
     <div>
-      <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress' link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group' title5='Meeting' link5='meeting' username={props.username}
+      <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress'
+        link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group'
+        title5='Meeting' link5='meeting' detailLink = 'student'
       />
       <div className="container">
         <div className="upper">

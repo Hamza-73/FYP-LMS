@@ -30,7 +30,7 @@ const superRoute = require('./routes/Supervisor/Supervisor');
 const committeeRoute = require('./routes/Committe/Committee');
 const vivaRoute = require('./routes/Committe/Viva')
 
-app.use('/login', loginRoute); //yah login ka route yaha user's ki api yaha run hogi
+app.use('/student', loginRoute); //yah login ka route yaha user's ki api yaha run hogi
 app.use('/supervisor', superRoute)  // yah supervisor
 app.use('/committee', committeeRoute)  //yah committee
 app.use('/viva', vivaRoute);

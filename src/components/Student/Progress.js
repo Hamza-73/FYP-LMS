@@ -32,26 +32,27 @@ const Progress = (props) => {
                 alert('Authorization token not found', 'danger');
                 return;
             }
-            const response = await axios.post("http://localhost:5000/login/send-project-request", {
-                username: "umair",
-                projectTitle: "BANK",
-                description: "desc",
-                scope: "scope",
+            const response = await fetch("http://localhost:5000/student/send-project-request", {
+                username: request.username, projectTitle: request.projectTitle,
+                description: request.description,  scope: request.scope,
                 status: false
             }, {
+                // method : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    authorization: `${token}`
                 }
             });
             const json = await response.data;
             console.log('json is ', json); // Log the response data to see its structure
             if(json){
-                props.showAlert('Request sent ', 'success');
-                setRequest(json);
+                props.showAlert( 'request sent sucessfully', 'success');
+                // setRequest(json);
             }
+            console.log('json is after')
 
         } catch (error) {
+            console.log('error is ', error)
             alert(`Some error occurred: ${error.message}`, 'danger');
         }
     }
@@ -74,22 +75,22 @@ const Progress = (props) => {
                             <div className="modal-body">
                                 <form >
                                     <form>
-                                        <div class="mb-3">
-                                            <label for="exampleInputEmail163" class="form-label">Supervisor Username</label>
-                                            <input type="text" class="form-control" id="username" name='username' value={request.username}  onChange={handleChange}/>
+                                        <div className="mb-3">
+                                            <label htmlFor="exampleInputEmail163" className="form-label">Supervisor Username</label>
+                                            <input type="text" className="form-control" id="username" name='username' value={request.username}  onChange={handleChange}/>
                                         </div>
-                                        <div class="mb-3">
-                                            <label for="exampleInputPassword331" class="form-label">Project Title</label>
-                                            <input type="password" class="form-control" id="projectTitle" name='projectTitle' value = {request.projectTitle} onChange={handleChange} />
+                                        <div className="mb-3">
+                                            <label htmlFor="exampleInputPassword331" className="form-label">Project Title</label>
+                                            <input type="text" className="form-control" id="projectTitle" name='projectTitle' value = {request.projectTitle} onChange={handleChange} />
                                         </div>
-                                        <div class="mb-3">
-                                            <label for="exampleInputPassword13" class="form-label">Scope of Study</label>
-                                            <input type="password" class="form-control" id="scope" name='scope' value={request.scope} onChange={handleChange} />
+                                        <div className="mb-3">
+                                            <label htmlFor="exampleInputPassword13" className="form-label">Scope of Study</label>
+                                            <input type="text" className="form-control" id="scope" name='scope' value={request.scope} onChange={handleChange} />
                                         </div>
-                                        <div class="mb-3">
-                                            <label for="exampleInputPassword153" class="form-label">Description</label>
-                                            <div class="form-floating">
-                                                <textarea class="form-control" id="description" name='description' value={request.description} onChange={handleChange}></textarea>
+                                        <div className="mb-3">
+                                            <label htmlFor="exampleInputPassword153" className="form-label">Description</label>
+                                            <div className="form-floating">
+                                                <textarea className="form-control" id="description" name='description' value={request.description} onChange={handleChange}></textarea>
                                             </div>
                                         </div>
                                     </form>
@@ -103,8 +104,10 @@ const Progress = (props) => {
                     </div>
                 </div>
             </>
-            <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress' link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group' title5='Meeting' link5='meeting' username={props.username}
-            />
+            <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress'
+        link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group'
+        title5='Meeting' link5='meeting' detailLink = 'student'
+      />
             <div className='containar'>
                 <div className="box my-3 mx-4">
                     <h3>Meeting Report</h3>

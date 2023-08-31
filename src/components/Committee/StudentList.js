@@ -17,7 +17,7 @@ const StudentList = (props) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/login/register", {
+      const response = await fetch("http://localhost:5000/student/register", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -70,7 +70,7 @@ const StudentList = (props) => {
       const id = selectedStudent._id;
       console.log('id is ', id)
 
-      const response = await axios.put(`http://localhost:5000/login/edit/${id}`, // Assuming _id is the correct identifier for a student
+      const response = await axios.put(`http://localhost:5000/student/edit/${id}`, // Assuming _id is the correct identifier for a student
         {
           name: register.name, father: register.father, username: register.username,
           department: register.department, batch: register.batch, semester: register.semester,
@@ -115,7 +115,7 @@ const StudentList = (props) => {
       try {
 
         console.log('id is ', id)
-        const response = await axios.delete(`http://localhost:5000/login/delete/${id}`,
+        const response = await axios.delete(`http://localhost:5000/student/delete/${id}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ const StudentList = (props) => {
         alert('Authorization token not found', 'danger');
         return;
       }
-      const response = await axios.get("http://localhost:5000/login/get-students", {
+      const response = await axios.get("http://localhost:5000/student/get-students", {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -182,20 +182,7 @@ const StudentList = (props) => {
     setSearchQuery(event.target.value);
   };
 
-  // console.log('data is ', data)
-
-  // const members = [{
-  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  // }, {
-  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  // }, {
-  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  // }, {
-  //   name: "Hamza", father: "Khan", username: "hamza", department: "CS", batch: "2021", semester: "9", password: "1234", cnic: "35202-27891-101", rollNO: "0072",
-  // },]
-
   const filteredData = Array.from(data.members).filter((member) =>
-    // const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.rollNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -215,9 +202,7 @@ const StudentList = (props) => {
   }
 
   return (
-
     <>
-
       {/* REGISTER */}
       <div className="register"  >
         <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -278,12 +263,10 @@ const StudentList = (props) => {
                     )}</div>
                 </form>
               </div>
-
             </div>
           </div>
         </div>
       </div>
-
 
       {loading ? (<Loading />) : (<>
         <div className='container'>

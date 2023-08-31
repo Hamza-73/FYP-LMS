@@ -20,12 +20,12 @@ router.post('/proposal', upload.single('proposal'), authenticateUser, async (req
   try {
 
     const user = await User.findById(req.user.id);
-    if(!user){
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
     const id = user.group;
     const group = await Group.findOneAndUpdate(
-      {_id : id},
+      { _id: id },
       {
         $set: {
           proposal: {
@@ -202,11 +202,15 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
   const { username, projectTitle, description, scope } = req.body;
 
   try {
-
     // Find the user who is making the request
     const userId = req.user.id;
     const user = await User.findById(userId);
-    if(user.isMember){
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // check if user is already in a group 
+    if (user.isMember) {
       user.pendingRequests = [];
       await user.save()
       return res.status(404).json({ success: false, message: 'You are already in a group' });
@@ -217,73 +221,76 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
+
+
     console.log('Supervisor is ', supervisor)
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
     console.log('User is ', user)
-    // Check if the user has already sent a request to this supervisor
-    const requestExists = user.pendingRequests.forEach(req => {
-      if ((req._id == supervisor._id)) {
-        return true
-      }
-      return false;
-    });
+    // Check if project exists
+    const pendingProject = await ProjectRequest.findOne({ projectTitle: projectTitle });
+    if (!pendingProject) {
+      // Create a new project request and add it to the user's pendingRequests
+      const projectRequest = new ProjectRequest({
+        supervisor: supervisor._id,
+        student: user._id,
+        projectTitle, description,
+        scope, status: false
+      });
+      user.pendingRequests.push({
+        projectId: projectRequest._id,
+        supervisor: supervisor._id
+      });
+      user.unseenNotifications.push({ message: `Project request sent to ${supervisor.name}` });
 
+      // console.log('project id is ', projectRequest._id, 'type is ', typeof (projectRequest._id))
+      // console.log('user id is ', user._id, 'type is ', typeof (user._id))
+
+      supervisor.projectRequest.push({
+        isAccepted: false,
+        project: projectRequest._id,
+        user: user._id
+      })
+      supervisor.unseenNotifications.push({ message: `A new proposal for ${projectTitle}` });
+
+      await Promise.all([user.save(), supervisor.save(), projectRequest.save()]);
+
+      res.json({ success: true, message: `Project request sent to ${supervisor.name}` });
+
+    }
+
+    // console.log('pending request is ', pendingProject)
+    // console.log('id request is ', pendingProject._id)
+    // Check if the user has already sent a request to this supervisor
+    const requestExists = user.pendingRequests.map(req => {
+      // console.log('req is ', req);
+      // console.log('re proj is', req.projectId);
+      // console.log('proje id', pendingProject._id);
+      // console.log('req sup is', req.supervisor);
+      // console.log('supervisor id', supervisor._id);
+      console.log(req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id) )
+        return (req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id) )
+        
+      })
     console.log('requestExists ', requestExists)
 
     if (requestExists) {
       return res.status(400).json({ success: false, message: 'Request already sent to this supervisor' });
     }
 
-    // first check if the requests exists already
-    const pendingProject = await ProjectRequest.findOne({ projectTitle: projectTitle });
-    if (pendingProject) {
-      user.pendingRequests.push(pendingProject);
-      user.unseenNotifications.push({ message: `Project request sent to ${supervisor.name}` });
-      const request = {
-        project: pendingProject._id,
-        user: user._id
-      };
+    user.pendingRequests.push({
+      projectId :  pendingProject._id ,
+      supervisor : supervisor._id
+    })
+    supervisor.projectRequest.push({
+      isAccepted: false,
+      project: pendingProject._id,
+      user: user._id
+    })
+    supervisor.unseenNotifications.push({ message: `A new proposal for ${projectTitle}` });
 
-      supervisor.projectRequest.push(request); // Add the request here
+    await Promise.all([user.save(), supervisor.save(), pendingProject.save()]);
 
-      supervisor.unseenNotifications.push({ message: `A new proposal for ${projectTitle}` });
-
-      await Promise.all([user.save(), supervisor.save(), pendingProject.save()]);
-
-      res.json({ success: true, message: 'Project request sent to supervisor' });
-    }
-    else {
-      // Create a new project request and add it to the user's pendingRequests
-      const projectRequest = new ProjectRequest({
-        student: user._id,
-        projectTitle, description,
-        scope, status: false
-      });
-
-      user.pendingRequests.push(projectRequest);
-      user.unseenNotifications.push({ message: `Project request sent to ${supervisor.name}` });
-
-      console.log('project id is ', projectRequest._id, 'type is ', typeof (projectRequest._id))
-      console.log('user id is ', user._id, 'type is ', typeof (user._id))
-      const request = {
-        project: projectRequest._id,
-        user: user._id
-      };
-
-      supervisor.projectRequest.push(request); // Add the request here
-
-      supervisor.unseenNotifications.push({ message: `A new proposal for ${projectTitle}` });
-
-      await Promise.all([user.save(), supervisor.save(), projectRequest.save()]);
-
-      res.json({ success: true, message: 'Project request sent to supervisor' });
-
-    }
-
-
+    res.json({ success: true, message: `Project request sent to ${supervisor.name}` });
   } catch (err) {
     console.error('Error sending project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -292,19 +299,20 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
 
 
 //get my detail
-router.get('/student', async (req, res) => {
+router.get('/detail', authenticateUser, async (req, res) => {
   try {
-    const studentId = req.user.id; // Get the authenticated user's ID from the token payload
+    const userId = req.user.id; // Get the authenticated user's ID from the token payload
 
-    const student = await User.findById(studentId);
+    const member = await User.findById(userId);
 
-    if (!student) {
+    if (!member) {
       return res.status(404).json({ message: 'Student not found' });
     }
 
     // Return the student details
-    return res.json(student);
+    return res.json({ success: true, member, user: userId });
   } catch (error) {
+    console.error('error is ', error)
     return res.status(500).json({ message: 'Server error' });
   }
 });

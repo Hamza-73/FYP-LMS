@@ -19,6 +19,7 @@ const CommitteeMain = (props) => {
                 title4='Student List' link4='student'
                 title5='Project List' link5='project'
                 title6='Schedule Viva' link6='event'
+                detailLink='committee'
             />
             <Routes>
                 <Route path='/' element={<Login showAlert={props.showAlert}

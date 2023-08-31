@@ -17,8 +17,8 @@ const App = () => {
   return (
     <>
     <Alert alert={alert} />
-    {/* <StudentMain showAlert={showAlert} /> */}
-    <CommitteeMain showAlert={showAlert} />
+    <StudentMain showAlert={showAlert} />
+    {/* <CommitteeMain showAlert={showAlert} /> */}
         
     </>
   )

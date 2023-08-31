@@ -123,7 +123,7 @@ const CumDashboard = (props) => {
     return (
         <div>
             <>
-                <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -133,14 +133,14 @@ const CumDashboard = (props) => {
                             <div className="modal-body">
                                 <form>
                                     <div className="mb-3">
-                                        <label for="role" className="form-label">Role</label>
+                                        <label htmlFor="role" className="form-label">Role</label>
                                         <input type="text" className="form-control" id="role" name='role' value={defineRole} onChange={(e) => setDefineRole(e.target.value)} />
                                     </div>
                                     {
                                         !loading ? (
                                             Array.from(role.rules).map((val, key) => (
                                                 <div className="mb-3" key={key}>
-                                                    <label htmlFor="exampleInputPassword1" className="form-label">
+                                                    <label htmlhtmlFor="exampleInputPassword1" className="form-label">
                                                         Rules
                                                     </label>
                                                     <input

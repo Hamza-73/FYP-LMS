@@ -269,6 +269,7 @@ router.get('/groups', async (req, res) => {
     groups.forEach((group) => {
       const supervisorName = group.supervisor;
       const remarks = group.remarks;
+      const id = group._id;
       const projects = group.projects.map((project) => {
         const projectTitle = project.projectTitle;
         const students = project.students.map((student) => ({
@@ -281,6 +282,7 @@ router.get('/groups', async (req, res) => {
       transformedGroups.push({
         supervisor: supervisorName,
         remarks : remarks,
+        id : id,
         projects: projects,
       });
     });

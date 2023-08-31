@@ -182,14 +182,6 @@ const CommitteeMember = (props) => {
 
   console.log('data is ', data)
 
-  // const members = [{
-  //   fname: 'Sufyan', lname: "Tiwana", department: "CS", designation: "President"
-  // }, {
-  //   fname: 'Hamza', lname: "Tiwana", department: "CSE", designation: "President"
-  // }, {
-  //   fname: 'Hamid', lname: "Tiwana", department: "CS", designation: "President"
-  // },]
-
   const filteredData =  Array.from(data.members).filter((member) =>
     member.fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.lname.toLowerCase().includes(searchQuery.toLowerCase()) ||
