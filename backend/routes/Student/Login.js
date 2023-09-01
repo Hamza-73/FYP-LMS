@@ -11,9 +11,11 @@ const Supervisor = require('../../models/Supervisor/Supervisor');
 const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 const Group = require('../../models/GROUP/Group');
 
-const multer = require('multer')
+const multer = require('multer');
+const { getTouchRippleUtilityClass } = require('@mui/material');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const Viva = require('../../models/Viva/Viva')
 
 // to upload file
 router.post('/proposal', upload.single('proposal'), authenticateUser, async (req, res) => {
@@ -213,7 +215,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (user.isMember) {
       user.pendingRequests = [];
       await user.save()
-      return res.status(404).json({ success: false, message: 'You are already in a group' });
+      return res.status(500).json({ success: false, message: 'You are already in a group' });
     }
 
     // Find the supervisor by username
@@ -221,8 +223,6 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-
-
     console.log('Supervisor is ', supervisor)
 
     console.log('User is ', user)
@@ -231,7 +231,6 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (!pendingProject) {
       // Create a new project request and add it to the user's pendingRequests
       const projectRequest = new ProjectRequest({
-        supervisor: supervisor._id,
         student: user._id,
         projectTitle, description,
         scope, status: false
@@ -254,7 +253,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
 
       await Promise.all([user.save(), supervisor.save(), projectRequest.save()]);
 
-      res.json({ success: true, message: `Project request sent to ${supervisor.name}` });
+      return res.json({ success: true, message: `Project request sent to ${supervisor.name}` });
 
     }
 
@@ -366,7 +365,39 @@ router.put('/edit/:id', async (req, res) => {
     }
     res.status(200).json(updatedStudent);
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/my-group', authenticateUser, async (req,res)=>{
+  try {
+    const userId = req.user.id;
+    console.log('userId', userId)
+    const student = await User.findById(userId);
+    if(!student){
+      return res.status(404).json({ message: 'Student Not Found' });
+    }
+    const group = await Group.findById(student.group);
+    if(!group){
+      return res.status(404).json({ message: 'Group Not Found' });
+    }
+    const viva = await Viva.findById(student.viva);
+    const groupDetail = {
+      groupId : student.group,
+      supervisor : group.supervisor,
+      supervisorId : group.supervisorId,
+      projectTitle : group.projects[0].projectTitle,      
+      projectId : group.projects[0].projectId,
+      groupMember : group.projects[0].students.filter(stu=>!stu.userId.equals(userId)),
+      proposal : group.isProp,     
+      documentation : group.isDoc,
+      docDate : student.docDate ? student.docDate : '----' ,
+      propDate : student.propDate ? student.propDate : '----' ,
+      viva : viva ? viva.vivaDate : '-----'
+    }
+    return res.json({success:true, group : groupDetail})
+  } catch (error) {
+    
   }
 });
 

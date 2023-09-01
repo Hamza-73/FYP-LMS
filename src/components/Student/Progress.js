@@ -21,7 +21,8 @@ const Progress = (props) => {
         { tasks: "Task1", duedate: "09-11-2023", subdate: "02-10-2023" },
     ]
     // eslint-disable-next-line
-    const [request, setRequest] = useState({ username: "", projectTitle: "", description: "",
+    const [request, setRequest] = useState({
+        username: "", projectTitle: "", description: "",
         scope: "", status: false
     });
 
@@ -32,36 +33,50 @@ const Progress = (props) => {
                 alert('Authorization token not found', 'danger');
                 return;
             }
-            const response = await fetch("http://localhost:5000/student/send-project-request", {
-                username: request.username, projectTitle: request.projectTitle,
-                description: request.description,  scope: request.scope,
-                status: false
-            }, {
-                // method : 'POST',
+            const response = await fetch(`http://localhost:5000/student/send-project-request`, {
+                method: 'POST', // Change to POST
                 headers: {
                     'Content-Type': 'application/json',
                     authorization: `${token}`
-                }
+                },
+                body: JSON.stringify({  username: request.username,
+                    projectTitle: request.projectTitle, description: request.description,
+                    scope: request.scope, status: false                      
+                })
             });
             const json = await response.data;
-            console.log('json is ', json); // Log the response data to see its structure
-            if(json){
-                props.showAlert( 'request sent sucessfully', 'success');
-                // setRequest(json);
+            if (!json) {
+                console.log('respons is ', response)
+                console.log('respons is ', response.json)
             }
-            console.log('json is after')
-
         } catch (error) {
             console.log('error is ', error)
             alert(`Some error occurred: ${error.message}`, 'danger');
         }
     }
-
-    
-    const handleChange = (e)=>{
-        setRequest({...request, [e.target.name]:[e.target.value]})
+    const handleChange = (e) => {
+        setRequest({ ...request, [e.target.name]: e.target.value })
     }
 
+    const handleRequest = async (e) => {
+        try {
+            console.log('handle request starts')
+            e.preventDefault();
+            await sendRequest();
+        } catch (error) {
+            console.log('handle error is ', error)
+        }
+    }
+
+    console.log('request is', request)
+    console.log('title is', request.projectTitle)
+    console.log('Request Payload:', JSON.stringify({
+        username: request.username,
+        projectTitle: request.projectTitle,
+        description: request.description,
+        scope: request.scope,
+        status: false
+    }));
     return (
         <>
             <>
@@ -73,15 +88,15 @@ const Progress = (props) => {
                                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div className="modal-body">
-                                <form >
-                                    <form>
+                                < >
+                                    <form onSubmit={(e) => handleRequest(e)}>
                                         <div className="mb-3">
                                             <label htmlFor="exampleInputEmail163" className="form-label">Supervisor Username</label>
-                                            <input type="text" className="form-control" id="username" name='username' value={request.username}  onChange={handleChange}/>
+                                            <input type="text" className="form-control" id="username" name='username' value={request.username} onChange={handleChange} />
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="exampleInputPassword331" className="form-label">Project Title</label>
-                                            <input type="text" className="form-control" id="projectTitle" name='projectTitle' value = {request.projectTitle} onChange={handleChange} />
+                                            <input type="text" className="form-control" id="projectTitle" name='projectTitle' value={request.projectTitle} onChange={handleChange} />
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="exampleInputPassword13" className="form-label">Scope of Study</label>
@@ -93,21 +108,23 @@ const Progress = (props) => {
                                                 <textarea className="form-control" id="description" name='description' value={request.description} onChange={handleChange}></textarea>
                                             </div>
                                         </div>
+                                        <div className="modal-footer">
+                                            
+                                                <button type="submit" className="btn btn-success">
+                                                    save
+                                                </button>
+                                           </div>
                                     </form>
-                                </form>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button style={{background:"maroon"}} type="button" className="btn btn-danger" onClick={sendRequest}>Send Request</button>
+                                </>
                             </div>
                         </div>
                     </div>
                 </div>
             </>
             <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress'
-        link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group'
-        title5='Meeting' link5='meeting' detailLink = 'student'
-      />
+                link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group'
+                title5='Meeting' link5='meeting' detailLink='student'
+            />
             <div className='containar'>
                 <div className="box my-3 mx-4">
                     <h3>Meeting Report</h3>
@@ -141,7 +158,7 @@ const Progress = (props) => {
                     </tbody>
                 </table>
                 <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls" >
-                    <button style={{background:"maroon"}} type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    <button style={{ background: "maroon" }} type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
                         Request Idea
                     </button>
                 </div>

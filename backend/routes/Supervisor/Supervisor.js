@@ -201,13 +201,25 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       console.log('user id is ', user._id)
       // Decrease supervisor group by one
       supervisor.slots = supervisor.slots - 1;
-      projectDetail.students.push(user._id)
+      projectDetail.students.push(user._id);
+      projectDetail.supervisor= (supervisor._id);
+      projectDetail.isAccepted = true ;
       console.log('Project Supervisor is ', projectDetail.supervisor);
       // projectDetail.supervisor.push(supervisor._id);
 
       if (projectDetail.students.length === 2) {
         projectDetail.status = true;
       }
+
+      // remove request from supervisor projectrequests
+      const filteredRequest = supervisor.projectRequest.filter((request)=>{
+        console.log('project is ', request.project);
+        console.log('detail filter', projectDetail._id)
+        console.log('tr/false',request.project.equals(projectDetail._id) )
+        return !request.project.equals(projectDetail._id);
+      });
+
+      supervisor.projectRequest = filteredRequest;
 
       // Make user pending request zero and give him a notification
       user.pendingRequests = [];
@@ -221,7 +233,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       // Save changes to supervisor and group
       await Promise.all([supervisor.save(), groupDoc.save(), user.save(), projectDetail.save()]);
 
-      res.json({ success: true, message: 'Project request accepted and user added to group' });
+      return res.json({ success: true, message: 'Project request accepted and user added to group' });
 
     }
 

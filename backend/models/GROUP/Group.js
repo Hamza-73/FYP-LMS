@@ -20,7 +20,8 @@ const groupSchema = new Schema({
   isProp: { type: Boolean, default: false },
   isDoc: { type: Boolean, default: false },
   viva: { type: Schema.Types.ObjectId, ref: 'Viva' },
-  propDate : {type : Date }
+  propDate:{type : Date},
+  docDate : {type: Date},
 });
 
 module.exports = mongoose.model('Group', groupSchema);
