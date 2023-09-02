@@ -185,18 +185,9 @@ const SupervisorList = (props) => {
     setSearchQuery(event.target.value);
   };
 
-  console.log('data is ', data)
-
-  // const members = [{
-  //   name: 'Sufyan', department: "CS", designation: "President", slots: "4"
-  // }, {
-  //   name: 'Hamza', department: "CSE", designation: "President", slots: "4"
-  // }, {
-  //   name: 'Hamid', department: "CS", designation: "President", slots: "4"
-  // },]
+  // console.log('data is ', data)
 
   const filteredData = Array.from(data.members).filter((member) =>
-    // const filteredData = members.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.designation.toLowerCase().includes(searchQuery.toLowerCase())
@@ -210,12 +201,8 @@ const SupervisorList = (props) => {
     setRegister({ ...register, [e.target.name]: e.target.value })
   }
 
-
-
   return (
-
     <>
-
       {/* REGISTER */}
       <div className="register"  >
         <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -270,7 +257,6 @@ const SupervisorList = (props) => {
           </div>
         </div>
       </div>
-
 
       {loading ? (<Loading />) : (<>
         <div className='container'>

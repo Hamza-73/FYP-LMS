@@ -48,7 +48,7 @@ const ProjectRequests = () => {
   ]
   return (
     <div>
-      <div div className='container'>
+      <div div className='container' style={{ width: "100%" }}>
         <h3 className='text-center'>Requests</h3>
         {request.length > 0 ? (
           <div>
@@ -88,9 +88,9 @@ const ProjectRequests = () => {
                         <td>{group.scope}</td>
                         <td><div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
                           <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button class="btn btn-success me-md-2" type="button">Accept</button>
-                            <button class="btn btn-warning" type="button">Reject</button>
-                            <button class="btn" style={{background:"maroon", color:"white"}} type="button">Imrpove</button>
+                            <button class="btn btn-success btn-sm me-md-2" type="button">Accept</button>
+                            <button class="btn btn-warning btn-sm" type="button">Reject</button>
+                            <button class="btn btn-sm" style={{ background: "maroon", color: "white" }} type="button">Imrpove</button>
                           </div>
                         </div>
                         </td>

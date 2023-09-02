@@ -675,7 +675,7 @@ router.get('/myIdeas', authenticateUser, async (req, res) => {
     // Filter out null values (projects not found)
     const validIdeas = ideas.filter((idea) => idea !== null);
 
-    return res.json({ success: true, ideas: validIdeas });
+    return res.json({ success: true, supervisor : supervisor.name, ideas: validIdeas });
   } catch (error) {
     console.error('error is ', error);
     return res.status(500).json({ message: 'Server error' });

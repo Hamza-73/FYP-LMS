@@ -29,7 +29,7 @@ const SideBar = (props) => {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
-                            authorization: `${token}`,
+                            authorization: `Bearer ${token}`,
                         },
                     });
 

@@ -19,10 +19,8 @@ const Groups = (props) => {
       console.log('json is ', json);
       setGroup(json);
 
-
     } catch (error) {
       console.log('error is ', error);
-      props.showAlert(`Error is ${error}`, 'danger')
     }
   }
 
@@ -94,16 +92,17 @@ const Groups = (props) => {
       __v: 1
     }
   ]
+
   return (
     <div>
-      <h3>Students Under Me</h3>
+      <h3 className='text-center my-4'>Students Under Me</h3>
 
       {/* Groups Table */}
-      <div div className='container'>        
+      <div className='container' style={{width:"100%"}} >        
 
-        {filteredData.length > 0 ? (
+        {group.groups.length > 0 ? (
           <div>
-            {filteredData.map((group, groupIndex) => (
+            {group.groups.map((group, groupIndex) => (
               <div key={groupIndex}>
                
                 <table className='table table-hover'>
