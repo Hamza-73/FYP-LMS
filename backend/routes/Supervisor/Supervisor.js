@@ -477,7 +477,6 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-
     // Notify all users about the new project idea
     const users = await User.find();
 
@@ -486,6 +485,7 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
 
     // Create a new project request without specifying the student
     const projectRequest = new ProjectRequest({
+      supervisor : supervisor._id,
       projectTitle, description,
       scope, status: false
     });
@@ -493,12 +493,14 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     await projectRequest.save();
 
     const notificationMessage = `A new project idea has been posted by Supervisor ${supervisor.name}`;
-
+    
     users.forEach(async (user) => {
       user.unseenNotifications.push({ message: notificationMessage });
       await user.save();
     });
 
+    supervisor.myIdeas.push(projectRequest._id);
+    await supervisor.save();
     res.json({ success: true, message: 'Project idea sent and users notified' });
 
   } catch (err) {
@@ -614,21 +616,69 @@ router.get('/my-groups', authenticateUser, async (req, res) => {
     }
 
     // Extract group information from the supervisor document
-    const groups = supervisor.groups.map(group => ({
-      supervisorName: supervisor.name,
-      projectId: group._id, // Assuming groups are associated with projects
-      projectTitle: group.projects[0].projectTitle, // Assuming each group has at least one project
-      students: group.projects[0].students.map(student => ({
-        name: student.name,
-        rollNo: student.rollNo
-      }))
-    }));
+    // const groups = supervisor.groups.map(group => ({
+    //   supervisorName: supervisor.name,
+    //   projectId: group._id, // Assuming groups are associated with projects
+    //   projectTitle: group.projects[0].projectTitle, // Assuming each group has at least one project
+    //   students: group.projects[0].students.map(student => ({
+    //     name: student.name,
+    //     rollNo: student.rollNo
+    //   }))
+    // }));
+
+    const groups = supervisor.groups;
 
     res.json({ success: true, groups });
 
   } catch (err) {
     console.error('Error fetching supervisor groups:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.get('/detail', authenticateUser, async (req,res)=>{
+  try {
+    const userId = req.user.id; // Get the authenticated user's ID from the token payload
+
+    const member = await Supervisor.findById(userId);
+
+    if (!member) {
+      return res.status(404).json({ message: 'Supervisor not found' });
+    }
+
+    // Return the student details
+    return res.json({ success: true, member, user: userId });
+  } catch (error) {
+    console.error('error is ', error)
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get supervisor ideas
+router.get('/myIdeas', authenticateUser, async (req, res) => {
+  try {
+    const supervisor = await Supervisor.findById(req.user.id);
+    if (!supervisor) {
+      return res.status(404).json({ message: 'Supervisor not found' });
+    }
+
+    const ideaPromises = supervisor.myIdeas.map(async (idea) => {
+      const project = await ProjectRequest.findById(idea);
+      if (!project) {
+        return null; // Return null if project not found
+      }
+      return project; // Return the project if found
+    });
+
+    const ideas = await Promise.all(ideaPromises);
+
+    // Filter out null values (projects not found)
+    const validIdeas = ideas.filter((idea) => idea !== null);
+
+    return res.json({ success: true, ideas: validIdeas });
+  } catch (error) {
+    console.error('error is ', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

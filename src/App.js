@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import StudentMain from './components/StudentMain';
 import Alert from './components/Alert';
 import CommitteeMain from './components/CommitteeMain';
+import SupervisorMain from './components/SupervisorMain';
 const App = () => {
 
   const [alert, setAlert] = useState(null)
@@ -17,7 +18,8 @@ const App = () => {
   return (
     <>
     <Alert alert={alert} />
-    <StudentMain showAlert={showAlert} />
+    {/* <StudentMain showAlert={showAlert} /> */}
+    <SupervisorMain showAlert={showAlert} /> 
     {/* <CommitteeMain showAlert={showAlert} /> */}
         
     </>

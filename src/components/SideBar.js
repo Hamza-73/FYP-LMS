@@ -12,45 +12,42 @@ const SideBar = (props) => {
         history('/')
     }
 
-    const [userData,setUserData] = useState({member:[]})
-    
-        const getDetail = async () => {
-          try {
-            const token = localStorage.getItem('token');
-            // console.log(token);
-            const decodedToken = jwtDecode(token);
-            // console.log('Decoded token is ', decodedToken);
-            if (!token) {
-              console.log('token not found');
-              return;
-            }
-    
-            const response = await fetch(`http://localhost:5000/${props.detailLink}/detail`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                authorization: `${token}`,
-              },
-            });
-    
-            if (!response.ok) {
-              console.log('error fetching detail', response);
-            }
-    
-            const json = await response.json();
-            // console.log('I am side bar ', json);
-            setUserData(json);
-          } catch (err) {
-            console.log('error is ', err);
-          }
-        };
- 
+    const [userData, setUserData] = useState({ member: [] });
 
-      useEffect(() => {
-        if(localStorage.getItem('token')){
-            getDetail(); // Call the function to fetch data
-        }
-      }, []);
+            const getDetail = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    // console.log(token);
+                    const decodedToken = jwtDecode(token);
+                    // console.log('Decoded token is ', decodedToken);
+                    if (!token) {
+                        console.log('token not found');
+                        return;
+                    }
+
+                    const response = await fetch(`http://localhost:5000/${props.detailLink}/detail`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            authorization: `${token}`,
+                        },
+                    });
+
+                    if (!response.ok) {
+                        console.log('error fetching detail', response);
+                    }
+
+                    const json = await response.data;
+                    // console.log('json is ', json)
+                    setUserData(json);
+                } catch (err) {
+                    console.log('error is ', err);
+                }
+            }
+
+        useEffect(() => {
+        // getDetail();
+    }, []);
 
     return (
         <>
@@ -97,7 +94,7 @@ const SideBar = (props) => {
                         </ul>
                         <form className={`d-flex ${!localStorage.getItem('token') ? 'd-none' : ''} `} role="search">
                             <h6 className={`text-center`}>{userData.member.username} <br /> BS Computer Science</h6>
-                            <button style={{background:"maroon", color:"white"}} className="btn mx-3" type="button" onClick={handleLogout}>Logout</button>
+                            <button style={{ background: "maroon", color: "white" }} className="btn mx-3" type="button" onClick={handleLogout}>Logout</button>
                         </form>
                     </div>
                 </div>

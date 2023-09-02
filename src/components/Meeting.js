@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import SideBar from '../SideBar'
 
 const Meeting = (props) => {
   const myStyle = {
@@ -11,13 +10,8 @@ const Meeting = (props) => {
 
   return (
     <div>
-      <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress'
-        link2='progress' title3='Tasks' link3='tasks' title4='My Group' link4='group'
-        title5='Meeting' link5='meeting' detailLink = 'student'
-      />
       <div className="container" style={{height:"500px"}}>
 
-      
         <h1>Link Information</h1>
           <textarea name="" id="" placeholder='Purpose of Meeting' cols="30" rows="2" style={myStyle}></textarea>
         <h6>Select a meeting type</h6>
@@ -46,7 +40,7 @@ const Meeting = (props) => {
           <textarea name="" id="" cols="35" rows="2" style={myStyle}></textarea>
         </div>
 
-        <button className="btn btn-danger">Schedule Metting</button>
+        <button className="btn btn-danger" style={{background:"maroon"}}>Schedule Metting</button>
         
       </div>
     </div>

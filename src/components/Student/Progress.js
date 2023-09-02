@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import SideBar from '../SideBar'
 import '../../css/progress.css'
 import graph from '../../images/graph.png'
@@ -25,6 +25,7 @@ const Progress = (props) => {
         username: "", projectTitle: "", description: "",
         scope: "", status: false
     });
+    const [groupDetails, setGroupDetails] = useState({});
 
     const sendRequest = async () => {
         try {
@@ -39,9 +40,10 @@ const Progress = (props) => {
                     'Content-Type': 'application/json',
                     authorization: `${token}`
                 },
-                body: JSON.stringify({  username: request.username,
+                body: JSON.stringify({
+                    username: request.username,
                     projectTitle: request.projectTitle, description: request.description,
-                    scope: request.scope, status: false                      
+                    scope: request.scope, status: false
                 })
             });
             const json = await response.data;
@@ -54,6 +56,40 @@ const Progress = (props) => {
             alert(`Some error occurred: ${error.message}`, 'danger');
         }
     }
+
+    const groupDetail = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Authorization token not found', 'danger');
+                return;
+            }
+            console.log('before fetch')
+            const response = await fetch("http://localhost:5000/student/my-group", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    authorization: `${token}`
+                }
+            });
+            console.log('after fetch')
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const json = await response.data;
+
+            if (!json) {
+                console.log('group response is ', response);
+            } else {
+                console.log('json is ', json);
+                setGroupDetails(json);
+            }
+        } catch (error) {
+            console.log('error fetching group ', error)
+        }
+    }
+
     const handleChange = (e) => {
         setRequest({ ...request, [e.target.name]: e.target.value })
     }
@@ -71,12 +107,14 @@ const Progress = (props) => {
     console.log('request is', request)
     console.log('title is', request.projectTitle)
     console.log('Request Payload:', JSON.stringify({
-        username: request.username,
-        projectTitle: request.projectTitle,
-        description: request.description,
-        scope: request.scope,
+        username: request.username, nprojectTitle: request.projectTitle,
+        description: request.description, scope: request.scope,
         status: false
     }));
+
+    useEffect(() => {
+        groupDetail()
+    }, [])
     return (
         <>
             <>
@@ -109,11 +147,11 @@ const Progress = (props) => {
                                             </div>
                                         </div>
                                         <div className="modal-footer">
-                                            
-                                                <button type="submit" className="btn btn-success">
-                                                    save
-                                                </button>
-                                           </div>
+
+                                            <button type="submit" className="btn btn-success">
+                                                save
+                                            </button>
+                                        </div>
                                     </form>
                                 </>
                             </div>

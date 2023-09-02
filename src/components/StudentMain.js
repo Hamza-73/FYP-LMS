@@ -6,7 +6,6 @@ import Progress from './Student/Progress'
 import Tasks from './Student/Tasks'
 import MyGroup from './Student/MyGroup'
 import Dashboard from './Dashboard'
-import Meeting from './Student/Meeting'
 
 const StudentMain = (props) => {
   return (
@@ -21,7 +20,6 @@ const StudentMain = (props) => {
           <Route path='/progress'  element={<Progress/>} />
           <Route path='/tasks'  element={<Tasks/>} />
           <Route path='/group'  element={<MyGroup/>} />
-          <Route path='/meeting'  element={<Meeting/>} />
         </Routes>
       </>
 

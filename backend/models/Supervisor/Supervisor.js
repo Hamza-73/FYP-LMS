@@ -18,6 +18,7 @@ const supervisorSchema = new Schema({
   ],
   seenNotifications: { type: Array, default: [] },
   unseenNotifications: { type: Array, default: [] },
+  myIdeas : [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProjectRequest'}]
 });
 
 module.exports = mongoose.model('Supervisor', supervisorSchema);

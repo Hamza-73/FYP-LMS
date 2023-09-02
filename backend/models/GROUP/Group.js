@@ -22,6 +22,7 @@ const groupSchema = new Schema({
   viva: { type: Schema.Types.ObjectId, ref: 'Viva' },
   propDate:{type : Date},
   docDate : {type: Date},
+  meeting:{type : String}
 });
 
 module.exports = mongoose.model('Group', groupSchema);

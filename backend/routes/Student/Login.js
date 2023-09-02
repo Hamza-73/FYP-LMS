@@ -383,6 +383,11 @@ router.get('/my-group', authenticateUser, async (req,res)=>{
     }
     const viva = await Viva.findById(student.viva);
     const groupDetail = {
+      myDetail : [{
+        name : student.name,
+        rollNo: student.rollNo,
+        myId : student._id
+      }],
       groupId : student.group,
       supervisor : group.supervisor,
       supervisorId : group.supervisorId,
