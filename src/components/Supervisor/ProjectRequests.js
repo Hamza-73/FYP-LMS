@@ -1,33 +1,44 @@
 import React, { useEffect, useState } from 'react'
+import Loading from '../Loading';
 
 const ProjectRequests = (props) => {
 
   const [requests,setRequests] = useState({request:[]});
   const [choice, setChoice] = useState({ action : '', id:'' });
   const [imporve, setImprove] = useState({projectTitle:'',scope:'',description:'' });
+  const [loading,setLoading] = useState(false);
 
-  const getRequests = async ()=>{
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/supervisor/view-sent-proposals',{
-        method : 'GET',
-        headers :{
-          "Content-Type": "application/json",
-          authorization : `${token}`
-        }
-      });
-      const json = await response.data;
-      if(json){
+  useEffect(()=>{
+    const getRequests = async ()=>{
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5000/supervisor/view-sent-proposals',{
+          method : 'GET',
+          headers :{
+            "Content-Type": "application/json",
+            "Authorization" : token
+          }
+        });
+        const json = await response.json();
+        console.log('ia am side bar')
         console.log('json requests is ', json);
-        setRequests(json)
-        props.showAlert(`Requests Fetched`, 'success')
+  
+        if(json){
+          setRequests(json)
+        }
+      } catch (error) {
+        console.log('error fetching requests', error);
+        props.showAlert(`Error fetching requests ${error}`, 'danger')
       }
-    } catch (error) {
-      console.log('error fetching requests', error);
-      props.showAlert(`Error fetching requests ${error}`, 'danger')
     }
-  }
-
+    if(localStorage.getItem('token')){
+      setTimeout(()=>{
+        setLoading(true);
+        getRequests();
+      },2000)
+    }
+  },[])
+ 
   const handleRequests = async (e)=>{
         try {
           e.preventDefault();
@@ -36,9 +47,9 @@ const ProjectRequests = (props) => {
             method:'PUT',
             headers:{
               "Content-type":"application/json",
-              authorization : `${token}`
+              'Authorization' : token
             }});
-            const json = await response.data ;
+            const json = await response.json() ;
             console.log('json');
             if(json.success){
               props.showAlert(`Request ${choice}`, 'success');
@@ -49,56 +60,10 @@ const ProjectRequests = (props) => {
         }
   }
 
-  const request = [
-    {
-      requestId: "64f1cbb10fd7185e397b2a32",
-      projectId: "64f1cbb10fd7185e397b2a30",
-      projectTitle: "DE",
-      scope: "scope",
-      description: "desc",
-      studentDetails: [
-        {
-          studentName: "Huzaifa",
-          rollNo: "0094",
-          studentId: "64f1c517957a7cb325355dc9"
-        }
-      ]
-    },
-    {
-      requestId: "64f1ccb82f292f6ee58d21e2",
-      projectId: "64f1ccb82f292f6ee58d21e0",
-      projectTitle: "LA",
-      scope: "scope",
-      description: "desc kjxbgiey jdcgey kyrgc8txygn gcretfu",
-      studentDetails: [
-        {
-          studentName: "Zaroon",
-          rollNo: "0091",
-          studentId: "64f1c4ea957a7cb325355dc0"
-        }
-      ]
-    },
-    {
-      requestId: "64f1ccb82f292f6ee58d21e2",
-      projectId: "64f1ccb82f292f6ee58d21e0",
-      projectTitle: "LA",
-      scope: "scope",
-      description: "desc kjxbgiey jdcgey kyrgc8txygn gcretfu",
-      studentDetails: [
-        {
-          studentName: "Zaroon",
-          rollNo: "0091",
-          studentId: "64f1c4ea957a7cb325355dc0"
-        }
-      ]
-    }
-  ]
   const handleChange = (e)=>{
     setImprove({...imporve, [e.target.name]: e.target.value})
   }
-  useEffect(()=>{
-    getRequests();
-  },[])
+  
   return (
     <div>
       <div className="imporve"  >
@@ -136,9 +101,10 @@ const ProjectRequests = (props) => {
         </div>
       </div>
 
-      <div div className='container' style={{ width: "100%" }}>
+      { loading? <>
+        <div div className='container' style={{ width: "100%" }}>
         <h3 className='text-center'>Requests</h3>
-        {request.length > 0 ? (
+        {requests.request.length > 0 ? (
           <div>
             <div>
               <table className='table table-hover'>
@@ -152,8 +118,8 @@ const ProjectRequests = (props) => {
                     <th scope="col">Accept/Reject/Improve</th>
                   </tr>
                 </thead>
-                {request.map((group, groupKey) => (
-                  <tbody style={{ textAlign: "center" }}>
+                {requests.request.map((group, groupKey) => (
+                  <tbody className='text-center' style={{ textAlign: "center" }}>
                     {group.studentDetails.map((project, projectKey) => (
                       <tr key={groupKey}>
                         <td>
@@ -174,11 +140,11 @@ const ProjectRequests = (props) => {
                         <td>{group.projectTitle}</td>
                         <td>{group.description}</td>
                         <td>{group.scope}</td>
-                        <td><div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
-                          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button class="btn btn-success btn-sm me-md-2" type="button" onClick={()=>{setChoice({action:'accept', id:`${group.requestId}`})}}>Accept</button>
-                            <button class="btn btn-warning btn-sm" type="button" onClick={()=>{setChoice({action:'reject', id:`${group.requestId}`})}}>Reject</button>
-                            <button class="btn btn-sm" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={()=>{setChoice({action:'improve', id:`${group.requestId}`})}}>Imrpove</button>
+                        <td><div style={{ cursor: "pointer" }}>
+                          <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button className="btn btn-success btn-sm me-md-2" type="button" onClick={()=>{setChoice({action:'accept', id:`${group.requestId}`})}}>Accept</button>
+                            <button className="btn btn-warning btn-sm" type="button" onClick={()=>{setChoice({action:'reject', id:`${group.requestId}`})}}>Reject</button>
+                            <button className="btn btn-sm" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={()=>{setChoice({action:'improve', id:`${group.requestId}`})}}>Imrpove</button>
                           </div>
                         </div>
                         </td>
@@ -191,9 +157,11 @@ const ProjectRequests = (props) => {
 
           </div>
         ) : (
-          <div>No matching members found.</div>
+          <div>You have No Requests By Now.</div>
         )}
       </div>
+      </> : <Loading/>
+      }
     </div>
   )
 }

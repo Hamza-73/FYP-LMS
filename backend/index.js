@@ -7,7 +7,21 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middlewares
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:3000', // Replace with your frontend's URL
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, // Enable credentials (cookies, HTTP authentication)
+  optionsSuccessStatus: 204, // Respond with a 204 No Content status for preflight requests
+  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+  exposedHeaders: 'Authorization', // Expose specific headers to the client
+  maxAge: 3600, // How long preflight requests can be cached (in seconds)
+  preflightContinue: false, // Pass the CORS preflight response to the next handler
+  optionsSuccessStatus: 204, // Return 204 No Content for OPTIONS requests
+};
+
+app.use(cors(corsOptions));
+
+
 app.use(bodyParser.json());
 
 // Paste your mongodb link

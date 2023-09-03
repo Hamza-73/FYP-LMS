@@ -161,8 +161,8 @@ const Groups = (props) => {
 
         {group.groups.length > 0 ? (
           <div>
-            {group.groups.map((group, groupIndex) => (
-              <div key={groupIndex}>
+            
+              <div>
 
                 <table className='table table-hover'>
                   <thead style={{ textAlign: "center" }}>
@@ -175,6 +175,7 @@ const Groups = (props) => {
                       <th scope="col">Grade</th>
                     </tr>
                   </thead>
+                  {group.groups.map((group, groupIndex) => (
                   <tbody style={{ textAlign: "center" }}>
                     {group.projects.map((project, projectKey) => (
                       <tr key={projectKey}>
@@ -198,9 +199,9 @@ const Groups = (props) => {
                       </tr>
                     ))}
                   </tbody>
+                ))}
                 </table>
               </div>
-            ))}
           </div>
         ) : (
           <div>No matching members found.</div>
