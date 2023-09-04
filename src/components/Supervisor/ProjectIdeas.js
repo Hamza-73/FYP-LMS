@@ -12,6 +12,7 @@ const ProjectIdeas = () => {
   useEffect(() => {
     const getIdeas = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem('token');
         const response = await fetch('http://localhost:5000/supervisor/myIdeas', {
           method: 'GET',
@@ -22,15 +23,15 @@ const ProjectIdeas = () => {
         const json = await response.json();
         console.log('idea json is ', json);
         setIdea(json)
+        setLoading(false)
       } catch (error) {
         console.log('error in ideas', error);
       }
     }
     if (localStorage.getItem('token')) {
       setTimeout(() => {
-        setLoading(true);
         getIdeas();
-      }, 2000);
+      }, 1000);
       console.log('inside effect ', idea)
     }
   }, []);
@@ -117,7 +118,7 @@ const ProjectIdeas = () => {
           </div>
         </div>
       </div>
-      {loading ? <>
+      {!loading ? <>
         <div div className='container my-5' style={{ width: "100%" }}>
           <h3 className='text-center'>My FYP Ideas</h3>
           {idea.ideas.length > 0 ? (

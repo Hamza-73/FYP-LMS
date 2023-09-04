@@ -17,6 +17,7 @@ const SideBar = (props) => {
     useEffect(() => {
         const getDetail = async () => {
           try {
+            setLoading(true);
             const token = localStorage.getItem('token');
             if (!token) {
               console.log('token not found');
@@ -40,6 +41,7 @@ const SideBar = (props) => {
             if (json) {
               console.log('User data is: ', json);
               setUserData(json);
+              setLoading(false)
             }
           } catch (err) {
             console.log('error is in sidebar: ', err);
@@ -48,14 +50,12 @@ const SideBar = (props) => {
       
         if (localStorage.getItem('token')) {
             setTimeout(()=>{
-                setLoading(true);
                 getDetail();
                 console.log('user data is in ', userData)
                 console.log('user data is in ', userData.member)
             },2000)
         }
-      }, []); // Empty dependency array to run the effect only once
-      
+      }, []); // Empty dependency array to run the effect only once    
 
     return (
         <>
@@ -85,6 +85,9 @@ const SideBar = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.link6}`}>{props.title6}</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.link7}`}>{props.title7}</Link>
+                            </li>
                             {/* <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     {props.title0}
@@ -101,7 +104,7 @@ const SideBar = (props) => {
                             </li> */}
                         </ul>
                         <form className={`d-flex ${!localStorage.getItem('token') ? 'd-none' : ''} `} role="search">
-                            <h6 className={`text-center`}>{loading? (userData? userData.member.username: "username") : 'loading...'}<br /> BS Computer Science</h6>
+                            <h6 className={`text-center`}>{!loading? (userData? userData.member.username: "username") : 'loading...'}<br /> BS Computer Science</h6>
                             <button style={{ background: "maroon", color: "white" }} className="btn mx-3" type="button" onClick={handleLogout}>Logout</button>
                         </form>
                     </div>
@@ -113,7 +116,9 @@ const SideBar = (props) => {
 SideBar.defaultProps = {
     title5: "",
     title6: "",
+    title7: "",
     link5: "/",
-    link6: "/"
+    link6: "/",
+    link7: "/",
 }
 export default SideBar

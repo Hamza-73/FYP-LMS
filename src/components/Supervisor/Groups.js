@@ -1,6 +1,5 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import { useAsyncError } from 'react-router-dom';
 
 const Groups = (props) => {
 
@@ -9,25 +8,42 @@ const Groups = (props) => {
     rollNo : '', projectTitle : ''
   });
 
-  const handleAddStudent = async (e, projectTitle, rollNo)=>{
+  const handleAddStudent = async (e, projectTitle, rollNo) => {
     try {
       e.preventDefault();
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/supervisor/add-student/${projectTitle}/${rollNo}`,{
-        method:'PUT',
-        headers:{
-          "Content-Type": "application/json",
-          authorization: `${token}`
-        }
+      const response = await fetch(`http://localhost:5000/supervisor/add-student/${projectTitle}/${rollNo}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
       });
-      console.log('response is ', response)
-      props.showAlert(`Student added to group`, 'success')
+  
+      const json = await response.json();
+      console.log('response is ', json);
+  
+      if (json.success) {
+        if (json.message) {
+          props.showAlert(json.message, 'success');
+        } else {
+          // Handle the case where json.message is empty
+          props.showAlert('Student added successfully', 'success');
+        }
+      } else {
+        // Handle the case where json.success is false
+        if (json.message) {
+          props.showAlert(json.message, 'danger');
+        } else {
+          props.showAlert('An error occurred while adding the student', 'danger');
+        }
+      }
     } catch (error) {
       console.log('error in adding student', error);
-      props.showAlert(`error adding to group ${error}`, 'danger')
+      props.showAlert(`error adding to group: ${error}`, 'danger');
     }
-  }
-
+  };
+  
   const getGroup = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -128,7 +144,7 @@ const Groups = (props) => {
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title" >Register</h5>
+                <h5 className="modal-title" >Add Student To Existing Group</h5>
               </div>
               <div className="modal-body">
                 <form onSubmit={(e)=>{handleAddStudent(e,addStudent.projectTitle,addStudent.rollNo)}}>
@@ -207,8 +223,8 @@ const Groups = (props) => {
           <div>No matching members found.</div>
         )}
       </div>
-      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-        <button class="btn" data-toggle="modal" data-target="#exampleModal"style={{ background: "maroon", color: "white", position: "relative", right: "7rem" }} type="button">Add Student</button>
+      <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button className="btn" data-toggle="modal" data-target="#exampleModal"style={{ background: "maroon", color: "white", position: "relative", right: "7rem" , top:"1rem"}} type="button">Add Student</button>
       </div>
       
     </div>
