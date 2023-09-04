@@ -33,19 +33,18 @@ const Notification = () => {
         }
     }, [])
     return (
-        <div>
-            Notifications
+        <div style={{marginTop:"3%"}}>
 
-            {notification.notification.map((elm, elmKey) => {
+            {notification.notification.length>0 ? notification.notification.map((elm, elmKey) => {
                 return (
-                    <>
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                            <strong>Holy guacamole!</strong>{elm.message}
+                    <div style={{position:"relative", left:"50px"}}>
+                        <div style={{height:"50px", width:"70%"}} class="alert alert-primary alert-dismissible fade show" role="alert">
+                            <strong style={{border:"2px solid black", borderRadius:"6px", padding:"5px"}}>Important</strong>    {elm.message}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                    </>
+                    </div>
                 )
-            })}
+            }): <h2 className='text-center'>No New Messages</h2> }
         </div>
     )
 }

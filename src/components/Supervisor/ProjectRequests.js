@@ -29,7 +29,6 @@ const ProjectRequests = (props) => {
         setLoading(false);
       } catch (error) {
         console.log('error fetching requests', error);
-        props.showAlert(`Error fetching requests ${error}`, 'danger');
       }
     };
     if (localStorage.getItem('token')) {
@@ -64,7 +63,7 @@ const ProjectRequests = (props) => {
       }
     } catch (error) {
       console.log('error dealing with requests', error);
-      props.showAlert(`Some error occured try to reload the page`, 'danger');
+      props.showAlert(`Some error occured try to reload the page/ try again`, 'danger');
     }
   };
 
@@ -110,9 +109,9 @@ const ProjectRequests = (props) => {
 
       {!loading ? (
         <>
+            {requests.request.length > 0 ? (
           <div div className="container" style={{ width: '100%' }}>
             <h3 className="text-center">Requests</h3>
-            {requests.request.length > 0 ? (
               <div>
                 <div>
                   <table className="table table-hover">
@@ -173,10 +172,10 @@ const ProjectRequests = (props) => {
                   </table>
                 </div>
               </div>
-            ) : (
-              <div>You have No Requests By Now.</div>
-            )}
           </div>
+            ) : (
+              <h1 className='text-center'>You have no requests for now.</h1>
+            )}
         </>
       ) : (
         <Loading />

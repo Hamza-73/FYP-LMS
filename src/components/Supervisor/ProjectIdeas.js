@@ -119,9 +119,9 @@ const ProjectIdeas = () => {
         </div>
       </div>
       {!loading ? <>
+          {idea.ideas.length > 0 ? (
         <div div className='container my-5' style={{ width: "100%" }}>
           <h3 className='text-center'>My FYP Ideas</h3>
-          {idea.ideas.length > 0 ? (
             <div>
               <div>
                 <table className='table table-hover'>
@@ -148,10 +148,10 @@ const ProjectIdeas = () => {
                 </table>
               </div>
             </div>
-          ) : (
-            <div>No matching members found.</div>
-          )}
         </div>
+          ) : (
+            <h2 className='text-center'>No Project Ideas! Add to see You're Ideas.</h2>
+          )}
 
         <div className="d-grid gap-2 d-md-flex justify-content-md-end">
           <button class="btn" data-toggle="modal" data-target="#exampleModal" style={{ background: "maroon", color: "white", position: "relative", right: "7rem" }} type="button">Add FYP Idea</button>

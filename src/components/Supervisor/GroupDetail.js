@@ -8,7 +8,9 @@ const GroupDetail = () => {
         projects: [
           {
             projectTitle: '',
-            students: [  { name: '', rollNo: '', userId: '', _id: '', }, { name: '', rollNo: '', userId: '', _id: '', },
+            students: [
+              { name: '', rollNo: '', userId: '', _id: '' },
+              { name: '', rollNo: '', userId: '', _id: '' },
             ],
           },
         ],
@@ -26,7 +28,7 @@ const GroupDetail = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          authorization: `${token}`,
+          Authorization: token,
         },
       });
       const json = await response.json();
@@ -58,71 +60,78 @@ const GroupDetail = () => {
   return (
     <div>
       {!loading ? (
-        <div className="container">
-          <div className="upperpart">
-            <div className="proj-detail d-flex justify-content-between">
-              <h4>Project Title</h4>
-              <h5>{currentGroup.projects[0]?.projectTitle || 'N/A'}</h5>
-            </div>
-            <div className="proj-detail d-flex justify-content-between">
-              <h4>Supervisor</h4>
-              <h5>{currentGroup.supervisor || 'N/A'}</h5>
-            </div>
-          </div>
-
-          <div className="mid">
-            {currentGroup.projects[0]?.students.map((student, index) => (
-              <div key={index}>
-                <h5>
-                  {student.name} <br /> {student.rollNo}
-                </h5>
-              </div>
-            ))}
-          </div>
-
-          <div className="last">
-            <div className="review-box">
-              <div>
-                <h6>Review</h6>
-                <div className="form-floating">
-                  <textarea className="form-control" cols="50" placeholder="" id="floatingTextarea"></textarea>
+        <>
+          {currentGroup.length > 0 ? (
+            <div className="container">
+              <div className="upperpart">
+                <div className="proj-detail d-flex justify-content-between">
+                  <h4>Project Title</h4>
+                  <h5>{currentGroup.projects[0].projectTitle || 'N/A'}</h5>
+                </div>
+                <div className="proj-detail d-flex justify-content-between">
+                  <h4>Supervisor</h4>
+                  <h5>{currentGroup.supervisor || 'N/A'}</h5>
                 </div>
               </div>
-              <div>
-                <a href="">view uploaded document</a>
+
+              <div className="mid">
+                {currentGroup.projects[0].students.map((student, index) => (
+                  <div key={index}>
+                    <h5>
+                      {student.name} <br /> {student.rollNo}
+                    </h5>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="review-box">
-              <div>
-                <h6>Review</h6>
-                <div className="form-floating">
-                  <textarea className="form-control" cols="50" placeholder="" id="floatingTextarea"></textarea>
+
+              <div className="last">
+                <div className="review-box">
+                  <div>
+                    <h6>Review</h6>
+                    <div className="form-floating">
+                      <textarea className="form-control" cols="50" placeholder="" id="floatingTextarea"></textarea>
+                    </div>
+                  </div>
+                  <div>
+                    <a href="">View uploaded document</a>
+                  </div>
+                </div>
+                <div className="review-box">
+                  <div>
+                    <h6>Review</h6>
+                    <div className="form-floating">
+                      <textarea className="form-control" cols="50" placeholder="" id="floatingTextarea"></textarea>
+                    </div>
+                  </div>
+                  <div>
+                    <a href="">View uploaded document</a>
+                  </div>
                 </div>
               </div>
-              <div>
-                <a href="">view uploaded document</a>
+
+              <div className="upload-btn">
+                <button className="btn btn-danger">Upload Document</button>
               </div>
+
+              <button
+                className="btn btn-success"
+                onClick={handlePrevClick}
+                disabled={currentIndex <= 0}
+              >
+                Prev
+              </button>
+              <button
+                className="btn btn-success"
+                onClick={handleNextClick}
+                disabled={currentIndex === group.groups.length - 1}
+              >
+                Next
+              </button>
             </div>
-          </div>
-
-          <div className="upload-btn">
-            <button className="btn btn-danger">Upload Document</button>
-          </div>
-
-          <button
-            className="btn btn-success"
-            onClick={handlePrevClick}
-            disabled={currentIndex <=0 }
-          >
-            Prev
-          </button><button
-            className="btn btn-success"
-            onClick={handleNextClick}
-            disabled={currentIndex === group.groups.length - 1}
-          >
-            Next
-          </button>
-        </div>
+          ) : (
+              <h2 className='text-center'>You currently have no group in supervision.</h2>
+          )}
+        </>
       ) : (
         <Loading />
       )}
