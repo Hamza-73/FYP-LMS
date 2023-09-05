@@ -12,8 +12,6 @@ const StudentList = (props) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
-
-
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -54,7 +52,6 @@ const StudentList = (props) => {
     }
   }
 
-
   const openEditModal = (student) => {
     setSelectedStudent(student);
     setEditMode(true); // Set edit mode when opening the modal
@@ -93,27 +90,21 @@ const StudentList = (props) => {
           ),
         }));
         console.log('updated student is ', updatedStudent)
-
-
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
           name: '', father: '', username: '', department: '', batch: '', semester: '', password: '', cnic: '', rollNo: '',
         });
       }
-
     } catch (error) {
       console.log('Error:', error); // Log the error message
       alert(`Some error occurred: ${error.message}`, 'danger');
     }
   };
 
-
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this student?');
     if (confirmed) {
-
       try {
-
         console.log('id is ', id)
         const response = await axios.delete(`http://localhost:5000/student/delete/${id}`,
           {
@@ -122,7 +113,6 @@ const StudentList = (props) => {
             },
           }
         );
-
         if (response.status === 200) {
           // Update the UI by removing the deleted student from the data
           setData((prevData) => ({
@@ -131,14 +121,12 @@ const StudentList = (props) => {
           }));
           props.showAlert('Student deleted successfully', 'success');
         }
-
       } catch (error) {
         console.log('Error:', error); // Log the error message
         alert(`Some error occurred: ${error.message}`, 'danger');
       }
     }
   };
-
 
   const getMembers = async () => {
     try {
@@ -164,12 +152,10 @@ const StudentList = (props) => {
     if (localStorage.getItem('token')) {
       // Set loading to true when starting data fetch
       setLoading(true);
-      getMembers()
-        .then(() => {
+      getMembers().then(() => {
           // Once data is fetched, set loading to false
           setLoading(false);
-        })
-        .catch((error) => {
+        }).catch((error) => {
           setLoading(false); // Handle error cases
           console.error('Error fetching data:', error);
         });
@@ -269,7 +255,7 @@ const StudentList = (props) => {
       </div>
 
       {loading ? (<Loading />) : (<>
-        <div className='container'>
+        <div className='container' style={{ width: "90%" }}>
           <h3 className='text-center' >Student List</h3>
           <div className="mb-3">
             <input
@@ -319,7 +305,7 @@ const StudentList = (props) => {
           )}
         </div>
         <div className="d-grid gap-2 col-6 mx-auto my-4">
-          <button style={{background:"maroon"}} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
+          <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
             Register
           </button>
         </div>

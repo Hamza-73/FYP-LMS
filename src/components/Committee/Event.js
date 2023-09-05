@@ -3,15 +3,15 @@ import 'react-calendar/dist/Calendar.css';
 import Calendar from 'react-calendar';
 import Loading from '../Loading'
 import { useNavigate } from 'react-router-dom';
-import Clock from 'react-clock';
+import 'react-clock/dist/Clock.css';
+import TimePicker from 'react-time-picker';
+import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 
 const Event = (props) => {
-  const history = useNavigate()
-
-
+  const history = useNavigate();
   const [value, onChange] = useState(new Date());
-  const [viva, setViva] = useState({ projectTitle: '', vivaDate: '', vivaTime: '' });
+  const [viva, setViva] = useState({ projectTitle: '', vivaDate: new Date(), vivaTime: '' });
   const [date, setDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({ vivas: [] });
@@ -51,12 +51,12 @@ const Event = (props) => {
   const scheduleViva = async (e) => {
     try {
       e.preventDefault();
-      const response = await fetch(`http://localhost:5000/viva/schedule-viva`,{
+      const response = await fetch(`http://localhost:5000/viva/schedule-viva`, {
         method: "POST",
         headers: {
           'Content-Type': "application/json",
         },
-        body : JSON.stringify({
+        body: JSON.stringify({
           projectTitle: viva.projectTitle, vivaDate: viva.vivaDate, vivaTime: viva.vivaTime
         },)
       });
@@ -77,6 +77,14 @@ const Event = (props) => {
   const handleChange1 = (e) => {
     setViva({ ...viva, [e.target.name]: e.target.value })
   }
+  const handleCalendarChange = (date) => {
+    setViva({ ...viva, vivaDate: date });
+  };
+
+  const handleTimeChange = (time) => {
+    setViva({ ...viva, vivaTime: time });
+  };
+
 
   return (
     <div>
@@ -92,18 +100,20 @@ const Event = (props) => {
                   <h5 className="modal-title" >Register</h5>
                 </div>
                 <div className="modal-body">
-                  <form onSubmit={(e)=>scheduleViva(e)}>
+                  <form onSubmit={(e) => scheduleViva(e)}>
                     <div className="mb-3">
                       <label htmlFor="name" className="form-label">Project Title</label>
                       <input type="text" className="form-control" id="projectTitle" name='projectTitle' value={viva.projectTitle} onChange={handleChange1} />
                     </div>
                     <div className="mb-3">
                       <label htmlFor="name" className="form-label">Viva Date</label>
-                      <input type="text" className="form-control" id="vivaDate" name='vivaDate' value={viva.vivaDate} onChange={handleChange1} />
+                      <Calendar onChange={handleCalendarChange} value={viva.vivaDate} />
                     </div>
                     <div className="mb-3">
                       <label htmlFor="name" className="form-label">Viva Time</label>
-                      <input type="text" className="form-control" id="vivaTime" name='vivaTime' value={viva.vivaTime} onChange={handleChange1} />
+                      <div>
+                        <TimePicker onChange={handleTimeChange} value={viva.vivaTime} />
+                      </div>
                     </div>
                     <div className="modal-footer">
                       <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>

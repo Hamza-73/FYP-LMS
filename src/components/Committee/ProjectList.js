@@ -48,7 +48,7 @@ const ProjectList = (props) => {
         setRemarks(json);
         props.showAlert('Remarks has been given to the Group', 'success')
       }
-      
+
     } catch (error) {
       console.log('error is ', error)
       props.showAlert('some error occured', 'danger')
@@ -71,7 +71,6 @@ const ProjectList = (props) => {
       getProjects();
     } else {
       history('/')
-      // props.showAlert('You need to login first','danger');
     }
   }, []);
 
@@ -111,7 +110,7 @@ const ProjectList = (props) => {
                   <h5 className="modal-title" >Give Reamrks</h5>
                 </div>
                 <div className="modal-body">
-                  <form onSubmit={(e)=>handleRemarks(e, selectedGroupId)}>
+                  <form onSubmit={(e) => handleRemarks(e, selectedGroupId)}>
 
                     <div className="mb-3">
                       <label htmlFor="remrks" className="form-label">Remarks</label>

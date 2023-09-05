@@ -259,7 +259,7 @@ const SupervisorList = (props) => {
       </div>
 
       {loading ? (<Loading />) : (<>
-        <div className='container'>
+        <div className='container' style={{ width: "90%" }}>
           <h3 className='text-center' >Supervisor List</h3>
           <div className="mb-3">
             <input
@@ -303,7 +303,7 @@ const SupervisorList = (props) => {
           )}
         </div>
         <div className="d-grid gap-2 col-6 mx-auto my-4">
-          <button style={{background:"maroon"}} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
+          <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
             Register
           </button>
         </div>
