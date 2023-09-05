@@ -29,6 +29,10 @@ const userSchema = new Schema({
   docDate : {type: Date},
   viva : {type: Schema.Types.ObjectId, ref: 'Viva'},
   vivaDate : {type : String},
+  vivaTime : {
+    type: String,
+    match: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, // Validate as HH:mm format
+  },
   meetingId: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
 });

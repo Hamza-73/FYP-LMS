@@ -18,7 +18,7 @@ const moment = require('moment');
 // Schedule a viva for a specific group's project
 router.post('/schedule-viva',  async (req, res) => {
     try {
-      const { projectTitle, vivaDate } = req.body;
+      const { projectTitle, vivaDate, vivaTime } = req.body;
   
       // Find the group by project title
       const group = await Group.findOne({
@@ -33,7 +33,7 @@ router.post('/schedule-viva',  async (req, res) => {
       if(!(group.isProp && group.isDoc)){
         return res.status(500).json({success:false, message:`Documentation or Proposal is Pending`})
       }
-  
+      const parsedDate = moment(vivaDate, 'DD-MM-YYYY').toDate();
       // Iterate through each project within the group and schedule a viva for each project
   group.projects.forEach(async (project) => {
     console.log('Project is ', project)
@@ -47,11 +47,12 @@ router.post('/schedule-viva',  async (req, res) => {
         name: student.name,
         rollNo: student.rollNo
       })),
-      vivaDate: new Date(vivaDate)
+      vivaDate: new Date(parsedDate),
+      vivaTime : vivaTime
     });
     group.viva = viva._id;
       
-    await Prmise.all([ group.save(),  viva.save()]);
+    await Promise.all([ group.save(),  viva.save()]);
     console.log('Viva is ', viva)
     // Send notification to group users and supervisors about the scheduled viva
     const notificationMessage = `A viva has been scheduled for the project "${project.projectTitle}" on ${vivaDate}`;
@@ -61,6 +62,9 @@ router.post('/schedule-viva',  async (req, res) => {
       const user = await User.findById(student.userId);
       if (user) {
         user.unseenNotifications.push({ message: notificationMessage });
+        user.vivaTime = vivaTime ;
+        user.vivaDate = parsedDate;
+        user.viva = viva._id;
         await user.save();
       }
     });
@@ -81,18 +85,38 @@ router.post('/schedule-viva',  async (req, res) => {
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
-  
-  // Get scheduled viva
-  router.get('/vivas', async (req,res)=>{
+
+// To get scheduled viva
+  router.get('/vivas', async (req, res) => {
     try {
       const vivas = await Viva.find();
-      if(!vivas){
-        res.status(500).json({ success: false, message: 'Vivas not found' });
+      if (!vivas || vivas.length === 0) {
+        return res.status(500).json({ success: false, message: 'Vivas not found' });
       }
-      res.json({ success: true, message: 'Viva fetched sucessfully', vivas });
+  
+      // Use Promise.all to wait for all asynchronous operations
+      const vivaPromises = vivas.map(async (viva) => {
+        const group = await Group.findById(viva.group);
+        if (!group) {
+          return res.status(500).json({ success: false, message: 'Group not found' });
+        }
+        // Add isProps and isDoc to the viva object
+        return {
+          ...viva.toObject(), // Convert Mongoose document to plain object
+          documentation: {
+            isProps: group.isProp,
+            isDoc: group.isDoc
+          }
+        };
+      });
+  
+      // Wait for all promises to resolve
+      const vivaResults = await Promise.all(vivaPromises);
+  
+      res.json({ success: true, message: 'Viva fetched successfully', vivas: vivaResults });
   
     } catch (error) {
-      console.error('error fetching scheduled vivas ', error);
+      console.error('Error fetching scheduled vivas ', error);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });

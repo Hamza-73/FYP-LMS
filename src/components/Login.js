@@ -45,75 +45,9 @@ const Login = (props) => {
         }
     }
 
-    const handleRegister = async  (e)=>{
-        e.preventDefault();
-        const response = await fetch("http://localhost:5000/login/register", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name: register.name, username: register.username, rollNo: register.rollNo, password: register.password, department: register.department })
-        });
-        const json = await response.json()
-        console.log(json);
-        if(json.success){
-        // Save the auth token and redirect
-        localStorage.setItem('token', json.token);
-        props.showAlert(`Account created successfully`,'success')
-        history("/");
-        }
-        else{
-            props.showAlert(`Wrong credentials`,'danger')    
-        }
-    }
-
     return (
         <>
 
-            {/* REGISTER */}
-            <div className="register"  >
-                <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title" >Register</h5>
-                            </div>
-                            <div className="modal-body">
-                                <form onSubmit={handleRegister}>
-                               
-                                <div className="mb-3">
-                                    <label htmlFor="name" className="form-label">Name</label>
-                                    <input type="text" className="form-control" id="name"  name='name' value={register.name}  onChange={handleChange1} />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                                    <input type="text" className="form-control" id="exampleInputusername2" name='username' value={register.username}  onChange={handleChange1} />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="department" className="form-label">Department</label>
-                                    <input type="text" className="form-control" id="department" name='department' value={register.department}  onChange={handleChange1} />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="department" className="form-label">Roll No.</label>
-                                    <input type="text" className="form-control" id="rollNO" name='rollNo' value={register.rollNo}  onChange={handleChange1} />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                                    <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password}  onChange={handleChange1} />
-                                    <small>password should be of atleast 4 characters </small>
-                                </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                                <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.name) || !(register.username)}>Register</button>
-                            </div>
-                                </form>
-                            </div>
-                            
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <h1 className='text-center' style={{ "fontSize": "56px" }}>{props.mainHeading}</h1>
             <div className="container my-5 d-flex justify-content-between" style={{borderLeft:"0", borderRight:"0"}}>
                 <div className="form my-2">
                     <h1 className='text-center'>{props.formHeading}</h1>
@@ -132,9 +66,6 @@ const Login = (props) => {
 
                         <div className="button my-4">
                             <button type="submit" className="btn btn-success btn" disabled={login.password.length < 4}>Login</button>
-                            <button type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
-                                Register
-                            </button>
                         </div>
                     </form>
                 </div>

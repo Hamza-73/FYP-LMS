@@ -11,7 +11,11 @@ const vivaSchema = new Schema({
     rollNO : {type : String}
   }], // Reference to the User model for student names
   documentation: { type: String },
-  vivaDate: { type: Date, required: true }
+  vivaDate: { type: Date, required: true },
+  vivaTime : {
+    type: String,
+    match: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, // Validate as HH:mm format
+  },
 });
 
 vivaSchema.methods.populateDocumentation = async function() {
