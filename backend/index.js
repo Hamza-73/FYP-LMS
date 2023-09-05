@@ -20,8 +20,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-
 app.use(bodyParser.json());
 
 // Paste your mongodb link
@@ -29,10 +27,7 @@ const mongoURI = 'mongodb://127.0.0.1:27017/lms';
 // const mongoURI = 'mongodb+srv://ameerhamza:passwordkyahai?@cluster0.tehlhzm.mongodb.net/FYP-LMS?retryWrites=true&w=majority';
 // const mongoURI = 'mongodb+srv://ameerhamza:passwordkyahai%3F@cluster0.tehlhzm.mongodb.net/FYP-LMS?retryWrites=true&w=majority';
 
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, });
 
 const connection = mongoose.connection;
 connection.once('open', () => {
@@ -42,12 +37,14 @@ connection.once('open', () => {
 const loginRoute = require('./routes/Student/Login'); 
 const superRoute = require('./routes/Supervisor/Supervisor');
 const committeeRoute = require('./routes/Committe/Committee');
-const vivaRoute = require('./routes/Committe/Viva')
+const vivaRoute = require('./routes/Committe/Viva');
 
-app.use('/student', loginRoute); //yah login ka route yaha user's ki api yaha run hogi
-app.use('/supervisor', superRoute)  // yah supervisor
-app.use('/committee', committeeRoute)  //yah committee
+app.use('/student', loginRoute);
+app.use('/supervisor', superRoute);
+app.use('/committee', committeeRoute);
 app.use('/viva', vivaRoute);
+const meetingRoute = require('./routes/Meeting/Meeting')
+app.use('/meeting', meetingRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

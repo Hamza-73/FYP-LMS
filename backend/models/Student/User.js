@@ -27,7 +27,10 @@ const userSchema = new Schema({
   isProp : {type:Boolean, default:false},
   propDate:{type : Date},
   docDate : {type: Date},
-  viva : {type: Schema.Types.ObjectId, ref: 'Viva'}
+  viva : {type: Schema.Types.ObjectId, ref: 'Viva'},
+  vivaDate : {type : String},
+  meetingId: { type: Schema.Types.ObjectId, ref: 'Meeting' },
+  meetingLink: { type: String },
 });
 
 module.exports = mongoose.model('User', userSchema);

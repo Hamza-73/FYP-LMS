@@ -127,34 +127,26 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
     }
 
     if (action === 'reject') {
-      console.log('Reject code starts')
+      console.log('Reject code starts');
+    
       // Remove the project request from supervisor's projectRequest array
       supervisor.projectRequest = supervisor.projectRequest.filter(request => !request._id.equals(requestId));
       await supervisor.save();
-
+    
       // Remove the project request from student's pendingRequests array
       const student = await User.findById(projectRequest.user);
       if (student) {
-        console.log('reject user is ', student);
-        console.log('reject user pending request is  ', student.pendingRequests);
-
-        const updatedPendingRequests = Array.from(student.pendingRequests).filter(request => {
-          console.log('filter request is ', request);
-          !request._id.equals(requestId)
-        });
-        console.log('updated requests is ', updatedPendingRequests)
+        const updatedPendingRequests = student.pendingRequests.filter(request => !request._id.equals(requestId));
         student.pendingRequests = updatedPendingRequests;
         student.unseenNotifications.push({
-          message: `${supervisor.name} rejected you're request for ${projectRequest.projectTitle}`
-        })
+          message: `${supervisor.name} rejected your request for ${projectRequest.projectTitle}`
+        });
         await student.save();
-
-        console.log('after reject is ', student.pendingRequests);
       }
-
+    
       res.json({ success: true, message: 'Project request rejected successfully' });
-
     }
+    
     // Check if a supervisor has slot or no
     if (supervisor.slots <= 0) {
       return res.status(400).json({ success: false, message: `You're slots are full` });
