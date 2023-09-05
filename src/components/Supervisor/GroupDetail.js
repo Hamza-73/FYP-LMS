@@ -8,9 +8,7 @@ const GroupDetail = () => {
         projects: [
           {
             projectTitle: '',
-            students: [
-              { name: '', rollNo: '', userId: '', _id: '' },
-              { name: '', rollNo: '', userId: '', _id: '' },
+            students: [ { name: '', rollNo: '', userId: '', _id: '' }, { name: '', rollNo: '', userId: '', _id: '' },
             ],
           },
         ],
@@ -61,7 +59,7 @@ const GroupDetail = () => {
     <div>
       {!loading ? (
         <>
-          {currentGroup.length > 0 ? (
+          {group.groups.length > 0 ? (
             <div className="container">
               <div className="upperpart">
                 <div className="proj-detail d-flex justify-content-between">

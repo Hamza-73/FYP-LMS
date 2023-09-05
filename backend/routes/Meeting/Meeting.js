@@ -78,7 +78,7 @@ router.post('/meeting', async (req, res) => {
   
       group.meetingLink = meetingLink;
       group.meetingid = meeting._id;
-      const message = `You're Meeting Scheduled for ${projectTitle} on ${date} at ${time} by ${group.supervisor}`;
+      const message = `You're Meeting Scheduled for ${projectTitle} on ${date} at ${time}`;
       supervisor.unseenNotifications.push({ type: "reminder", message: message });
       await Promise.all([group.save(), supervisor.save()]);
   
