@@ -67,7 +67,6 @@ const Login = (props) => {
         }
     }
 
-    
     return (
         <>
 
@@ -131,9 +130,6 @@ const Login = (props) => {
                         </div>
                         <Link to="/forgotpassword" style={{ "textDecoration": "none" }}>Forgot Password?</Link>
 
-                        {  // eslint-disable-next-line   
-                            
-                        }
                         <div className="button my-4">
                             <button type="submit" className="btn btn-success btn" disabled={login.password.length < 4}>Login</button>
                             <button type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">

@@ -18,8 +18,8 @@ const App = () => {
   return (
     <>
     <Alert alert={alert} />
-    {/* <StudentMain showAlert={showAlert} /> */}
-    <SupervisorMain showAlert={showAlert} /> 
+    <StudentMain showAlert={showAlert} />
+    {/* <SupervisorMain showAlert={showAlert} />  */}
     {/* <CommitteeMain showAlert={showAlert} /> */}
         
     </>

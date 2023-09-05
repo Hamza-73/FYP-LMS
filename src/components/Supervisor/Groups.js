@@ -1,12 +1,53 @@
+import { current } from '@reduxjs/toolkit';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const Groups = (props) => {
   const [group, setGroup] = useState({ groups: [] });
+  const [grades, setGrades] = useState({ marks : 0 , external : 0});
+  const [groupId, setGrouppId] = useState('');
+  
   const [addStudent, setAddStudent] = useState({
     rollNo: '',
     projectTitle: '',
   });
+
+  const handleMarks = async (e) => {
+    try {
+      e.preventDefault();
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/supervisor/give-marks/${groupId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+        body : JSON.stringify({ marks : grades.marks , external : grades.external })
+      });
+
+      const json = await response.json();
+      console.log('response is ', json);
+
+      if (json.success) {
+        if (json.message) {
+          props.showAlert(json.message, 'success');
+        } else {
+          // Handle the case where json.message is empty
+          props.showAlert('Student added successfully', 'success');
+        }
+      } else {
+        // Handle the case where json.success is false
+        if (json.message) {
+          props.showAlert(json.message, 'danger');
+        } else {
+          props.showAlert('An error occurred while adding the student', 'danger');
+        }
+      }
+    } catch (error) {
+      console.log('error in adding student', error);
+      props.showAlert(`error adding to group: ${error}`, 'danger');
+    }
+  };
 
   const handleAddStudent = async (e, projectTitle, rollNo) => {
     try {
@@ -44,6 +85,7 @@ const Groups = (props) => {
     }
   };
 
+
   const getGroup = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -66,12 +108,48 @@ const Groups = (props) => {
     getGroup();
   }, []);
 
+  const handleChange1 = (e) => {
+    setGrades({ ...grades, [e.target.name]: e.target.value });
+  };
+
   const handleChange = (e) => {
     setAddStudent({ ...addStudent, [e.target.name]: e.target.value });
   };
 
+
+
   return (
     <div>
+      <div className="fypIdea">
+        <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Assign Grades</h5>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={(e)=>{handleMarks(e)}}>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">Marks</label>
+                    <input type="text" className="form-control" id="marks" name="marks" value={grades.marks} onChange={handleChange1} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="exampleInputPassword1" className="form-label">External</label>
+                    <input type="text" className="form-control" id="external" name="external" value={grades.external} onChange={handleChange1} />
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external}>
+                      Give Grades
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="fypIdea">
         <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
@@ -102,7 +180,8 @@ const Groups = (props) => {
         </div>
       </div>
 
-      {group.groups.length > 0 ? (
+
+      { current.length > 0 ? (
         <>
           <h3 className='text-center my-4'>Students Under Me</h3>
           <div className='container' style={{ width: "100%" }}>
@@ -133,13 +212,13 @@ const Groups = (props) => {
                             </div>
                           </td>
                           <td>{project.projectTitle}</td>
-                          <td>{'-----'}</td>
+                          <td>{"-------"}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
                           <td>
                             {group.remarks}
-                            <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
-                              <i className="fa-solid fa-pen-to-square"></i>
+                            <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
+                              {(group.marks && group.external)? (group.marks + group.external) : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={()=>setGrouppId(group._id)}></i>
                             </div>
                           </td>
                         </tr>
