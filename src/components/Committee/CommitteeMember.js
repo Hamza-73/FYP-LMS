@@ -68,26 +68,21 @@ const CommitteeMember = (props) => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      console.log('selected Student is ', selectedStudent, ' type of ', typeof selectedStudent._id)
       const id = selectedStudent._id;
-      console.log('id is ', id)
-
-      const response = await axios.put(
-        `http://localhost:5000/committee/edit/${id}`, // Assuming _id is the correct identifier for a student
+      const response = await fetch( `http://localhost:5000/committee/edit/${id}`,
         {
-          fname: register.fname, lname: register.lname, username: register.username,
-          designation: register.designation, password: register.password, department: register.department
-        },
-        {
-          // method:"PUT",
+          method:"PUT",
           headers: {
             'Content-Type': 'application/json',
           },
+          body : JSON.stringify({
+            fname: register.fname, lname: register.lname, username: register.username,
+            designation: register.designation, password: register.password, department: register.department
+          })
         }
       );
 
-      const updatedStudent = await response.data;
-      // console.log('updatedStudent is ', updatedStudent)
+      const updatedStudent = await response.json();
       if (updatedStudent) {
         setData((prevData) => ({
           ...prevData,
@@ -96,12 +91,11 @@ const CommitteeMember = (props) => {
           ),
         }));
         console.log('updated student is ', updatedStudent)
-
-
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
           fname: '', lname:'', username: '', department: '', designation: '', password: ''
         });
+        props.showAlert('student updated successfully', 'success')
       }
 
     } catch (error) {
@@ -113,9 +107,7 @@ const CommitteeMember = (props) => {
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete?');
     if (confirmed) {
-
       try {
-
         console.log('id is ', id)
         const response = await axios.delete(`http://localhost:5000/committee/delete/${id}`,
           {
@@ -124,7 +116,6 @@ const CommitteeMember = (props) => {
             },
           }
         );
-
         if (response.status === 200) {
           // Update the UI by removing the deleted student from the data
           setData((prevData) => ({
@@ -133,14 +124,12 @@ const CommitteeMember = (props) => {
           }));
           props.showAlert('Student deleted successfully', 'success');
         }
-
       } catch (error) {
         console.log('Error:', error); // Log the error message
         alert(`Some error occurred: ${error.message}`, 'danger');
       }
     }
   };
-
 
   const getMembers = async () => {
     try {
@@ -200,7 +189,6 @@ const CommitteeMember = (props) => {
   return (
 
     <>
-
       {/* REGISTER */}
       <div className="register"  >
         <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -255,7 +243,6 @@ const CommitteeMember = (props) => {
           </div>
         </div>
       </div>
-
 
       {loading ? (<Loading />) : (<>
         <div className='container'>

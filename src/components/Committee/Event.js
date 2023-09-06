@@ -101,13 +101,12 @@ const Event = (props) => {
       }
     } catch (error) {
       console.log('error scheduling viva', error);
-      props.showAlert(`Some error occurred try to reload the page/ try again`, 'danger');
+      NotificationManager.error(`Some error occurred try again/reload page`);
     }
   };
 
   const handleChange1 = (e) => {
     setViva({ ...viva, [e.target.name]: e.target.value });
-    setIsFieldsModified(true); // Field modified, enable the button
   };
 
   const handleCalendarChange = (date) => {
@@ -206,7 +205,7 @@ const Event = (props) => {
                         <td>{'project Submission'}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
-                        <td style={{ cursor: 'pointer' }} data-toggle="modal" data-target="#exampleModal"  onClick={()=>selectEditMode(true)}>
+                        <td style={{ cursor: 'pointer' }} data-toggle="modal" data-target="#exampleModal"  onClick={()=>{selectEditMode(true); setViva({projectTitle: val.projectTitle})}}>
                           <i className="fa-solid fa-pen-to-square"></i>
                         </td>
                       </tr>

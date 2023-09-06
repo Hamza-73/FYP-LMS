@@ -8,6 +8,7 @@ import StudentList from './Committee/StudentList'
 import Event from './Committee/Event'
 import SupervisorList from './Committee/SupervisorList'
 import CommitteeMember from './Committee/CommitteeMember'
+import ProjectProgress from './Committee/ProjectProgress'
 
 const CommitteeMain = (props) => {
     return (
@@ -19,7 +20,7 @@ const CommitteeMain = (props) => {
                 title4='Student List' link4='student'
                 title5='Project List' link5='project'
                 title6='Schedule Viva' link6='event'
-                detailLink='committee'
+                detailLink='committee' title7='Project Progress' link7='progress'
             />
             <Routes>
                 <Route path='/' element={<Login showAlert={props.showAlert}
@@ -32,6 +33,7 @@ const CommitteeMain = (props) => {
                 <Route path='/event' element={<Event showAlert={props.showAlert} />} />
                 <Route path='/supervisor' element={<SupervisorList showAlert={props.showAlert} />} />
                 <Route path='/members' element={<CommitteeMember showAlert={props.showAlert} />} />
+                <Route path='/progress' element={<ProjectProgress />} />
             </Routes>
         </div>
     )

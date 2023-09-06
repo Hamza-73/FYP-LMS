@@ -24,7 +24,7 @@ const SideBar = (props) => {
               return;
             }
             
-            const response = await fetch(`http://localhost:5000/supervisor/detail`, {
+            const response = await fetch(`http://localhost:5000/${props.detailLink}/detail`, {
               method: 'GET',
               headers: {
                 'Authorization': token    
@@ -88,6 +88,9 @@ const SideBar = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.link7}`}>{props.title7}</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.link8}`}>{props.title8}</Link>
+                            </li>
                             {/* <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     {props.title0}
@@ -117,8 +120,10 @@ SideBar.defaultProps = {
     title5: "",
     title6: "",
     title7: "",
+    title8: "",
     link5: "/",
     link6: "/",
     link7: "/",
+    link8: "/",
 }
 export default SideBar
