@@ -1,9 +1,10 @@
 import React from 'react'
-import SideBar from './SideBar'
+import Navbar from './Navbar'
 
 const Dashboard = (props) => {
   return (
     <div>
+      <Navbar/>
       DashBoard will be shown here
     </div>
   )
