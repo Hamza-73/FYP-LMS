@@ -49,6 +49,7 @@ router.post('/register', [
         res.json({ success: true, token, message: 'Registration successful' });
       }
     } catch (err) {
+      console.error('error in registering ', err)
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
@@ -77,6 +78,7 @@ router.post('/login', async (req, res) => {
         res.status(401).json({ success: false, message: 'Invalid username or password' });
       }
     } catch (err) {
+      console.error('error is ',err)
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
@@ -213,7 +215,31 @@ router.put('/editrules/:role', async (req, res) => {
     // Save the updated shared rules
     await sharedRules.save();
 
-    res.json({ message: 'Rules for the specified role updated successfully', sharedRules });
+    const students = await User.find();
+    if(!students){
+      return  res.status(404).json({message:'No Students Found'});}
+    
+    const superviors = await Supervisor.find();
+    if(!superviors){
+      return   res.status(404).json({message:"No Supervisor Found"});
+    }
+
+    const notification = {
+      type : "Important",
+      message:"New Rules added by Committee Members"
+    }
+
+    students.map(student=>{
+      student.unseenNotifications.push(notification);
+      student.save();
+    })
+
+    superviors.map(student=>{
+      student.unseenNotifications.push(notification);
+      student.save();
+    })
+
+    return res.json({ message: 'Rules for the specified role updated successfully', sharedRules });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Internal server error' });

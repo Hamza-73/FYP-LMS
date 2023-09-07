@@ -182,19 +182,21 @@ router.put('/edit', async (req, res) => {
     const updatedViva = await Viva.findOneAndUpdate(
       { projectTitle: projectTitle },
       { vivaDate: vivaDate, vivaTime: vivaTime },
-      { new: true } 
+      { new: true }
     );
 
-    if (!updatedViva) {
-      return res.status(404).json({ error: 'Viva not found' });
+    const students = await User.find();
+    if (!students) {
+      return res.status(404).json({ error: 'Students not found' });
     }
 
     // Send the updated document as the response
-    res.json({success:true, message:"Viva Updated Successfully", updatedViva});
-} catch (error) {
+    res.json({ success: true, message: "Viva Updated Successfully", updatedViva });
+  } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
-}});
+  }
+});
 
 
 module.exports = router;

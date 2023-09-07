@@ -4,14 +4,31 @@ import '../../css/task.css'
 import axios from 'axios';
 
 const Tasks = (props) => {
-  const [file,setFile] = useState();
-  const upload = ()=>{
-    const formData = new FormData();
-    formData.append('file', file);
-    axios.put('http://localhost:5000/upload', formData).then(
-      res =>{}
-    ).catch(er=>console.log('error is ', er))
-  }
+  const [file, setFile] = useState();
+  const upload = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('http://localhost:5000/student/proposal', {
+        method: "POST",
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': localStorage.getItem('token'),
+        },
+        body: formData,
+      });
+      if (!response.ok) {
+        console.log('upload is ', response);
+      }
+
+    } catch (error) {
+      console.error('error us', error)
+      console.log('error in uploading', error)
+    }
+
+  };
+
   return (
     <div>
       <div className="container">
@@ -39,8 +56,8 @@ const Tasks = (props) => {
             <div>Task Submitted Late</div>
           </div>
           <div className="boxes d-flex justify-content-evenly">
-            <input type="file" onChange={(e)=>{setFile(e.target.files[0])}} />
-            <div className='btn' type='button' onClick={upload}>Add Submission</div>
+            <input type="file" onChange={(e) => { setFile(e.target.files[0]); console.log(e.target.files[0]) }} />
+            <button className='btn' type='button' style={{color:"white", fontWeight:"600"}} onClick={upload}>Add Submission</button>
           </div>
         </div>
       </div>

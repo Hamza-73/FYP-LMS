@@ -2,9 +2,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+cloudinary.config({ 
+  cloud_name: 'dfexs9qho', 
+  api_key: '798692241663155', 
+  api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8' 
+});
 
 // Middlewares
 const corsOptions = {
@@ -21,6 +29,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+app.use(fileUpload({
+  useTempFiles:true
+}))
 
 // Paste your mongodb link
 const mongoURI = 'mongodb://127.0.0.1:27017/lms';

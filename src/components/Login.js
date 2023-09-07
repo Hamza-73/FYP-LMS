@@ -34,14 +34,14 @@ const Login = (props) => {
             body: JSON.stringify({username: login.username, password: login.password})
         });
         const json = await response.json()
-        console.log(json);
-        if (json.success){ 
+        console.log('login json ',json);
+        if (json.success && json.message){ 
             // Save the auth token and redirect
             localStorage.setItem('token', json.token); 
-            props.showAlert( `You've been loggen in`,'success')
+            props.showAlert( json.message,'success')
             history(props.path);
         }else{
-            props.showAlert( `Wrong credentials`,'danger')
+            props.showAlert( json.message,'danger')
         }
     }
 

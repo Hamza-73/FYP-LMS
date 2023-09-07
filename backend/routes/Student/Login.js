@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const router = express.Router();
 const User = require('../../models/Student/User');
 const { body, validationResult } = require('express-validator');
@@ -12,13 +12,12 @@ const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 const Group = require('../../models/GROUP/Group');
 
 const multer = require('multer');
-const { getTouchRippleUtilityClass } = require('@mui/material');
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-const Viva = require('../../models/Viva/Viva')
+const upload = multer({ storage:storage });
+const Viva = require('../../models/Viva/Viva');
 
-// to upload file
-router.post('/proposal', upload.single('proposal'), authenticateUser, async (req, res) => {
+// To upload Files
+router.post('/proposal', upload.single('proposal'), authenticateUser, async (req, res,) => {
   try {
 
     const user = await User.findById(req.user.id);
@@ -26,6 +25,7 @@ router.post('/proposal', upload.single('proposal'), authenticateUser, async (req
       return res.status(404).json({ error: 'User not found' });
     }
     const id = user.group;
+    console.log('uploaded file is ', req.file.buffer)
     const group = await Group.findOneAndUpdate(
       { _id: id },
       {
