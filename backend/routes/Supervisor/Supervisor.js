@@ -118,8 +118,8 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-    console.log('supervisor is 1 ', supervisor);
-    console.log('Project of sup ius ', supervisor.projectRequest)
+    // console.log('supervisor is 1 ', supervisor);
+    // console.log('Project of sup ius ', supervisor.projectRequest)
 
     const projectRequest = supervisor.projectRequest.find(request => request._id.equals(requestId));
     if (!projectRequest) {
@@ -157,7 +157,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       return res.status(404).json({ success: false, message: `Project is already supervised by ${sup.name}` });
     }
     
-    console.log('ProjectRequest is 1 ', projectRequest);
+    // console.log('ProjectRequest is 1 ', projectRequest);
 
     const user = await User.findById(projectRequest.user)
 
@@ -169,7 +169,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       // GetProjectDetail for Project Id
       const projectDetail = await ProjectRequest.findById(projectRequest.project);
-      console.log("ProjectDetail is ", projectDetail);
+      // console.log("ProjectDetail is ", projectDetail);
 
       // Check if user is already in the group
       if (projectDetail.status) {
@@ -185,49 +185,49 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         group = newGroup._id; // Store the ObjectId of the new group
         supervisor.groups.push(group);
       }
-      console.log('group is ', group);
+      // console.log('group is ', group);
 
 
       // Find or create the relevant project in the group
       const groupDoc = await Group.findById(group); // Fetch the group document
-      console.log('Project', groupDoc.projects);
+      // console.log('Project', groupDoc.projects);
       let project = groupDoc.projects.find(proj => proj.projectTitle === projectRequest.projectTitle);
       if (!project) {
         project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
         groupDoc.projects.push(project);
       }
-      console.log("project is after initlialization", project)
-      console.log('GroupDoc is ', groupDoc);
+      // console.log("project is after initlialization", project)
+      // console.log('GroupDoc is ', groupDoc);
 
-      console.log('User is ', user);
+      // console.log('User is ', user);
 
-      console.log('Group doc studen is ', groupDoc.projects)
+      // console.log('Group doc studen is ', groupDoc.projects)
       // console.log('Group doc studen are ', project.students)
       // Add the user to the project's students array
       groupDoc.projects.map((group) => {
         if (group.projectTitle === projectDetail.projectTitle) {
-          console.log('Inside map group is ', group)
-          console.log('inside map', group.projectTitle)
-          console.log('inside map', user.name)
-          console.log('Student is ', group.students)
-          console.log('ID is ', group.projectId)
+          // console.log('Inside map group is ', group)
+          // console.log('inside map', group.projectTitle)
+          // console.log('inside map', user.name)
+          // console.log('Student is ', group.students)
+          // console.log('ID is ', group.projectId)
           group.students.push({
             name: user.name, rollNo: user.rollNo, userId: user._id
           })
-          console.log('After push')
+          // console.log('After push')
         }
       });
-      console.log('Project Detail is ', projectDetail)
+      // console.log('Project Detail is ', projectDetail)
       // projectDetail.forEach((proj)=>{
       //   console.log(proj.projectTitle)
       // })
-      console.log('user id is ', user._id)
+      // console.log('user id is ', user._id)
       // Decrease supervisor group by one
       supervisor.slots = supervisor.slots - 1;
       projectDetail.students.push(user._id);
       projectDetail.supervisor = (supervisor._id);
       projectDetail.isAccepted = true;
-      console.log('Project Supervisor is ', projectDetail.supervisor);
+      // console.log('Project Supervisor is ', projectDetail.supervisor);
       // projectDetail.supervisor.push(supervisor._id);
 
       if (projectDetail.students.length === 2) {
@@ -259,7 +259,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       return res.json({ success: true, message: 'Project request accepted and user added to group' });
 
     }
-
 
     if (action === 'improve') {
       const { projectTitle, description, scope } = req.body;
@@ -294,7 +293,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         group = newGroup._id; // Store the ObjectId of the new group
         supervisor.groups.push(group);
       }
-      console.log('group is ', group);
+      // console.log('group is ', group);
 
 
       // Find or create the relevant project in the group
@@ -305,38 +304,38 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
         groupDoc.projects.push(project);
       }
-      console.log("project is after initlialization", project)
-      console.log('GroupDoc is ', groupDoc);
+      // console.log("project is after initlialization", project)
+      // console.log('GroupDoc is ', groupDoc);
 
-      console.log('User is ', user);
+      // console.log('User is ', user);
 
-      console.log('Group doc studen is ', groupDoc.projects)
+      // console.log('Group doc studen is ', groupDoc.projects)
       // console.log('Group doc studen are ', project.students)
       // Add the user to the project's students array
       groupDoc.projects.map((group) => {
         if (group.projectTitle === projectDetail.projectTitle) {
-          console.log('Inside map group is ', group)
-          console.log('inside map', group.projectTitle)
-          console.log('inside map', user.name)
-          console.log('Student is ', group.students)
-          console.log('ID is ', group.projectId)
+          // console.log('Inside map group is ', group)
+          // console.log('inside map', group.projectTitle)
+          // console.log('inside map', user.name)
+          // console.log('Student is ', group.students)
+          // console.log('ID is ', group.projectId)
           group.students.push({
             name: user.name,
             rollNo: user.rollNo,
             userId: user._id
           })
-          console.log('After push')
+          // console.log('After push')
         }
       });
-      console.log('Project Detail is ', projectDetail)
+      // console.log('Project Detail is ', projectDetail)
       // projectDetail.forEach((proj)=>{
       //   console.log(proj.projectTitle)
       // })
-      console.log('user id is ', user._id)
+      // console.log('user id is ', user._id)
       // Decrease supervisor group by one
       supervisor.slots = supervisor.slots - 1;
       projectDetail.students.push(user._id)
-      console.log('Project Supervisor is ', projectDetail.supervisor);
+      // console.log('Project Supervisor is ', projectDetail.supervisor);
       // projectDetail.supervisor.push(supervisor._id);
 
       if (projectDetail.students.length === 2) {
@@ -348,7 +347,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       user.unseenNotifications.push({ message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
       supervisor.unseenNotifications.push({ message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
 
-      console.log('Student is ', user)
+      // console.log('Student is ', user)
       // Add group id to user
       user.group = groupDoc._id;
       user.isMember = true;
@@ -358,7 +357,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       res.json({ success: true, message: 'Project request improved and accepted and user added to group' });
 
     }
-
   } catch (err) {
     console.error('Error accepting project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -676,5 +674,6 @@ router.get('/notification', authenticateUser, async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 module.exports = router;

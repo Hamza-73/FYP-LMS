@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import 'react-calendar/dist/Calendar.css';
-import Calendar from 'react-calendar';
 import Loading from '../Loading';
 import { useNavigate } from 'react-router-dom';
 import 'react-clock/dist/Clock.css';
-import TimePicker from 'react-time-picker';
 import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 import { NotificationContainer, NotificationManager } from 'react-notifications';

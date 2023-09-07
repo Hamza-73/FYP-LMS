@@ -37,9 +37,9 @@ const SideBar = (props) => {
             }
       
             const json = await response.json();
-            console.log('json is in sidebar: ', json);
+            // console.log('json is in sidebar: ', json);
             if (json) {
-              console.log('User data is: ', json);
+            //   console.log('User data is: ', json);
               setUserData(json);
               setLoading(false)
             }
@@ -51,8 +51,8 @@ const SideBar = (props) => {
         if (localStorage.getItem('token')) {
             setTimeout(()=>{
                 getDetail();
-                console.log('user data is in ', userData)
-                console.log('user data is in ', userData.member)
+                // console.log('user data is in ', userData)
+                // console.log('user data is in ', userData.member)
             },2000)
         }
       }, []); // Empty dependency array to run the effect only once    

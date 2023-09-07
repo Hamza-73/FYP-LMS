@@ -245,7 +245,7 @@ const CommitteeMember = (props) => {
       </div>
 
       {loading ? (<Loading />) : (<>
-        <div className='container'>
+        <div className='container' style={{width:"90%"}}>
           <h3 className='text-center'>Committee Members</h3>
           <div className="mb-3">
             <input

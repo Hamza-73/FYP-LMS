@@ -38,13 +38,15 @@ const loginRoute = require('./routes/Student/Login');
 const superRoute = require('./routes/Supervisor/Supervisor');
 const committeeRoute = require('./routes/Committe/Committee');
 const vivaRoute = require('./routes/Committe/Viva');
+const meetingRoute = require('./routes/Meeting/Meeting')
+const projectRoute = require('./routes/ProjectRequest')
 
 app.use('/student', loginRoute);
 app.use('/supervisor', superRoute);
 app.use('/committee', committeeRoute);
 app.use('/viva', vivaRoute);
-const meetingRoute = require('./routes/Meeting/Meeting')
 app.use('/meeting', meetingRoute);
+app.use('/projects', projectRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

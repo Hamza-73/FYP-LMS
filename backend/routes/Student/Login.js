@@ -316,36 +316,57 @@ router.get('/detail', authenticateUser, async (req, res) => {
   }
 });
 
-
-router.post('/request-to-join/:projectRequestId', authenticateUser, async (req, res) => {
-  const { projectRequestId } = req.params;
+router.post('/request-to-join/:projectTitle', authenticateUser, async (req, res) => {
+  const { projectTitle } = req.params;
 
   try {
     const student = await User.findById(req.user.id);
     if (!student) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
-    const projectRequest = await ProjectRequest.findById(projectRequestId);
+    if (student.isMember) {
+      return res.status(500).json({ success: false, message: `You're already in a Group` });
+    }
+
+    const projectRequest = await ProjectRequest.findOne({ projectTitle: projectTitle });
     if (!projectRequest) {
       return res.status(404).json({ success: false, message: 'Project request not found' });
     }
 
-    // Check if the student has already requested to join
-    if (projectRequest.students.includes(student._id)) {
-      return res.status(400).json({ success: false, message: 'Student has already requested to join' });
+    // Check if the group is already filled
+    if (projectRequest.students.length === 2) {
+      return res.status(400).json({ success: false, message: 'Student The Group is already filled' });
     }
 
-    projectRequest.students.push(student._id);
-    await projectRequest.save();
+    const supervisor = await Supervisor.findById(projectRequest.supervisor);
+    if (!supervisor) {
+      return res.status(404).json({ success: false, message: 'Supervisor not found' });
+    }
 
-    const supervisor = await Supervisor.findById(projectRequest.supervisor)
+    // Check if a user has already sent a request for this group
+    const hasSentRequest = student.pendingRequests.some((request) =>
+      request.projectId.equals(projectRequest._id) && request.supervisor.equals(supervisor._id)
+    );
 
-    const notificationMessage = `${student.name} has requested to join the project: ${projectRequest.projectTitle}`;
-    supervisor.unseenNotifications.push({ message: notificationMessage });
-    await supervisor.save();
+    if (hasSentRequest) {
+      return res.status(500).json({ success: false, message: `You've Already sent Request for This Group` });
+    }
 
-    res.json({ success: true, message: 'Request to join sent' });
+    const notificationMessage = `${student.name} has requested to join the group: ${projectRequest.projectTitle}`;
+    supervisor.unseenNotifications.push({ type: 'Important', message: notificationMessage });
+    supervisor.projectRequest.push({
+      project: projectRequest._id,
+      user: student._id
+    });
+    student.pendingRequests.push({
+      projectId: projectRequest._id,
+      supervisor: supervisor._id
+    });
+    student.unseenNotifications.push({ type: 'Important', message: `You've sent a request to ${supervisor.name} to join group ${projectRequest.projectTitle}` })
+    await Promise.all([supervisor.save(), student.save()]);
+
+    res.json({ success: true, message: `Request sent to ${supervisor.name} for ${projectRequest.projectTitle}` });
   } catch (err) {
     console.error('Error sending join request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -388,14 +409,11 @@ router.get('/my-group', authenticateUser, async (req,res)=>{
         rollNo: student.rollNo,
         myId : student._id
       }],
-      groupId : student.group,
-      supervisor : group.supervisor,
-      supervisorId : group.supervisorId,
-      projectTitle : group.projects[0].projectTitle,      
+      groupId : student.group, supervisor : group.supervisor,
+      supervisorId : group.supervisorId, projectTitle : group.projects[0].projectTitle,      
       projectId : group.projects[0].projectId,
       groupMember : group.projects[0].students.filter(stu=>!stu.userId.equals(userId)),
-      proposal : group.isProp,     
-      documentation : group.isDoc,
+      proposal : group.isProp, documentation : group.isDoc,
       docDate : student.docDate ? student.docDate : '----' ,
       propDate : student.propDate ? student.propDate : '----' ,
       viva : viva ? viva.vivaDate : '-----'
@@ -403,6 +421,21 @@ router.get('/my-group', authenticateUser, async (req,res)=>{
     return res.json({success:true, group : groupDetail})
   } catch (error) {
     
+  }
+});
+
+router.get('/notification', authenticateUser, async (req,res)=>{
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    const notification = user.unseenNotifications;
+    return res.json({ success: true, notification })
+  } catch (error) {
+    console.error('error is ', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

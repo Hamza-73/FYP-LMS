@@ -27,7 +27,7 @@ const SupervisorMain = (props) => {
         <Route path='/meeting' element={<Meeting showAlert={props.showAlert} />} />
         <Route path='/ideas' element={<ProjectIdeas showAlert={props.showAlert} />} />
         <Route path='/requests' element={<ProjectRequest showAlert={props.showAlert} />} />
-        <Route path='/notification' element={<Notification />} />
+        <Route path='/notification' element={<Notification user='supervisor' />} />
       </Routes>
     </div>
   )
