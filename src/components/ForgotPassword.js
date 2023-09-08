@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const ForgotPassword = (props) => {
 
@@ -16,7 +18,7 @@ const ForgotPassword = (props) => {
 
     const handleSubmit = async  (e)=>{
         e.preventDefault();
-        const response = await fetch("http://localhost:5000/login/reset-password", {
+        const response = await fetch(`http://localhost:5000/${props.detailLink}/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -26,11 +28,13 @@ const ForgotPassword = (props) => {
         const json = await response.json()
         console.log(json);
         if(json.success){
+        NotificationManager.success('Password Updated Successfully');
+        setTimeout(()=>{
         history("/");
-        props.showAlert(`Password updated successfully`,'success')
+        },1500)
         }
         else{
-            props.showAlert(`User does not exists`,'danger')    
+            NotificationManager.error('User does not exist');   
         }
     }
 
@@ -50,6 +54,7 @@ const ForgotPassword = (props) => {
                 </div>
                 <button type="submit" disabled={text.newPassword.length<4 || !text.username} className="btn btn-warning">Submit</button>
             </form>
+                <NotificationContainer />
         </div>
     )
 }

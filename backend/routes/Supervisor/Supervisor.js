@@ -54,6 +54,31 @@ router.post('/create', [
   }
 });
 
+
+// Password reset route
+router.post('/reset-password', async (req, res) => {
+  const { username, newPassword } = req.body;
+
+  try {
+    // Find the user by username
+    const user = await Supervisor.findOne({ username });
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Update the password and save it to the database
+    user.password = newPassword;
+    await user.save();
+    res.status(200).json({ success: true, message: 'Password reset successful' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+
+
 //delete supervisor
 router.delete('/delete/:id', async (req, res) => {
   try {

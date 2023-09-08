@@ -15,7 +15,7 @@ const StudentMain = (props) => {
   const location = useLocation();
 
   // Define an array of paths where the sidebar should not be shown
-  const pathsWithoutSidebar = ['/', '/forgotpassword', '/studentMain'];
+  const pathsWithoutSidebar = ['/', '/forgotpassword', '/studentMain', '/studentMain/forgotpassword'];
 
   // Check if the current location is in the pathsWithoutSidebar array
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
@@ -33,9 +33,9 @@ const StudentMain = (props) => {
         </div>
         <Routes>
           <Route path='/' exact element={<Login showAlert={props.showAlert}
-            formHeading='Student Login' mainHeading='FYP PROCTORING'
+            formHeading='Student Login' mainHeading='FYP PROCTORING' user='student'
             loginRoute='/student/login' path='/studentMain/dashboard' />} />
-          <Route path='/forgotpassword' exact element={<ForgotPassword showAlert={props.showAlert} />} />
+          <Route path='/forgotpassword' exact element={<ForgotPassword detailLink='student' showAlert={props.showAlert} />} />
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/progress' element={<Progress />} />
           <Route path='/tasks' element={<Tasks />} />

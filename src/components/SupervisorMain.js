@@ -9,13 +9,14 @@ import Meeting from './Meeting'
 import ProjectIdeas from './Supervisor/ProjectIdeas'
 import ProjectRequest from './Supervisor/ProjectRequests'
 import Notification from './Notification'
+import ForgotPassword from './ForgotPassword'
 
 const SupervisorMain = (props) => {
   
   const location = useLocation();
 
   // Define an array of paths where the sidebar should not be shown
-  const pathsWithoutSidebar = ['/', '/forgotpassword', '/supervisorMain' ];
+  const pathsWithoutSidebar = ['/', '/forgotpassword', '/supervisorMain', '/supervisorMain/forgotpassword' ];
 
   // Check if the current location is in the pathsWithoutSidebar array
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
@@ -30,9 +31,10 @@ const SupervisorMain = (props) => {
         )}
       </div>
       <Routes>
-        <Route path='/' exact element={<Login showAlert={props.showAlert}
+        <Route path='/' exact element={<Login showAlert={props.showAlert} user='supervisorMain'
           formHeading='Supervisor Login' mainHeading='FYP PROCTORING'
           loginRoute='/supervisor/login' path='/supervisorMain/dashboard' />} />
+        <Route path='/forgotpassword' element={<ForgotPassword detailLink='supervisor' showAlert={props.showAlert} />} />
         <Route path='/dashboard' element={<Dashboard showAlert={props.showAlert} />} />
         <Route path='/group' element={<Group showAlert={props.showAlert} />} />
         <Route path='/groupDetail' element={<GroupDetail showAlert={props.showAlert} />} />

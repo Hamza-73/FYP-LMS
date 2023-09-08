@@ -35,7 +35,8 @@ const Login = (props) => {
         if (json.success && json.message) {
             // Save the auth token and redirect
             localStorage.setItem('token', json.token);
-            history(props.path);
+            setTimeout(()=>history(props.path), 780)
+            
             NotificationManager.success(json.message);
         } else {
             NotificationManager.error(json.message);
@@ -59,7 +60,7 @@ const Login = (props) => {
                             <input type="password" className="form-control" id="exampleInputPassword1" value={login.password} name='password' onChange={handleChange} />
                             <small>password should be of atleast 4 characters </small>
                         </div>
-                        <Link to="/forgotpassword" style={{ "textDecoration": "none" }}>Forgot Password?</Link>
+                        <Link to={`/${props.user}/forgotpassword`} style={{ "textDecoration": "none" }}>Forgot Password?</Link>
 
                         <div className="button my-4">
                             <button type="submit" className="btn btn-success btn" disabled={login.password.length < 4}>Login</button>

@@ -9,13 +9,14 @@ import Event from './Committee/Event'
 import SupervisorList from './Committee/SupervisorList'
 import CommitteeMember from './Committee/CommitteeMember'
 import ProjectProgress from './Committee/ProjectProgress'
+import ForgotPassword from './ForgotPassword'
 
 const CommitteeMain = (props) => {
 
     const location = useLocation();
 
     // Define an array of paths where the sidebar should not be shown
-    const pathsWithoutSidebar = ['/', '/forgotpassword', '/committeeMain'];
+    const pathsWithoutSidebar = ['/', '/forgotpassword', '/committeeMain', '/committeeMain/forgotpassword'];
 
     // Check if the current location is in the pathsWithoutSidebar array
     const showSidebar = pathsWithoutSidebar.includes(location.pathname);
@@ -37,8 +38,9 @@ const CommitteeMain = (props) => {
             <Routes>
                 <Route path='/' element={<Login showAlert={props.showAlert}
                     formHeading='Committee Login' mainHeading='FYP PROCTORING'
-                    loginRoute='/committee/login' path='/committeeMain/commdashboard'
+                    loginRoute='/committee/login' path='/committeeMain/commdashboard' user='committeeMain'
                 />} />
+                <Route path='/forgotpassword' exact element={<ForgotPassword detailLink='committee' showAlert={props.showAlert} />} />
                 <Route path='/commdashboard' element={<CumDashboard showAlert={props.showAlert} />} />
                 <Route path='/project' element={<ProjectList showAlert={props.showAlert} />} />
                 <Route path='/student' element={<StudentList showAlert={props.showAlert} />} />

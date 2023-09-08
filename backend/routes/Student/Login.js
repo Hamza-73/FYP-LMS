@@ -230,7 +230,6 @@ router.get('/my-supervisor', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-// router.use(authenticateUser);
 
 // User sends a project request to a supervisor
 router.post('/send-project-request', authenticateUser, async (req, res) => {

@@ -10,7 +10,10 @@ const SideBar = (props) => {
     const handleLogout = () => {
         localStorage.removeItem('token')
         console.log('Logout successfully localStorage is :', localStorage.getItem('token'))
-        history('/');
+        setTimeout(()=>{
+            history('/');
+        },1000)
+
         NotificationManager.success('Logout Successfully');
     }
 
@@ -56,7 +59,7 @@ const SideBar = (props) => {
                 getDetail();
                 // console.log('user data is in ', userData)
                 // console.log('user data is in ', userData.member)
-            },2000)
+            },700)
         }
       }, []); // Empty dependency array to run the effect only once    
 

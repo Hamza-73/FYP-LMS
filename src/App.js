@@ -75,11 +75,10 @@ const App = () => {
     margin-bottom : 10px;
   }
   .boxs:hover{
+    z-index: 3;
     transform : scale(1.2);
   }
   `
-
-
   return (
     <div>
       <Alert alert={alert} />
@@ -89,7 +88,6 @@ const App = () => {
         <Route path='/committeeMain/*' element={<CommitteeMain showAlert={showAlert} />} />
       </Routes>
       {showSidebar && (
-
         <div>
           <style>{style}</style>
           <div className="cards text-center container">
