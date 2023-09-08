@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const SupervisorList = (props) => {
   const history = useNavigate();
@@ -30,7 +32,7 @@ const SupervisorList = (props) => {
       if (json.success) {
         // Save the auth token and redirect
         localStorage.setItem('token', json.token);
-        props.showAlert(`Account created successfully`, 'success')
+        NotificationManager.success('Registeration Sucessful');
         // history("/"); 
         setData(prevData => ({
           ...prevData,
@@ -45,10 +47,10 @@ const SupervisorList = (props) => {
 
       }
       else {
-        props.showAlert(`Wrong credentials`, 'danger')
+        NotificationManager.error('Register According to the Standard of Registeration.');
       }
     } catch (error) {
-      props.showAlert('Internal Server Error', 'danger')
+      NotificationManager.error('Error in Registering');
     }
   }
 
@@ -65,7 +67,7 @@ const SupervisorList = (props) => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      console.log('selected Student is ', selectedStudent, ' type of ', typeof selectedStudent._id)
+      // console.log('selected Student is ', selectedStudent, ' type of ', typeof selectedStudent._id)
       const id = selectedStudent._id;
       console.log('id is ', id)
 
@@ -95,7 +97,7 @@ const SupervisorList = (props) => {
         }));
         console.log('updated student is ', updatedStudent)
 
-
+        NotificationManager.success('Edited Successfully');
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
           name: '', username: '', department: '', designation: '', password: '', slots: ''
@@ -104,13 +106,13 @@ const SupervisorList = (props) => {
 
     } catch (error) {
       console.log('Error:', error); // Log the error message
-      alert(`Some error occurred: ${error.message}`, 'danger');
+      NotificationManager.error('Error in Editing');
     }
   };
 
 
   const handleDelete = async (id) => {
-    const confirmed = window.confirm('Are you sure you want to delete this student?');
+    const confirmed = window.confirm('Are you sure you want to delete this supervisor?');
     if (confirmed) {
 
       try {
@@ -131,12 +133,12 @@ const SupervisorList = (props) => {
             ...prevData,
             members: prevData.members.filter((member) => member._id !== id),
           }));
-          props.showAlert('Student deleted successfully', 'success');
+          NotificationManager.success('Deleted Sucessfully');
         }
 
       } catch (error) {
         console.log('Error:', error); // Log the error message
-        alert(`Some error occurred: ${error.message}`, 'danger');
+        NotificationManager.error('Error in Deleting');
       }
     }
   };
@@ -158,7 +160,7 @@ const SupervisorList = (props) => {
       console.log('students are ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
-      alert(`Some error occurred: ${error.message}`, 'danger');
+      NotificationManager.error('Error in fetching Members');
     }
   }
 
@@ -307,6 +309,7 @@ const SupervisorList = (props) => {
             Register
           </button>
         </div>
+        <NotificationContainer />
       </>)}
     </>
   )

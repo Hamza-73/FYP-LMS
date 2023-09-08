@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Loading from '../Loading';
+import SideBar from '../SideBar';
 
 const GroupDetail = () => {
   const [group, setGroup] = useState({
@@ -53,7 +54,7 @@ const GroupDetail = () => {
     setCurrentIndex((prevIndex) => prevIndex - 1);
   };
 
-  const currentGroup = group.groups[currentIndex] || {};
+  const currentGroup = group.groups.length>0 ? group.groups[currentIndex] :  {};
 
   return (
     <div>

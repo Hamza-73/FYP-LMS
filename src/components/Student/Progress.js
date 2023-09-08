@@ -7,6 +7,7 @@ import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Loading from '../Loading';
+import SideBar from '../SideBar';
 
 
 const Progress = (props) => {
@@ -15,7 +16,7 @@ const Progress = (props) => {
         width: "280px",
         height: "200px"
     }
-    const[ percentage, setPercentage ]= useState(25);
+    const [percentage, setPercentage] = useState(25);
 
     const data = [
         { tasks: "Task1", status: 'Completed', duedate: "27-09-2023", subdate: "02-10-2023" },
@@ -80,16 +81,14 @@ const Progress = (props) => {
             });
 
             const json = await response.json();
-            if(json){
+            if (json) {
                 setGroupDetails(json)
             }
             if (json.success && json.message) {
                 NotificationManager.success(json.message);
-            } else {
-                NotificationManager.error(json.message);
             }
         } catch (error) {
-            NotificationManager.success(`Error fetching group ${error}`);
+            console.log('error in fetching progress', error)
         }
     }
 
@@ -114,12 +113,12 @@ const Progress = (props) => {
             setTimeout(() => {
                 groupDetail();
                 setLoading(false);
-               if(groupDetails.group){
-                    if(groupDetails.group.proposal)
-                        setPercentage(percentage+25);
-                    if(groupDetails.group.documentation)
-                        setPercentage(percentage+20);
-               }
+                if (groupDetails.group) {
+                    if (groupDetails.group.proposal)
+                        setPercentage(percentage + 25);
+                    if (groupDetails.group.documentation)
+                        setPercentage(percentage + 20);
+                }
             }, 1300)
         }
 
@@ -127,49 +126,50 @@ const Progress = (props) => {
 
     return (
         <>
+
             {!loading ? (
                 <>
-                    {groupDetails.group ? (
-                        <>
-                            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div className="modal-dialog">
-                                    <div className="modal-content">
-                                        <div className="modal-header">
-                                            <h1 className="modal-title fs-5" id="exampleModalLabel">Your Request</h1>
-                                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div className="modal-body">
-                                            <>
-                                                <form onSubmit={(e) => handleRequest(e)}>
-                                                    <div className="mb-3">
-                                                        <label htmlFor="exampleInputEmail163" className="form-label">Supervisor Username</label>
-                                                        <input type="text" className="form-control" id="username" name='username' value={request.username} onChange={handleChange} />
-                                                    </div>
-                                                    <div className="mb-3">
-                                                        <label htmlFor="exampleInputPassword331" className="form-label">Project Title</label>
-                                                        <input type="text" className="form-control" id="projectTitle" name='projectTitle' value={request.projectTitle} onChange={handleChange} />
-                                                    </div>
-                                                    <div className="mb-3">
-                                                        <label htmlFor="exampleInputPassword13" className="form-label">Scope of Study</label>
-                                                        <input type="text" className="form-control" id="scope" name='scope' value={request.scope} onChange={handleChange} />
-                                                    </div>
-                                                    <div className="mb-3">
-                                                        <label htmlFor="exampleInputPassword153" className="form-label">Description</label>
-                                                        <div className="form-floating">
-                                                            <textarea className="form-control" id="description" name='description' value={request.description} onChange={handleChange}></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div className="modal-footer">
-                                                        <button type="submit" className="btn btn-success">
-                                                            save
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </>
-                                        </div>
-                                    </div>
+                    <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h1 className="modal-title fs-5" id="exampleModalLabel">Your Request</h1>
+                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div className="modal-body">
+                                    <>
+                                        <form onSubmit={(e) => handleRequest(e)}>
+                                            <div className="mb-3">
+                                                <label htmlFor="exampleInputEmail163" className="form-label">Supervisor Username</label>
+                                                <input type="text" className="form-control" id="username" name='username' value={request.username} onChange={handleChange} />
+                                            </div>
+                                            <div className="mb-3">
+                                                <label htmlFor="exampleInputPassword331" className="form-label">Project Title</label>
+                                                <input type="text" className="form-control" id="projectTitle" name='projectTitle' value={request.projectTitle} onChange={handleChange} />
+                                            </div>
+                                            <div className="mb-3">
+                                                <label htmlFor="exampleInputPassword13" className="form-label">Scope of Study</label>
+                                                <input type="text" className="form-control" id="scope" name='scope' value={request.scope} onChange={handleChange} />
+                                            </div>
+                                            <div className="mb-3">
+                                                <label htmlFor="exampleInputPassword153" className="form-label">Description</label>
+                                                <div className="form-floating">
+                                                    <textarea className="form-control" id="description" name='description' value={request.description} onChange={handleChange}></textarea>
+                                                </div>
+                                            </div>
+                                            <div className="modal-footer">
+                                                <button type="submit" className="btn" style={{background:"maroon", color:"white"}}>
+                                                    Send Request
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    {groupDetails.group ? (
+                        <>
                             <div className='containar'>
                                 <div className="box my-3 mx-4">
                                     <h3>Meeting Report</h3>
@@ -193,38 +193,39 @@ const Progress = (props) => {
                                     <tbody>
                                         <tr>
                                             <td>Project Title</td>
-                                            <td>{groupDetails.group.proposal?"Submitted":'Pending'}</td>
+                                            <td>{groupDetails.group.proposal ? "Submitted" : 'Pending'}</td>
                                             <td>{groupDetails.group.propDate}</td>
                                             <td>{'-----'}</td>
                                         </tr>
                                         <tr>
                                             <td>Proposal</td>
-                                            <td>{groupDetails.group.proposal?"Submitted":'Pending'}</td>
+                                            <td>{groupDetails.group.proposal ? "Submitted" : 'Pending'}</td>
                                             <td>{groupDetails.group.propDate}</td>
                                             <td>{'-----'}</td>
                                         </tr>
                                         <tr>
                                             <td>Project Documentation</td>
-                                            <td>{groupDetails.group.documentation?"Submitted":'Pending'}</td>
+                                            <td>{groupDetails.group.documentation ? "Submitted" : 'Pending'}</td>
                                             <td>{groupDetails.group.docDate}</td>
                                             <td>{'-----'}</td>
                                         </tr>
                                         <tr>
                                             <td>Viva</td>
-                                            <td>{groupDetails.group.viva?"Taken":'Pending'}</td>
+                                            <td>{groupDetails.group.viva ? "Taken" : 'Pending'}</td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>
                                         </tr>
                                     </tbody>
                                 </table>
-                                <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls" >
-                                    <button style={{ background: "maroon" }} type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                        Request Idea
-                                    </button>
-                                </div>
+
                             </div>
                         </>
-                    ) : <h1 className='text-center my-3'>You're not currently enrolled in any Group</h1>}
+                    ) : <><h1 className='text-center my-3'>You're not currently enrolled in any Group</h1> </>}
+                    <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls" >
+                        <button style={{ background: "maroon" }} type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            Request Idea
+                        </button>
+                    </div>
                 </>
             ) : <Loading />}
         </>

@@ -130,7 +130,7 @@ const Event = (props) => {
                   <h5 className="modal-title">Register</h5>
                 </div>
                 <div className="modal-body">
-                  <form onSubmit={editMode ? (e)=>editViva(e) :(e) => scheduleViva(e)}>
+                  <form onSubmit={editMode ? (e) => editViva(e) : (e) => scheduleViva(e)}>
                     <div className="mb-3">
                       <label htmlFor="name" className="form-label">
                         Project Title
@@ -158,7 +158,7 @@ const Event = (props) => {
                       <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
                         disabled={!isFieldsModified || !viva.projectTitle}
                       >
-                        {editMode? "Edit" : "Schedule"}
+                        {editMode ? "Edit" : "Schedule"}
                       </button>
                     </div>
                   </form>
@@ -205,7 +205,7 @@ const Event = (props) => {
                         <td>{'project Submission'}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
-                        <td style={{ cursor: 'pointer' }} data-toggle="modal" data-target="#exampleModal"  onClick={()=>{selectEditMode(true); setViva({projectTitle: val.projectTitle})}}>
+                        <td style={{ cursor: 'pointer' }} data-toggle="modal" data-target="#exampleModal" onClick={() => { selectEditMode(true); setViva({ projectTitle: val.projectTitle }) }}>
                           <i className="fa-solid fa-pen-to-square"></i>
                         </td>
                       </tr>

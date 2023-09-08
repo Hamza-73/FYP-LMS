@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const StudentList = (props) => {
   const history = useNavigate();
@@ -31,7 +33,7 @@ const StudentList = (props) => {
       if (json.success) {
         // Save the auth token and redirect
         localStorage.setItem('token', json.token);
-        props.showAlert(`Account created successfully`, 'success')
+        NotificationManager.success('Registeration Sucessful');
         // history("/");
         setData(prevData => ({
           ...prevData,
@@ -45,10 +47,10 @@ const StudentList = (props) => {
         setRegister({ name: "", father: "", username: "", department: "", batch: "", semester: "", password: "", cnic: "", rollNo: "", });
       }
       else {
-        props.showAlert(`Wrong credentials`, 'danger')
+        NotificationManager.error(json.message);
       }
     } catch (error) {
-      props.showAlert('Internal Server Error', 'danger')
+      NotificationManager.error('Error in Registerating');
     }
   }
 
@@ -63,7 +65,7 @@ const StudentList = (props) => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      console.log('selected Student is ', selectedStudent, ' type of ', typeof selectedStudent._id)
+      // console.log('selected Student is ', selectedStudent, ' type of ', typeof selectedStudent._id)
       const id = selectedStudent._id;
       console.log('id is ', id)
 
@@ -94,10 +96,11 @@ const StudentList = (props) => {
         setRegister({
           name: '', father: '', username: '', department: '', batch: '', semester: '', password: '', cnic: '', rollNo: '',
         });
+        NotificationManager.success('Edited Successfully');
       }
     } catch (error) {
       console.log('Error:', error); // Log the error message
-      alert(`Some error occurred: ${error.message}`, 'danger');
+      NotificationManager.error('Error in Editing');
     }
   };
 
@@ -119,11 +122,11 @@ const StudentList = (props) => {
             ...prevData,
             members: prevData.members.filter((member) => member._id !== id),
           }));
-          props.showAlert('Student deleted successfully', 'success');
+          NotificationManager.error('Deleted Successfully');
         }
       } catch (error) {
         console.log('Error:', error); // Log the error message
-        alert(`Some error occurred: ${error.message}`, 'danger');
+        NotificationManager.error('Error in Deleting');
       }
     }
   };
@@ -153,12 +156,12 @@ const StudentList = (props) => {
       // Set loading to true when starting data fetch
       setLoading(true);
       getMembers().then(() => {
-          // Once data is fetched, set loading to false
-          setLoading(false);
-        }).catch((error) => {
-          setLoading(false); // Handle error cases
-          console.error('Error fetching data:', error);
-        });
+        // Once data is fetched, set loading to false
+        setLoading(false);
+      }).catch((error) => {
+        setLoading(false); // Handle error cases
+        console.error('Error fetching data:', error);
+      });
     } else {
       history('/');
     }
@@ -309,6 +312,7 @@ const StudentList = (props) => {
             Register
           </button>
         </div>
+        <NotificationContainer />
       </>)}
     </>
   )

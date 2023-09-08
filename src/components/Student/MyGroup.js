@@ -20,71 +20,68 @@ const MyGroup = (props) => {
 
 
   useEffect(() => {
-    
-  const groupDetail = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Authorization token not found', 'danger');
-        return;
-      }
-      console.log('before fetch')
-      const response = await fetch("http://localhost:5000/student/my-group", {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          "Authorization": token
+
+    const groupDetail = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Authorization token not found', 'danger');
+          return;
         }
-      });
-      console.log('after fetch')
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        console.log('before fetch')
+        const response = await fetch("http://localhost:5000/student/my-group", {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": token
+          }
+        });
+        console.log('after fetch')
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const json = await response.json();
+        if (!json) {
+          console.log('group response is ', response);
+        } else {
+          console.log('json is ', json);
+          setGroupDetails(json);
+        }
+      } catch (error) {
+        console.log('error fetching group ', error)
       }
-      const json = await response.json();
-      if (!json) {
-        console.log('group response is ', response);
-      } else {
-        console.log('json is ', json);
-        setGroupDetails(json);
-      }
-    } catch (error) {
-      console.log('error fetching group ', error)
     }
-  }
     if (localStorage.getItem('token')) {
       setLoading(true)
       setTimeout(() => {
         groupDetail();
         setLoading(false)
-        console.log('details is in grpouyp ', group)
-        console.log('details is in grpouyp ', group.group.length)
-        console.log('details is in grpouyp ', group.group.projectTitle)
-        console.log('details is in grpouyp ', group.group.groupMember[0].name)
+        console.log('details is in grpouyp ', group.group)
       }, 1000)
     }
   }, [])
+  
 
- 
   return (
     <div>
-      {!loading ? <div className={`${group.group? 'container' : ""}`}>
+      {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
-          <div className="upperpart">
-            <div className="proj-detail d-flex justify-content-between">
-              <h4>Project Title</h4>
-              <h5>{group.group.projectTitle}</h5>
+            <div className="upperpart">
+              <div className="proj-detail d-flex justify-content-between">
+                <h4>Project Title</h4>
+                <h5>{group.group.projectTitle}</h5>
+              </div>
+              <div className="proj-detail d-flex justify-content-between">
+                <h4>Supervisor</h4>
+                <h5>{group.group.supervisor}</h5>
+              </div>
             </div>
-            <div className="proj-detail d-flex justify-content-between">
-              <h4>Supervisor</h4>
-              <h5>{group.group.supervisor}</h5>
-            </div>
-          </div>
 
             <div className="mid">
               <h5>{group.group.supervisor}</h5>
-              <h5>{group.group.groupMember[0].name} <br /> {group.group.groupMember[0].rollNo}
+              <h5>{group.group.groupMember.length>0? group.group.groupMember[0].name : "No Group Member Yet"} <br /> {group.group.groupMember[0]?.rollNo}
               </h5>
               <h5>{group.group.myDetail[0].name} <br /> {group.group.myDetail[0].rollNo}</h5>
             </div>

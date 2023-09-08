@@ -77,7 +77,7 @@ const ProjectProgress = (props) => {
 
   return (
     <div>
-      <>     
+      <>
         {loading ? (
           <Loading />
         ) : (
@@ -114,8 +114,8 @@ const ProjectProgress = (props) => {
                         <td>{val.documentation.isDoc ? 'Submitted' : 'Pending'}</td>
                         <td>{'project Submission'}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB') < new Date() ? "Taken" : new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
-                        <td>{val.extarnal || val.extarnal>0? val.extarnal: 0}</td>
-                        <td>{val.marks || val.marks>0? val.marks: 0}</td>
+                        <td>{val.extarnal || val.extarnal > 0 ? val.extarnal : 0}</td>
+                        <td>{val.marks || val.marks > 0 ? val.marks : 0}</td>
                       </tr>
                     ))}
                   </tbody>

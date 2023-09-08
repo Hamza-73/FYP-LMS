@@ -12,44 +12,77 @@ const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 const Group = require('../../models/GROUP/Group');
 
 const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage:storage });
 const Viva = require('../../models/Viva/Viva');
+const uuid = require('uuid');
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, './uploads')
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+//     cb(null, file.fieldname + '-' + uniqueSuffix)
+//   }
+// })
+// const upload = multer({dest: '../../uploads'});
 
-// To upload Files
-router.post('/proposal', upload.single('proposal'), authenticateUser, async (req, res,) => {
+// const cloudinary = require('cloudinary');
+
+const path = require("path");
+
+// Define storage for uploaded files
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Upload a PDF
+router.post('/proposal', upload.single('proposal'), authenticateUser, async (req, res) => {
   try {
+    const { filename, originalname, mimetype, buffer } = req.file;
 
+    // Check if the user belongs to the specified group
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Student Not Found' });
     }
-    const id = user.group;
-    console.log('uploaded file is ', req.file.buffer)
-    const group = await Group.findOneAndUpdate(
-      { _id: id },
-      {
-        $set: {
-          proposal: {
-            data: req.file.buffer,
-            contentType: req.file.mimetype,
-          },
-        },
-      },
-      { new: true } // To get the updated group after the update
+
+    // Save the uploaded PDF to the group and user
+    const pdfDocument = {
+      filename: originalname,
+      data: buffer,
+      contentType: mimetype,
+    };
+
+    // Update the Group and User models with the uploaded PDF
+    const groupUpdate = Group.findOneAndUpdate(
+      { _id: user.group },
+      { $push: { proposal: pdfDocument } },
+      { new: true }
     );
-
-    if (!group) {
-      return res.status(404).json({ error: 'Group not found' });
+    if(!groupUpdate){
+      return res.status(404).json({ error: 'Group Not Found' });
     }
 
-    await group.save();
-    res.status(200).json({ message: 'File uploaded successfully' });
+
+    // groupUpdate.projects.map((project)=>{
+    //   project.students.map(async student=>{
+    //     const stu = await User.findById(student.userId);
+    //     if(!stu){
+    //       return res.status(404).json({message:"Student not found"}); 
+    //     }
+    //     stu.proposal = pdfDocument;
+    //     await stu.save();
+    //   })
+    // })
+
+    
+    await groupUpdate.save();
+
+    res.status(201).json({ message: 'PDF uploaded successfully' });
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error('Error uploading PDF:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 // Login route

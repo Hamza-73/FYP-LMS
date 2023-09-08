@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const CommitteeMember = (props) => {
   const history = useNavigate();
@@ -13,7 +15,7 @@ const CommitteeMember = (props) => {
   const [editMode, setEditMode] = useState(false);
 
 
-  
+
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -32,9 +34,7 @@ const CommitteeMember = (props) => {
       if (json.success) {
         // Save the auth token and redirect
         localStorage.setItem('token', json.token);
-        props.showAlert(`Account created successfully`, 'success')
-        // history("/");
-
+        NotificationManager.success('Registeration Sucessful');
         setData(prevData => ({
           ...prevData,
           members: [...prevData.members, {
@@ -48,10 +48,10 @@ const CommitteeMember = (props) => {
 
       }
       else {
-        props.showAlert(`Wrong credentials`, 'danger')
+        NotificationManager.error('Register According to the standard of Registeration');
       }
     } catch (error) {
-      props.showAlert('Internal Server Error', 'danger')
+      NotificationManager.error('Error in Registerating');
     }
   }
 
@@ -60,7 +60,7 @@ const CommitteeMember = (props) => {
     setSelectedStudent(student);
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
-      fname: student.fname, lname:student.lname, username: student.username, department: student.department,
+      fname: student.fname, lname: student.lname, username: student.username, department: student.department,
       designation: student.designation, slots: student.slots, password: student.password
     });
   };
@@ -69,13 +69,13 @@ const CommitteeMember = (props) => {
     e.preventDefault();
     try {
       const id = selectedStudent._id;
-      const response = await fetch( `http://localhost:5000/committee/edit/${id}`,
+      const response = await fetch(`http://localhost:5000/committee/edit/${id}`,
         {
-          method:"PUT",
+          method: "PUT",
           headers: {
             'Content-Type': 'application/json',
           },
-          body : JSON.stringify({
+          body: JSON.stringify({
             fname: register.fname, lname: register.lname, username: register.username,
             designation: register.designation, password: register.password, department: register.department
           })
@@ -93,14 +93,14 @@ const CommitteeMember = (props) => {
         console.log('updated student is ', updatedStudent)
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
-          fname: '', lname:'', username: '', department: '', designation: '', password: ''
+          fname: '', lname: '', username: '', department: '', designation: '', password: ''
         });
-        props.showAlert('student updated successfully', 'success')
+        NotificationManager.success('Edited Successfully');
       }
 
     } catch (error) {
       console.log('Error:', error); // Log the error message
-      alert(`Some error occurred: ${error.message}`, 'danger');
+      NotificationManager.error('Error in Editing');
     }
   };
 
@@ -122,11 +122,11 @@ const CommitteeMember = (props) => {
             ...prevData,
             members: prevData.members.filter((member) => member._id !== id),
           }));
-          props.showAlert('Student deleted successfully', 'success');
+          NotificationManager.success('Error in Deleting');
         }
       } catch (error) {
         console.log('Error:', error); // Log the error message
-        alert(`Some error occurred: ${error.message}`, 'danger');
+        NotificationManager.error('Error in Deleting');
       }
     }
   };
@@ -169,9 +169,9 @@ const CommitteeMember = (props) => {
     setSearchQuery(event.target.value);
   };
 
-  console.log('data is ', data)
+  // console.log('data is ', data)
 
-  const filteredData =  Array.from(data.members).filter((member) =>
+  const filteredData = Array.from(data.members).filter((member) =>
     member.fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.lname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -228,9 +228,9 @@ const CommitteeMember = (props) => {
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
                     {editMode ? (
-                      <button type="submit" className="btn btn-primary">Save Changes</button>
+                      <button type="submit" className="btn" style={{background:"maroon", color:"white"}}>Save Changes</button>
                     ) : (
-                      <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.fname)|| !(register.lname)
+                      <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.fname) || !(register.lname)
                         || !(register.username) || !(register.department)
                       }>
                         Register
@@ -245,7 +245,7 @@ const CommitteeMember = (props) => {
       </div>
 
       {loading ? (<Loading />) : (<>
-        <div className='container' style={{width:"90%"}}>
+        <div className='container' style={{ width: "90%" }}>
           <h3 className='text-center'>Committee Members</h3>
           <div className="mb-3">
             <input
@@ -274,9 +274,9 @@ const CommitteeMember = (props) => {
                     <td>{val.department}</td>
                     <td>{val.designation}</td>
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                    <i class="fa-solid fa-pen-to-square"></i>
-                  </td>
-                  <td  style={{ cursor:"pointer", color:"maroon", textAlign:"center", fontSize:"25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </td>
+                    <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
                   </tr>
                 ))}
               </tbody>
@@ -286,10 +286,11 @@ const CommitteeMember = (props) => {
           )}
         </div>
         <div className="d-grid gap-2 col-6 mx-auto my-4">
-          <button style={{background:"maroon"}} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
+          <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
             Register
           </button>
         </div>
+        <NotificationContainer />
       </>)}
     </>
   )

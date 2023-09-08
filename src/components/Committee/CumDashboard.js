@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const CumDashboard = (props) => {
   const history = useNavigate();
@@ -32,7 +34,7 @@ const CumDashboard = (props) => {
       setRules(json);
       setLoading(false);
     } catch (error) {
-      alert(`Some error occurred: ${error.message}`, 'danger');
+      NotificationManager.error('Some Error occurred reload page/ try again');
       console.log('error', error);
     }
   }
@@ -49,6 +51,7 @@ const CumDashboard = (props) => {
       const json = await response.data;
       setRole(json);
       setModalRules(json.rules); // Update modalRules with the new rules
+      NotificationManager.sucess('Rules fetched successfully');
     } catch (error) {
       console.log('error', error);
     }
@@ -78,13 +81,13 @@ const CumDashboard = (props) => {
       });
       const json = await response.data;
       if (json) {
-        props.showAlert('Rules Updated Successfully', 'success');
-        
+        NotificationManager.success('Rules Edited Sucessfully');
+
         // Reset state variables to their initial values
         setDefineRole('');
         setModalRules([]);
         setEditRuleIndex(-1);
-  
+
         // Update the rules in the setRules state immediately
         setRules((prevRules) => ({
           ...prevRules,
@@ -106,7 +109,7 @@ const CumDashboard = (props) => {
       setCheck(false);
     }
   }
-  
+
 
   const addRuleInput = () => {
     // Add an empty rule to modalRules when the user clicks "Add Rule"
@@ -203,6 +206,7 @@ const CumDashboard = (props) => {
           Edit Rules
         </button>
       </div>
+        <NotificationContainer />
     </div>
   );
 };

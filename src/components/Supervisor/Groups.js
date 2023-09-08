@@ -1,6 +1,7 @@
 import { current } from '@reduxjs/toolkit';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import SideBar from '../SideBar';
 
 const Groups = (props) => {
   const [group, setGroup] = useState({ groups: [] });
@@ -195,6 +196,7 @@ const Groups = (props) => {
                       <th scope="col">Meeting</th>
                       <th scope="col">Project Proposal</th>
                       <th scope="col">Documentation</th>
+                      <th scope="col">Viva</th>
                       <th scope="col">Grade</th>
                     </tr>
                   </thead>
@@ -215,8 +217,8 @@ const Groups = (props) => {
                           <td>{"-------"}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
+                          <td>{'Viva'}</td>
                           <td>
-                            {group.remarks}
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
                               {(group.marks && group.external)? (group.marks + group.external) : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={()=>setGrouppId(group._id)}></i>
                             </div>

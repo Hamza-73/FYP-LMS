@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import SideBar from '../SideBar';
 
 const FypIdeas = () => {
     const [group, setGroup] = useState({
@@ -58,23 +59,24 @@ const FypIdeas = () => {
         }
     }, []);
 
-    const sendRequest = async ()=>{
+    const sendRequest = async () => {
         try {
             console.log('project is ', projectTitle)
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/student/request-to-join/${projectTitle}`,{
-                method:"POST",
-                headers:{
-                    "Authorization" : token
-                }});
-                const json = await response.json();
-                console.log('json request sent is ', json);
-                if(json.success && json.message){
-                    NotificationManager.success(json.message);
+            const response = await fetch(`http://localhost:5000/student/request-to-join/${projectTitle}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": token
                 }
-                else{
-                    NotificationManager.error(json.message);
-                }
+            });
+            const json = await response.json();
+            console.log('json request sent is ', json);
+            if (json.success && json.message) {
+                NotificationManager.success(json.message);
+            }
+            else {
+                NotificationManager.error(json.message);
+            }
         } catch (error) {
             console.log(`error in sending request ${error}`)
         }
@@ -157,7 +159,7 @@ const FypIdeas = () => {
                                                         <td>{group.projectDetails.projectTitle}</td>
                                                         <td>{group.projectDetails.scope}</td>
                                                         <td>{group.projectDetails.description}</td>
-                                                        <td><button type='button' className='btn' style={{background:"maroon", color:"white"}} onClick={()=>{
+                                                        <td><button type='button' className='btn' style={{ background: "maroon", color: "white" }} onClick={() => {
                                                             setProject(group.projectDetails.projectTitle); sendRequest();
                                                         }}>request to join</button></td>
                                                     </tr>
@@ -173,8 +175,8 @@ const FypIdeas = () => {
                     )}
                 </div>
             ) : <Loading />}
-            
-        <NotificationContainer />
+
+            <NotificationContainer />
         </>
     )
 }

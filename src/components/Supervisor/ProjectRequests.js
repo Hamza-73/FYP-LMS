@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Loading from '../Loading';
+import SideBar from '../SideBar';
 
 const ProjectRequests = (props) => {
   const [requests, setRequests] = useState({ request: [] });
@@ -39,17 +40,20 @@ const ProjectRequests = (props) => {
     }
   }, []);
 
-  const handleRequests = async () => {
+  const handleRequests = async (e) => {
     try {
-      // e.preventDefault();
+      e.preventDefault();
       console.log('request is started');
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/supervisor/accept-project-request/${choice.id}/${choice.action}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token,
+          "Authorization": token,
         },
+        body : JSON.stringify({
+          projectTitle: improve.projectTitle, scope: improve.scope, description: improve.description 
+        })
       });
 
       console.log('Response status:', response.status);

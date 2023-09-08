@@ -100,7 +100,6 @@ const ProjectList = (props) => {
 
   return (
     <>
-
       <div>
         <div className="register"  >
           <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

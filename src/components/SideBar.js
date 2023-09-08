@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import image1 from '../images/logo.ico'
+import image1 from '../images/logo.png'
 import axios from 'axios'
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const SideBar = (props) => {
     let history = useNavigate()
     const handleLogout = () => {
         localStorage.removeItem('token')
         console.log('Logout successfully localStorage is :', localStorage.getItem('token'))
-        history('/')
+        history('/');
+        NotificationManager.success('Logout Successfully');
     }
 
     const [userData, setUserData] = useState({member:[]});
@@ -68,28 +71,28 @@ const SideBar = (props) => {
                     <div className="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                             <li className="nav-item">
-                                <Link className="nav-link active" aria-current="page" to={`/${props.link1}`} >{props.title1}</Link>
+                                <Link className="nav-link active" aria-current="page" to={`/${props.user}/${props.link1}`} >{props.title1}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.link2}`}>{props.title2}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link2}`}>{props.title2}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.link3}`}>{props.title3}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link3}`}>{props.title3}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.link4}`}>{props.title4}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link4}`}>{props.title4}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.link5}`}>{props.title5}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link5}`}>{props.title5}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.link6}`}>{props.title6}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link6}`}>{props.title6}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.link7}`}>{props.title7}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link7}`}>{props.title7}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.link8}`}>{props.title8}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link8}`}>{props.title8}</Link>
                             </li>
                             {/* <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -113,6 +116,7 @@ const SideBar = (props) => {
                     </div>
                 </div>
             </nav>
+                <NotificationContainer />
         </>
     )
 }
