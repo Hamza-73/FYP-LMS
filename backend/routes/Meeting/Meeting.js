@@ -72,14 +72,14 @@ router.post('/meeting', async (req, res) => {
         const message = `You're Meeting Scheduled for ${projectTitle} on ${date} at ${time} by ${group.supervisor}`;
         stu.meetingId = meeting._id;
         stu.meetingLink = meetingLink;
-        stu.unseenNotifications.push({ type: "reminder", message: message });
+        stu.unseenNotifications.push({ type: "Reminder", message: message });
         await stu.save();
       });
   
       group.meetingLink = meetingLink;
       group.meetingid = meeting._id;
       const message = `You're Meeting Scheduled for ${projectTitle} on ${date} at ${time}`;
-      supervisor.unseenNotifications.push({ type: "reminder", message: message });
+      supervisor.unseenNotifications.push({ type: "Reminder", message: message });
       await Promise.all([group.save(), supervisor.save()]);
   
       return res.json({ success: true, message: `Meeting Scheduled with group of ${projectTitle}` });

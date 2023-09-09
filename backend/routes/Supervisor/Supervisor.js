@@ -5,7 +5,7 @@ const Supervisor = require('../../models/Supervisor/Supervisor');
 const User = require('../../models/Student/User');
 const authenticateUser = require('../../middleware/auth');
 const { body, validationResult } = require('express-validator');
-const JWT_KEY = 'hamzakhan1'; // Replace with your actual JWT secret key
+const JWT_KEY = 'hamzakhan1';
 const bcrypt = require('bcryptjs');
 var jwt = require("jsonwebtoken");
 const Group = require('../../models/GROUP/Group')
@@ -17,11 +17,17 @@ router.post('/login', async (req, res) => {
   try {
     // Find the supervisor by username
     const supervisor = await Supervisor.findOne({ username });
+    if(!supervisor){
+      return res.status(404).json({success:false, message:"Supervisor not found"});
+    }
+    const check = await bcrypt.compare(password, supervisor.password)
 
     // Check if supervisor exists and if the password matches
-    if (supervisor && bcrypt.compare(password, supervisor.password)) {
+    if (check) {
       // Generate JWT token
       const token = jwt.sign({ id: supervisor._id }, JWT_KEY);
+      supervisor.token = token;
+      await supervisor.save();
 
       res.json({ message: 'Supervisor Login successful', success: true, token });
     } else {
@@ -32,6 +38,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 // Create a new supervisor
 router.post('/create', [
@@ -46,9 +53,17 @@ router.post('/create', [
   }
 
   try {
-    const supervisor = new Supervisor({ name, designation, username, password, slots, department });
-    await supervisor.save();
-    res.json({ success: true, supervisor });
+    const existingSupervisor = await Supervisor.findOne({ username });
+    if (existingSupervisor) {
+      return res.status(409).json({ success: false, message: 'username already exists' });
+    } else {    
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(password, salt);
+      const supervisor = new Supervisor({ name, designation, username, password:secPass, slots, department });
+      await supervisor.save();
+      res.json({ success: true, supervisor });
+    }
+
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
@@ -153,11 +168,11 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
     if (action === 'reject') {
       console.log('Reject code starts');
-    
+
       // Remove the project request from supervisor's projectRequest array
       supervisor.projectRequest = supervisor.projectRequest.filter(request => !request._id.equals(requestId));
       await supervisor.save();
-    
+
       // Remove the project request from student's pendingRequests array
       const student = await User.findById(projectRequest.user);
       if (student) {
@@ -168,12 +183,12 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         });
         await student.save();
       }
-    
+
       // This line sends a response to the client.
       res.json({ success: true, message: 'Project request rejected successfully' });
     }
-    
-    
+
+
     // Check if a supervisor has slot or no
     if (supervisor.slots <= 0) {
       return res.status(400).json({ success: false, message: `You're slots are full` });
@@ -183,7 +198,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       const sup = await Supervisor.findById(projectRequest.supervisor);
       return res.status(404).json({ success: false, message: `Project is already supervised by ${sup.name}` });
     }
-    
+
     // console.log('ProjectRequest is 1 ', projectRequest);
 
     const user = await User.findById(projectRequest.user)
@@ -273,7 +288,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       // Make user pending request zero and give him a notification
       user.pendingRequests = [];
-      user.unseenNotifications.push({ type : "important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+      user.unseenNotifications.push({ type: "important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
       supervisor.unseenNotifications.push({ message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
 
       console.log('Student is ', user)
@@ -362,7 +377,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       // Decrease supervisor group by one
       supervisor.slots = supervisor.slots - 1;
       projectDetail.students.push(user._id)
-      
+
 
       if (projectDetail.students.length === 2) {
         projectDetail.status = true;

@@ -35,10 +35,12 @@ router.post('/register', [
       const existingUser = await Committee.findOne({ username });
   
       if (existingUser) {
-        res.status(409).json({ success: false, message: 'username already exists' });
+        return res.status(409).json({ success: false, message: 'username already exists' });
       } else {
+        const salt = await bcrypt.genSalt(10);
+        const secPass = await bcrypt.hash(password, salt);
         // Create a new user if the username is unique
-        const newUser = new Committee({ fname, lname, username,  department, designation, password });
+        const newUser = new Committee({ fname, lname, username,  department, designation, password:secPass });
         await newUser.save();
         const data = {
           user: {
@@ -57,31 +59,35 @@ router.post('/register', [
 
 // Login route
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-  
-    try {
-      // Find the user by username
-      const user = await Committee.findOne({ username });
-  
-      // Check if user exists and if the password matches
-      if (user && bcrypt.compare(password, user.password)) {
-        // Generate JWT token
-        const token = jwt.sign({ id: user.id }, JWT_KEY);
-  
-        // Save the token to the user's token field in the database
-        user.token = token;
-        await user.save();
-  
-        // Send the token in the response
-        res.json({ message: 'Login successful', success: true, token, user });
-      } else {
-        res.status(401).json({ success: false, message: 'Invalid username or password' });
-      }
-    } catch (err) {
-      console.error('error is ',err)
-      res.status(500).json({ success: false, message: 'Internal server error' });
+  const { username, password } = req.body;
+
+  try {
+    // Find the user by username
+    const user = await Committee.findOne({ username });
+    if(!user){
+      return res.status(404).json({success:false, message:"Committee Member not found"});
     }
-  });
+    const check = (await bcrypt.compare(password, user.password))
+    // Check if user exists and if the password matches
+    console.log('check is',  check)
+    if (check) {
+      // Generate JWT token
+      const token = jwt.sign({ id: user.id }, JWT_KEY);
+
+      // Save the token to the user's token field in the database
+      user.token = token;
+      await user.save();
+
+      // Send the token in the response
+      res.json({ message: 'Login successful', success: true, token });
+    } else {
+      res.status(401).json({ success: false, message: 'Invalid username or password' });
+    }
+  } catch (err) {
+    console.error( err)
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
   
 // Password reset route
@@ -299,6 +305,17 @@ router.put('/remarks/:groupId', async (req,res)=>{
         return res.status(404).json({ message: 'Group not found' });
       }
       group.remarks = remarks ;
+      group.projects.map(project=>{
+        project.students.map(async stu=>{
+          const student = await User.findById(stu.userId);
+          if(!student){
+            return res.status(404).json({ message: 'Student not found' });
+          }
+          student.unseenNotifications.push({
+            type : 'Important', message:`You're Group has been given remarks by Committee`
+          })
+        })
+      })
       await group.save();
       res.json({ message: `Remarks have been given to the group ${group.supervisor} , ${group.projects.map(el=>el.projectTitle)}`, remarks });
 

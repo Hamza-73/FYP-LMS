@@ -47,7 +47,7 @@ const SupervisorList = (props) => {
 
       }
       else {
-        NotificationManager.error('Register According to the Standard of Registeration.');
+        NotificationManager.error(json.message);
       }
     } catch (error) {
       NotificationManager.error('Error in Registering');

@@ -36,8 +36,7 @@ app.use (bodyParser.urlencoded ({extended: true}));
 
 // Paste your mongodb link
 const mongoURI = 'mongodb://127.0.0.1:27017/lms';
-// const mongoURI = 'mongodb+srv://ameerhamza:passwordkyahai?@cluster0.tehlhzm.mongodb.net/FYP-LMS?retryWrites=true&w=majority';
-// const mongoURI = 'mongodb+srv://ameerhamza:passwordkyahai%3F@cluster0.tehlhzm.mongodb.net/FYP-LMS?retryWrites=true&w=majority';
+// const mongoURI = 'mongodb+srv://hamza:hamzakhan1@cluster0.axs4hvz.mongodb.net/FYP-LMS?retryWrites=true&w=majority';
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, });
 

@@ -33,7 +33,7 @@ const StudentMain = (props) => {
         </div>
         <Routes>
           <Route path='/' exact element={<Login showAlert={props.showAlert}
-            formHeading='Student Login' mainHeading='FYP PROCTORING' user='student'
+            formHeading='Student Login' mainHeading='FYP PROCTORING' user='studentMain'
             loginRoute='/student/login' path='/studentMain/dashboard' />} />
           <Route path='/forgotpassword' exact element={<ForgotPassword detailLink='student' showAlert={props.showAlert} />} />
           <Route path='/dashboard' element={<Dashboard />} />

@@ -92,9 +92,14 @@ router.post('/login', async (req, res) => {
   try {
     // Find the user by username
     const user = await User.findOne({ username });
+    if(!user){
+      return res.status(404).json({success:false, message:"Student not found"});
+    }
 
-    // Check if user exists and if the password matches
-    if (user && bcrypt.compare(password, user.password)) {
+    const check = await bcrypt.compare(password, user.password)
+
+    // Check if supervisor exists and if the password matches
+    if (check) {
       // Generate JWT token
       const token = jwt.sign({ id: user.id }, JWT_KEY);
 
@@ -137,10 +142,13 @@ router.post('/register', [
     const existingUser = await User.findOne({ username });
 
     if (existingUser) {
-      res.status(409).json({ success: false, message: 'username already exists' });
+      return res.status(409).json({ success: false, message: 'username already exists' });
     } else {
+      
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(password, salt);
       // Create a new user if the username is unique
-      const newUser = new User({ name, father, username, rollNo, batch, cnic, semester, department, password });
+      const newUser = new User({ name, father, username, rollNo, batch, cnic, semester, department, password: secPass });
       await newUser.save();
       const data = {
         user: {
@@ -271,7 +279,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
         projectId: projectRequest._id,
         supervisor: supervisor._id
       });
-      user.unseenNotifications.push({ message: `Project request sent to ${supervisor.name}` });
+      user.unseenNotifications.push({ type : "Important", message: `Project request sent to ${supervisor.name}` });
 
       // console.log('project id is ', projectRequest._id, 'type is ', typeof (projectRequest._id))
       // console.log('user id is ', user._id, 'type is ', typeof (user._id))
@@ -281,7 +289,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
         project: projectRequest._id,
         user: user._id
       })
-      supervisor.unseenNotifications.push({ message: `A new proposal for ${projectTitle}` });
+      supervisor.unseenNotifications.push({ type : "Important", message: `A new proposal for ${projectTitle}` });
 
       await Promise.all([user.save(), supervisor.save(), projectRequest.save()]);
 
@@ -302,7 +310,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
         return (req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id) )
         
       })
-    console.log('requestExists ', requestExists)
+    // console.log('requestExists ', requestExists)
 
     if (requestExists) {
       return res.status(400).json({ success: false, message: 'Request already sent to this supervisor' });
@@ -317,7 +325,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
       project: pendingProject._id,
       user: user._id
     })
-    supervisor.unseenNotifications.push({ message: `A new proposal for ${projectTitle}` });
+    supervisor.unseenNotifications.push({ type : "Important", message: `A new proposal for ${projectTitle}` });
 
     await Promise.all([user.save(), supervisor.save(), pendingProject.save()]);
 

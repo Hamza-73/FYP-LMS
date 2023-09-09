@@ -37,8 +37,7 @@ const App = () => {
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
   const style = `
-  body{
-    
+  body{   
   background-color: #ceb070;
   }
   .cards{
@@ -77,6 +76,17 @@ const App = () => {
   .boxs:hover{
     z-index: 3;
     transform : scale(1.2);
+  }
+  @media (max-width : 480px) {
+    .m-box{
+      flex-direction: column;
+      position : relative ;
+      left : -15px;
+    }
+    .boxs{
+      width: 300px;
+      height:300px;
+    }
   }
   `
   return (

@@ -122,7 +122,7 @@ const CommitteeMember = (props) => {
             ...prevData,
             members: prevData.members.filter((member) => member._id !== id),
           }));
-          NotificationManager.success('Error in Deleting');
+          NotificationManager.success('Deleted Successfully');
         }
       } catch (error) {
         console.log('Error:', error); // Log the error message
