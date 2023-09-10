@@ -61,7 +61,7 @@ const CommitteeMember = (props) => {
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
       fname: student.fname, lname: student.lname, username: student.username, department: student.department,
-      designation: student.designation, slots: student.slots, password: student.password
+      designation: student.designation, slots: student.slots
     });
   };
 
@@ -77,7 +77,7 @@ const CommitteeMember = (props) => {
           },
           body: JSON.stringify({
             fname: register.fname, lname: register.lname, username: register.username,
-            designation: register.designation, password: register.password, department: register.department
+            designation: register.designation, department: register.department
           })
         }
       );
@@ -220,17 +220,17 @@ const CommitteeMember = (props) => {
                     <label htmlFor="department" className="form-label">Designation</label>
                     <input type="text" className="form-control" id="designation" name='designation' value={register.designation} onChange={handleChange1} />
                   </div>
-                  <div className="mb-3">
+                  {!editMode ? <div className="mb-3">
                     <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
                     <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
                     <small>password should be of atleast 4 characters </small>
-                  </div>
+                  </div>:''}
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
                     {editMode ? (
                       <button type="submit" className="btn" style={{background:"maroon", color:"white"}}>Save Changes</button>
                     ) : (
-                      <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.fname) || !(register.lname)
+                      <button type="submit" className="btn btn-success" disabled={ !(register.fname) || !(register.lname)
                         || !(register.username) || !(register.department)
                       }>
                         Register

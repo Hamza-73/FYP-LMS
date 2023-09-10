@@ -1,133 +1,89 @@
 import React, { useEffect, useState } from 'react';
-import 'react-calendar/dist/Calendar.css';
-import Loading from '../Loading';
-import { useNavigate } from 'react-router-dom';
-import 'react-clock/dist/Clock.css';
-import 'react-time-picker/dist/TimePicker.css';
-import 'react-clock/dist/Clock.css';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
-import 'react-notifications/lib/notifications.css';
+import axios from 'axios';
 
 const ProjectProgress = (props) => {
-  const history = useNavigate();
-  const [viva, setViva] = useState({ projectTitle: '', vivaDate: new Date(), vivaTime: '' });
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({ vivas: [] });
-  const [isFieldsModified, setIsFieldsModified] = useState(false);
+  const [group, setGroup] = useState({ groups: [] });
 
-  const getVivas = async () => {
+  const getProjects = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:5000/viva/vivas`, {
-        method: 'GET',
-      });
-      const json = await response.json();
-
-      if (json.message && json.success) {
-        setData(json);
-        NotificationManager.success(json.message);
-      } else {
-        NotificationManager.error(json.message);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found', 'danger');
+        return;
       }
-    } catch (error) {
-      console.log('error dealing with requests', error);
-      NotificationManager.error('Some Error occurred reload page/ try again');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const editViva = async (e) => {
-    try {
-      e.preventDefault();
-      const response = await fetch(`http://localhost:5000/viva/edit`, {
-        method: "PUT",
+      const response = await fetch("http://localhost:5000/committee/progress", {
+        method:"GET",
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectTitle: viva.projectTitle,
-          vivaDate: viva.vivaDate,
-          vivaTime: viva.vivaTime,
-        }),
+          'Content-Type': 'application/json'
+        }
       });
       const json = await response.json();
-      console.log('json in handle requests is ', json);
-
-      if (json.message && json.success) {
-        NotificationManager.success(json.message);
-      } else {
-        NotificationManager.error(json.message);
-      }
+      console.log('prograa is ', json)
+      setGroup(json);
     } catch (error) {
-      console.log('error scheduling viva', error);
-      NotificationManager.error(`Some error occurred try to reload the page/ try again`);
+      console.log(`Some error occurred: ${error.message}`);
     }
   }
 
   useEffect(() => {
-    setLoading(true);
-    if (localStorage.getItem('token')) {
-      setTimeout(() => {
-        getVivas();
-      }, 1500);
-    }
+    setTimeout(() => {
+      getProjects();
+    }, 1000)
   }, []);
-
 
   return (
     <div>
-      <>
-        {loading ? (
-          <Loading />
-        ) : (
-          <>
-            <div className="container" style={{ width: '90%' }}>
-              <h3 className="text-center">Project Progress</h3>
-              <div className="mb-3"></div>
-              {data.vivas.length > 0 ? (
-                <table className="table text-center table-hover">
-                  <thead>
-                    <tr>
-                      <th scope="col">Student Name</th>
-                      <th scope="col">Project Title</th>
-                      <th scope="col">Project Proposal</th>
-                      <th scope="col">Documentation</th>
-                      <th scope="col">Project Submission</th>
-                      <th scope="col">Viva</th>
-                      <th scope="col">External</th>
-                      <th scope="col">Grade</th>
+      {group.groups.length > 0 ? (
+        <>
+          <h3 className='text-center my-4'>Project Progress</h3>
+          <div className='container' style={{ width: "100%" }}>
+            <table className='table table-hover'>
+              <thead style={{ textAlign: "center" }}>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">My Group</th>
+                  <th scope="col">Project Proposal</th>
+                  <th scope="col">Documentation</th>
+                  <th scope="col">Viva</th>
+                  <th scope="col">External</th>
+                  <th scope="col">Grade</th>
+                </tr>
+              </thead>
+              <tbody style={{ textAlign: "center" }}>
+                {group.groups.map((group, groupIndex) => (
+                  group.projects.map((project, projectKey) => (
+                    <tr key={projectKey}>
+                      <td>
+                        <div>
+                          {project.students.map((student, studentKey) => (
+                            <React.Fragment key={studentKey}>
+                              {student.name}<br />
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      </td>
+                      <td>{project.projectTitle}</td>
+                      <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
+                      <td>
+                        <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
+                          {(group.finalSubmission ? (
+                            <a href={group.finalSubmission} target="_blank" rel="noopener noreferrer">Document</a>
+                          ) : 'Pending')}
+                        </div>
+                      </td>
+                      <td>{group.vivaDate ? (new Date() > new Date(group.vivaDate) ? 'Taken' : new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })) : '---'}</td>
+                      <td>{group.external? group.external : 0}</td>
+                      <td>{group.marks? group.marks : 0}</td>
                     </tr>
-                  </thead>
-                  <tbody className="text-center">
-                    {data.vivas.map((val, key) => (
-                      <tr key={key}>
-                        <td>
-                          <div>
-                            {val.students.map((student, studentKey) => (
-                              <React.Fragment key={studentKey}>{student.name} <br /></React.Fragment>
-                            ))}
-                          </div>
-                        </td>
-                        <td>{val.projectTitle}</td>
-                        <td>{val.documentation.isProps ? 'Submitted' : 'Pending'}</td>
-                        <td>{val.documentation.isDoc ? 'Submitted' : 'Pending'}</td>
-                        <td>{'project Submission'}</td>
-                        <td>{new Date(val.vivaDate).toLocaleDateString('en-GB') < new Date() ? "Taken" : new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
-                        <td>{val.extarnal || val.extarnal > 0 ? val.extarnal : 0}</td>
-                        <td>{val.marks || val.marks > 0 ? val.marks : 0}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div>No matching members found.</div>
-              )}
-            </div>
-          </>
-        )}
-        <NotificationContainer />
-      </>
+                  ))
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : (
+        <h2 className='text-center'>You currently have no group in supervision.</h2>
+      )}
     </div>
   );
 };

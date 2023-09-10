@@ -10,6 +10,60 @@
     transition: 1s;
 }
 
+/* username/ password above the boxes */
+#C1{
+    text-indent: 10px;
+    font-style: italic;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+/* the text written under the boxes */
+#C2{
+    font-style: italic;
+    text-indent: 10px;
+    font-size: small;
+    opacity: .3;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+/* for the boxes in login page  */
+.C3{
+    width: 320px;
+    height: 10px;
+    border: 0.5px solid grey;
+    box-shadow: 3px 3px 3px;
+    border-radius: 25px;
+    border: 2px solid grey;
+    padding: 20px;
+}
+
+/* for the boxes in register page */
+.C5{
+    width: 450px;
+    height: 10px;
+    border: 0.5px solid grey;
+    box-shadow: 3px 3px 3px;
+    border-radius: 25px;
+    border: 2px solid grey;
+    padding: 20px;
+}
+
+/* for the register page, close/register button */
+#C6{
+    color: aliceblue;
+    background-color: darkred;
+    font-size: 17px;
+    border-radius: 12px;
+    width: 50%;
+}
+/* for the login/registar button */
+#C4{
+
+    background-color: darkred;
+    font-size: 17px;
+    border-radius: 12px;
+    width: 100%;
+}
 
 @media (max-width : 480px) {
     .image{

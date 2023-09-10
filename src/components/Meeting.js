@@ -86,13 +86,9 @@ const Meeting = (props) => {
       </div>
 
         <div className="source d-flex" style={{ marginTop: "20px" }}>
-          {/* <h3>Using</h3>
-          <select className='mx-5' name="source" id="" style={{ width: "200px", textAlign: "center", fontSize: "23px", backgroundColor: "lightgrey" }}>
-            <option value="Google Meet">Google Meet</option>
-            <option value="Zoom">Zoom</option>
-          </select> */}
+          
           <input type="text" placeholder='Meeting Time' onChange={handleInputChange} name='time' value={meeting.time}/>
-          <input type="text" placeholder='Meeting Date' onChange={handleInputChange} name='date' value={meeting.date}/>
+          <input type="date" placeholder='Meeting Date' onChange={handleInputChange} name='date' value={meeting.date}/>
         </div>
 
         <div className="link">

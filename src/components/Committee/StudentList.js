@@ -78,7 +78,7 @@ const StudentList = (props) => {
           body: JSON.stringify({
             name: register.name, father: register.father, username: register.username,
             department: register.department, batch: register.batch, semester: register.semester,
-            cnic: register.cnic, rollNo: register.rollNo, password: register.password
+            cnic: register.cnic, rollNo: register.rollNo
           })
         }
       );
@@ -235,17 +235,17 @@ const StudentList = (props) => {
                     <label htmlFor="department" className="form-label">Semester</label>
                     <input type="text" className="form-control" id="semester" name='semester' value={register.semester} onChange={handleChange1} />
                   </div>
-                  <div className="mb-3">
+                  {!editMode?<div className="mb-3">
                     <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                    <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
+                    <input type="password" className="form-control" minLength={4} id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
                     <small>password should be of atleast 4 characters </small>
-                  </div>
+                  </div>:""}
                   <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={()=>setEditMode(false)}>Close</button>
                     {editMode ? (
                       <button type="submit" className="btn btn-primary">Save Changes</button>
                     ) : (
-                      <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.name)
+                      <button type="submit" className="btn btn-success" disabled={!(register.name)
                         || !(register.username) || !(register.department)
                       }>
                         Register

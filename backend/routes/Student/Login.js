@@ -501,7 +501,8 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       proposal: group.proposal, documentation: group.documentation, finalSubmission : group.finalSubmission,
       docDate: student.docDate ? student.docDate : '----',
       propDate: student.propDate ? student.propDate : '----',
-      viva: viva ? viva.vivaDate : '-----'
+      viva: viva ? viva.vivaDate : '-----',
+      meetingReport : group.meetingReport
     }
     return res.json({ success: true, group: groupDetail })
   } catch (error) {

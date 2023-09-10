@@ -51,6 +51,7 @@ router.post('/schedule-viva', async (req, res) => {
         vivaTime: vivaTime
       });
       group.viva = viva._id;
+      group.vivaDate = newDate(parsedDate);
 
       await Promise.all([group.save(), viva.save()]);
       console.log('Viva is ', viva)
@@ -184,11 +185,31 @@ router.put('/edit', async (req, res) => {
       { vivaDate: vivaDate, vivaTime: vivaTime },
       { new: true }
     );
+    
+    const group = await Group.findOne({
+      'projects.projectTitle': projectTitle
+    }).populate('supervisor projects.students');
 
-    const students = await User.find();
-    if (!students) {
-      return res.status(404).json({ error: 'Students not found' });
-    }
+    group.vivaDate = vivaDate;
+    await group.save();
+
+    group.projects.map(proj=>{
+      proj.students.map(async stu=>{
+        const student = await User.findById(stu.userId);
+        if(!student){
+          return;
+        }
+        student.vivaDate = vivaDate;
+        student.unseenNotifications.push({
+          type : "Important",
+          message : `Viva Date has been changed by the Committee 
+          It's now ${vivaDate} at ${vivaTime}
+          `
+        });
+        student.vivaTime = vivaTime;  
+        await student.save();
+      })
+    })
 
     // Send the updated document as the response
     res.json({ success: true, message: "Viva Updated Successfully", updatedViva });

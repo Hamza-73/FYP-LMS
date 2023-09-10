@@ -7,7 +7,7 @@ import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Loading from '../Loading';
-
+import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
 
 const Progress = (props) => {
 
@@ -24,6 +24,10 @@ const Progress = (props) => {
     });
     const [groupDetails, setGroupDetails] = useState({});
     const [loading, setLoading] = useState(false);
+    const [graph, setGraph] = useState({
+        meetingTitle: '', type: '', date: '', time: '', purpose: ''
+    })
+
 
     const sendRequest = async () => {
         try {
@@ -76,7 +80,9 @@ const Progress = (props) => {
 
             const json = await response.json();
             if (json) {
-                setGroupDetails(json)
+                console.log('group detail is ', json)
+                setGroupDetails(json);
+                setGraph(json.group.meetingReport);
             }
             if (json.success && json.message) {
                 NotificationManager.success(json.message);
@@ -106,29 +112,53 @@ const Progress = (props) => {
         if (localStorage.getItem('token')) {
             setTimeout(() => {
                 groupDetail();
-                setLoading(false);
-                if (groupDetails.group) {
-                    let updatedPercentage = 25; // Initialize with a base value
-                
-                    if (groupDetails.group.proposal) {
-                      updatedPercentage += 25;
-                    }
-                    if (groupDetails.group.documentation) {
-                      updatedPercentage += 20;
-                    }
-                    if (groupDetails.group.finalSubmission) {
-                      updatedPercentage += 20;
-                    }
-                    if( groupDetails.group.marks>0)
-                    updatedPercentage += 10;
-                
-                    setPercentage(updatedPercentage);
-                  }
+                setLoading(false)
             }, 1300)
         }
 
     }, []);
 
+    useEffect(() => {
+        if (groupDetails.group) {
+            let updatedPercentage = 25; // Initialize with a base value
+
+            if (groupDetails.group.proposal) {
+                updatedPercentage += 25;
+            }
+            if (groupDetails.group.documentation) {
+                updatedPercentage += 20;
+            }
+            if (groupDetails.group.finalSubmission) {
+                updatedPercentage += 20;
+            }
+            if (groupDetails.group.marks > 0)
+                updatedPercentage += 10;
+
+            setPercentage(updatedPercentage);
+        }
+    }, [groupDetails]);
+
+
+    const generateRandomMeetingData = (count) => {
+        const meetingData = [];
+
+        for (let i = 1; i <= count; i++) {
+            const meetingName = `Meeting ${i}`;
+            const pv = Math.floor(Math.random() * 30); // Random value for pv (e.g., attendees)
+            const uv = Math.floor(Math.random() * 20); // Random value for uv (e.g., engagement)
+
+            meetingData.push({
+                name: meetingName,
+                pv: pv,
+                uv: uv,
+            });
+        }
+
+        return meetingData;
+    };
+
+    // Generate 5 random meetings for the BarChart
+    const randomMeetingData = generateRandomMeetingData(5);
 
     return (
         <>
@@ -164,7 +194,7 @@ const Progress = (props) => {
                                                 </div>
                                             </div>
                                             <div className="modal-footer">
-                                                <button type="submit" className="btn" style={{background:"maroon", color:"white"}}>
+                                                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>
                                                     Send Request
                                                 </button>
                                             </div>
@@ -177,9 +207,16 @@ const Progress = (props) => {
                     {groupDetails.group ? (
                         <>
                             <div className='containar'>
-                                <div className="box my-3 mx-4">
-                                    <h3>Meeting Report</h3>
-                                    <img src={graph} alt="" style={graphStyle} />
+                                <div className='my-3 box mx-4'>
+                                    <h3>Meeting Progress</h3>
+                                    <BarChart width={400} height={200} data={graph}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="meetingTitle" />
+                                        <YAxis />
+                                        <Tooltip formatter={(value) => `Date: ${value}`} />
+                                        <Legend />
+                                        <Bar dataKey="date" fill="#8884d8" name="Meeting Date" />
+                                    </BarChart>
                                 </div>
                                 <div className="box my-3 mx-4">
                                     <h3>Project Report</h3>

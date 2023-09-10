@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import image from '../images/gcu-login.jpg'
+import image from '../images/back.jpeg'
 import '../css/login.css'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
@@ -15,9 +15,11 @@ const Login = (props) => {
 
     const [login, setLogin] = useState({ username: '', password: '' })
 
+
     const handleChange = (e) => {
         setLogin({ ...login, [e.target.name]: e.target.value })
     }
+    
 
     let history = useNavigate();
 
@@ -43,35 +45,37 @@ const Login = (props) => {
         }
     }
 
+    
     return (
         <>
-
-            <div className="container my-5 d-flex justify-content-between" style={{ borderLeft: "0", borderRight: "0" }}>
+            {/* Student/Supervisor/Committee heading */}
+            <h1 className='text-center' style={{ "fontSize": "50px", "fontFamily":"Georgia, 'Times New Roman', Times, serif", "fontStyle":"italic"  }}>{props.formHeading}</h1> 
+            <div className="container my-5 d-flex justify-content-between" style={{borderLeft:"0", borderRight:"0"}}>
                 <div className="form my-2">
-                    <h1 className='text-center'>{props.formHeading}</h1>
                     <form className='my-3' onSubmit={handleSubmit}>
                         <div className="mb-3">
-                            <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                            <input type="username" className="form-control" id="exampleInputusername1" aria-describedby="usernameHelp" name='username' value={login.username} onChange={handleChange} />
-                            <div id="usernameHelp" className="form-text">We'll never share your username with anyone else.</div>
+                            <label id="C1" htmlFor="exampleInputusername1" className="form-label">Username</label>
+                            <input type="username" placeholder="Username" className="form-control, C3" id="exampleInputusername1" aria-describedby="usernameHelp" name='username' value={login.username}   onChange={handleChange}/>
+                            <p id="C2">We'll never share your username with anyone else</p>
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                            <input type="password" className="form-control" id="exampleInputPassword1" value={login.password} name='password' onChange={handleChange} />
-                            <small>password should be of atleast 4 characters </small>
+                            <label id="C1" htmlFor="exampleInputPassword1" className="form-label">Password</label>
+                            <input type="password" placeholder="Password" className="form-control, C3" id="exampleInputPassword1" value={login.password} name='password'  onChange={handleChange} />
+                            <p id="C2">password should be of atleast 4 characters </p>
                         </div>
-                        <Link to={`/${props.user}/forgotpassword`} style={{ "textDecoration": "none" }}>Forgot Password?</Link>
+                        <Link to={`/${props.user}/forgotpassword`} style={{ "textDecoration": "none", "color":"black", "fontFamily":"Georgia, 'Times New Roman', Times, serif", "fontStyle":"italic" }}>Forgot Password?</Link>
 
                         <div className="button my-4">
-                            <button type="submit" className="btn btn-success btn" disabled={login.password.length < 4}>Login</button>
+                            <button id="C4" type="submit" className="btn btn-success btn" disabled={login.password.length < 4}>Login</button>
                         </div>
                     </form>
                 </div>
                 <div className="image">
                     <img src={image} alt="GCU GOTHIC LADY" style={imgStyle} />
                 </div>
-            </div>
                 <NotificationContainer />
+
+            </div>
         </>
     )
 }

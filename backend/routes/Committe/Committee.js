@@ -16,46 +16,46 @@ const SharedRules = require('../../models/SharedRules')
 
 // Registration route
 router.post('/register', [
-    body('fname', 'First name should be atleast 4 characters').exists(),
-    body('lname', 'Last name Number cannot not be blank').exists(),
-    body('username', 'Enter a valid username').isLength({ min: 4 }),
-    body('department', 'Department cannot be left blank').exists(),
-    body('designation', 'Designation cannot be left blank').exists(),
-    body('password', 'Password must be atleast 4 characters').isLength({ min: 4 }),
-  ], async (req, res) => {
-    const { fname, lname, username,  department, designation, password } = req.body;
-  
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-  
-    try {
-      // Check if the username already exists in the database
-      const existingUser = await Committee.findOne({ username });
-  
-      if (existingUser) {
-        return res.status(409).json({ success: false, message: 'username already exists' });
-      } else {
-        const salt = await bcrypt.genSalt(10);
-        const secPass = await bcrypt.hash(password, salt);
-        // Create a new user if the username is unique
-        const newUser = new Committee({ fname, lname, username,  department, designation, password:secPass });
-        await newUser.save();
-        const data = {
-          user: {
-            id: newUser.id
-          }
+  body('fname', 'First name should be atleast 4 characters').exists(),
+  body('lname', 'Last name Number cannot not be blank').exists(),
+  body('username', 'Enter a valid username').isLength({ min: 4 }),
+  body('department', 'Department cannot be left blank').exists(),
+  body('designation', 'Designation cannot be left blank').exists(),
+  body('password', 'Password must be atleast 4 characters').isLength({ min: 4 }),
+], async (req, res) => {
+  const { fname, lname, username, department, designation, password } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    // Check if the username already exists in the database
+    const existingUser = await Committee.findOne({ username });
+
+    if (existingUser) {
+      return res.status(409).json({ success: false, message: 'username already exists' });
+    } else {
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(password, salt);
+      // Create a new user if the username is unique
+      const newUser = new Committee({ fname, lname, username, department, designation, password: secPass });
+      await newUser.save();
+      const data = {
+        user: {
+          id: newUser.id
         }
-        const token = jwt.sign(data, JWT_KEY)
-        res.json({ success: true, token, message: 'Registration successful' });
       }
-    } catch (err) {
-      console.error('error in registering ', err)
-      res.status(500).json({ success: false, message: 'Internal server error' });
+      const token = jwt.sign(data, JWT_KEY)
+      res.json({ success: true, token, message: 'Registration successful' });
     }
-  });
-  
+  } catch (err) {
+    console.error('error in registering ', err)
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 
 // Login route
 router.post('/login', async (req, res) => {
@@ -64,12 +64,12 @@ router.post('/login', async (req, res) => {
   try {
     // Find the user by username
     const user = await Committee.findOne({ username });
-    if(!user){
-      return res.status(404).json({success:false, message:"Committee Member not found"});
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Committee Member not found" });
     }
     const check = (await bcrypt.compare(password, user.password))
     // Check if user exists and if the password matches
-    console.log('check is',  check)
+    console.log('check is', check)
     if (check) {
       // Generate JWT token
       const token = jwt.sign({ id: user.id }, JWT_KEY);
@@ -84,12 +84,12 @@ router.post('/login', async (req, res) => {
       res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
   } catch (err) {
-    console.error( err)
+    console.error(err)
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
-  
+
 // Password reset route
 router.post('/reset-password', async (req, res) => {
   const { username, newPassword } = req.body;
@@ -114,41 +114,41 @@ router.post('/reset-password', async (req, res) => {
 
 
 
-  //get all committee members
-  router.get('/get-members', async (req,res)=>{
+//get all committee members
+router.get('/get-members', async (req, res) => {
 
-    try {
-      const members = await Committee.find();
-      res.json({success:true, members})
-    } catch (error) {
-      res.status(500).json({ success: false, message: 'Internal server error' });
+  try {
+    const members = await Committee.find();
+    res.json({ success: true, members })
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+
+});
+
+//delete member
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the provided ID is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid committee member ID' });
     }
 
-  });
-  
-  //delete member
-  router.delete('/delete/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-  
-      // Check if the provided ID is a valid ObjectId
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: 'Invalid committee member ID' });
-      }
-  
-      const deletedMember = await Committee.findByIdAndDelete(id);
-  
-      if (!deletedMember) {
-        return res.status(404).json({ message: 'Committee member not found' });
-      }
-  
-      res.json({ message: 'Committee member deleted successfully' });
-    } catch (error) {
-      console.error('Error deleting committee member:', error);
-      res.status(500).json({ message: 'Error deleting committee member', error });
+    const deletedMember = await Committee.findByIdAndDelete(id);
+
+    if (!deletedMember) {
+      return res.status(404).json({ message: 'Committee member not found' });
     }
-  });
-    
+
+    res.json({ message: 'Committee member deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting committee member:', error);
+    res.status(500).json({ message: 'Error deleting committee member', error });
+  }
+});
+
 
 // Define a route to get shared rules for committee members
 router.get('/getrules', async (req, res) => {
@@ -207,15 +207,15 @@ router.get('/getrules/:role', async (req, res) => {
 });
 
 // get committee member detail
-router.get('/detail', authenticateUser, async (req,res)=>{
+router.get('/detail', authenticateUser, async (req, res) => {
   const userId = req.user.id;
   try {
     console.log(userId)
     const member = await Committee.findById(userId);
-    if(!member){
+    if (!member) {
       return res.status(404).json({ message: 'Member not found' });
     }
-    return  res.send({success: true, member , user : userId});
+    return res.send({ success: true, member, user: userId });
   } catch (error) {
     console.error('Error fetching membetrs', err);
     return res.status(404).json({ message: 'Internal server error' });
@@ -247,25 +247,26 @@ router.put('/editrules/:role', async (req, res) => {
     await sharedRules.save();
 
     const students = await User.find();
-    if(!students){
-      return  res.status(404).json({message:'No Students Found'});}
-    
+    if (!students) {
+      return res.status(404).json({ message: 'No Students Found' });
+    }
+
     const superviors = await Supervisor.find();
-    if(!superviors){
-      return   res.status(404).json({message:"No Supervisor Found"});
+    if (!superviors) {
+      return res.status(404).json({ message: "No Supervisor Found" });
     }
 
     const notification = {
-      type : "Important",
-      message:"New Rules added by Committee Members"
+      type: "Important",
+      message: "New Rules added by Committee Members"
     }
 
-    students.map(student=>{
+    students.map(student => {
       student.unseenNotifications.push(notification);
       student.save();
     })
 
-    superviors.map(student=>{
+    superviors.map(student => {
       student.unseenNotifications.push(notification);
       student.save();
     })
@@ -296,33 +297,33 @@ router.put('/edit/:id', async (req, res) => {
 
 
 // give remarks to students
-router.put('/remarks/:groupId', async (req,res)=>{
-    const  { groupId } = req.params;
-    const {remarks} = req.body ;
-    try {
-      const group = await Group.findById(groupId);
-      if(!group){
-        return res.status(404).json({ message: 'Group not found' });
-      }
-      group.remarks = remarks ;
-      group.projects.map(project=>{
-        project.students.map(async stu=>{
-          const student = await User.findById(stu.userId);
-          if(!student){
-            return res.status(404).json({ message: 'Student not found' });
-          }
-          student.unseenNotifications.push({
-            type : 'Important', message:`You're Group has been given remarks by Committee`
-          })
+router.put('/remarks/:groupId', async (req, res) => {
+  const { groupId } = req.params;
+  const { remarks } = req.body;
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+    group.remarks = remarks;
+    group.projects.map(project => {
+      project.students.map(async stu => {
+        const student = await User.findById(stu.userId);
+        if (!student) {
+          return res.status(404).json({ message: 'Student not found' });
+        }
+        student.unseenNotifications.push({
+          type: 'Important', message: `You're Group has been given remarks by Committee`
         })
       })
-      await group.save();
-      res.json({ message: `Remarks have been given to the group ${group.supervisor} , ${group.projects.map(el=>el.projectTitle)}`, remarks });
+    })
+    await group.save();
+    res.json({ message: `Remarks have been given to the group ${group.supervisor} , ${group.projects.map(el => el.projectTitle)}`, remarks });
 
-    } catch (error) {
-      console.error('error giving marks', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
+  } catch (error) {
+    console.error('error giving marks', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 router.get('/groups', async (req, res) => {
@@ -333,7 +334,7 @@ router.get('/groups', async (req, res) => {
     }
 
     const transformedGroups = [];
-    
+
     groups.forEach((group) => {
       const supervisorName = group.supervisor;
       const remarks = group.remarks;
@@ -349,8 +350,8 @@ router.get('/groups', async (req, res) => {
 
       transformedGroups.push({
         supervisor: supervisorName,
-        remarks : remarks,
-        id : id,
+        remarks: remarks,
+        id: id,
         projects: projects,
       });
     });
@@ -361,5 +362,65 @@ router.get('/groups', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+router.get('/progress', async (req, res) => {
+  try {
+    const groups = await Group.find();
+    if (!groups) {
+      return res.status(404).json({ message: 'Groups not found' });
+    }
+    res.json({ success: true, groups });
+  } catch (error) {
+    console.error('Error fetching groups', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.post('/dueDate/:groupId', async (req, res) => {
+  try {
+    const { type, dueDate } = req.body;
+    const groupId = req.params;
+    const group = await Group.findById(groupId);
+    if (!group) {
+      res.status(404).json({ message: "Group Not Found" });
+    }
+
+    // Create an array to store promises
+    const promises = [];
+
+    group.projects.map(proj => {
+      proj.students.map(async student => {
+        const stu = await User.findById(student.userId);
+        if (!stu) {
+          return;
+        }
+        if (type === 'proposal') {
+          group.propDate = dueDate;
+          stu.propDate = dueDate;
+        }
+        else if (type === 'documentation') {
+          group.docDate = dueDate;
+          stu.docDate = dueDate;
+        }
+        else if (type === 'final') {
+          group.finalDate = dueDate;
+          stu.finalDate = dueDate;
+        }
+        // Push both group.save() and stu.save() promises into the array
+        promises.push(group.save(), stu.save());
+      })
+    });
+
+    // Use Promise.all to execute all promises in parallel
+    await Promise.all(promises);
+
+    res.status(200).json({ message: "Due Date Updated Successfully" });
+  } catch (error) {
+    // Handle errors
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 module.exports = router;

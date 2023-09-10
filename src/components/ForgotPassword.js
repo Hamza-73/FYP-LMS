@@ -42,7 +42,7 @@ const ForgotPassword = (props) => {
     }
 
     const backgroundStyle = {
-        backgroundImage: `linear-gradient(rgba(0,0,0,0),rgba(0,0,0,0)),url(${image})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url(${image})`,
         backgroundPosition: 'center',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
@@ -50,7 +50,7 @@ const ForgotPassword = (props) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color:"black",
+        color:"white",
     };
     
     

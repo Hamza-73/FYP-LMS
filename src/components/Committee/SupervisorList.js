@@ -59,7 +59,7 @@ const SupervisorList = (props) => {
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
       name: student.name, username: student.username, department: student.department,
-      designation: student.designation, slots: student.slots, password: student.password
+      designation: student.designation, slots: student.slots
     });
   };
 
@@ -76,7 +76,7 @@ const SupervisorList = (props) => {
         {
           name: register.name, username: register.username,
           department: register.department, designation: register.designation,
-          slots: register.slots, password: register.password
+          slots: register.slots
         },
         {
           // method:"PUT",
@@ -236,17 +236,17 @@ const SupervisorList = (props) => {
                     <label htmlFor="department" className="form-label">Slots</label>
                     <input type="text" className="form-control" id="semester" name='slots' value={register.slots} onChange={handleChange1} />
                   </div>
-                  <div className="mb-3">
+                  {!editMode ? <div className="mb-3">
                     <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
                     <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
                     <small>password should be of atleast 4 characters </small>
-                  </div>
+                  </div> : ''}
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
                     {editMode ? (
                       <button type="submit" className="btn btn-primary">Save Changes</button>
                     ) : (
-                      <button type="submit" className="btn btn-success" disabled={register.password.length < 4 || !(register.name)
+                      <button type="submit" className="btn btn-success" disabled={!(register.name)
                         || !(register.username) || !(register.department)
                       }>
                         Register

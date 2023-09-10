@@ -42,18 +42,18 @@ router.post('/meeting', async (req, res) => {
         type: type
       });
       await meeting.save();
-      console.log('meeting is ', meeting);
+      // console.log('meeting is ', meeting);
   
       const check = await Meeting.findById(meeting._id);
       if (!check) {
         return res.status(404).json({ message: 'Meeting not found' });
       }
       
-      console.log('check is ', check);
+      // console.log('check is ', check);
       const student = group.projects.flatMap(proj => proj.students.map(student => student.userId));
 
   
-      console.log('students are ', student);
+      // console.log('students are ', student);
   
       const supervisor = await Supervisor.findById(group.supervisorId);
       if (!supervisor) {
@@ -64,7 +64,7 @@ router.post('/meeting', async (req, res) => {
   
       student.map(async students => {
         const stu = await User.findById(students);
-        console.log('students is ', stu);
+        // console.log('students is ', stu);
         if (!stu) {
           res.status(404).json({ message: 'Student not found' });
         }
@@ -75,11 +75,19 @@ router.post('/meeting', async (req, res) => {
         stu.meetingDate = parsedDate;
         stu.unseenNotifications.push({ type: "Reminder", message: message });
         await stu.save();
-        console.log('student info save')
+        // console.log('student info save')
       });
   
       group.meetingLink = meetingLink;
       group.meetingid = meeting._id;
+      const meetingReport = {
+        meetingTitle: projectTitle, // You can use the projectTitle as the meeting title
+        date: parsedDate,
+        time: time,
+        type: type,
+        purpose: purpose,
+      };
+      group.meetingReport.push(meetingReport);
       const message = `You're Meeting Scheduled for ${projectTitle} on ${date} at ${time}`;
       supervisor.unseenNotifications.push({ type: "Reminder", message: message });
       await Promise.all([group.save(), supervisor.save()]);

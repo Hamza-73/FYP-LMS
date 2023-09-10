@@ -215,10 +215,10 @@ const Groups = (props) => {
                             </div>
                           </td>
                           <td>{project.projectTitle}</td>
-                          <td>{"-------"}</td>
+                          <td>{project.meetingDate? project.meetingDate : "---"}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
-                          <td>{'Viva'}</td>
+                          <td>{(project.vivaDate? (new Date() > project.vivaDate ? "Pending" : "Taken") : "---" ) }</td>
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
                               {(group.marks && group.external)? (group.marks + group.external) : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={()=>setGrouppId(group._id)}></i>

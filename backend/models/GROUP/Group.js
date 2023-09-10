@@ -29,9 +29,11 @@ const groupSchema = new Schema({
   docSub: { type: Date },
   meetingid: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
+  meetingDate : {type : Date},
   isFinal : {type: Boolean, default:false},
   finalDate : {type : Date},
   finalSub : {type : Date},
+  meetingReport :{type:Array, default:[]}
 });
 
 module.exports = mongoose.model('Group', groupSchema);
