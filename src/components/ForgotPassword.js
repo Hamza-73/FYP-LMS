@@ -4,7 +4,7 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import 'react-notifications/lib/notifications.css';
 // import styles from '../css/forgotPassword.module.css';
 
-import image from '../images/images.jpg'
+import image from '../images/home.jpg'
 
 const ForgotPassword = (props) => {
 

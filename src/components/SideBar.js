@@ -65,7 +65,7 @@ const SideBar = (props) => {
 
     return (
         <>
-            <nav className="navbar navbar-expand-lg bg-body-tertiary text-dark">
+            <nav className="navbar navbar-expand-lg bg-body-tertiary text-dark" style={{ "backgroundColor": "rgba(0, 0, 0, 0.5)", color:"black", height:"80px"}}>
                 <div className="container-fluid">
                     <p className="navbar-brand" to='/dashboard' ><img src={image1} alt="" style={{ "width": "60px", "cursor": "pointer" }} /></p>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
