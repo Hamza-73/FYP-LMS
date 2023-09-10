@@ -25,8 +25,10 @@ const userSchema = new Schema({
   isMember : {type : Boolean, default:false},
   isDoc : {type:Boolean, default:false},
   isProp : {type:Boolean, default:false},
+  isFinal : {type:Boolean, default:false},
   propDate:{type : Date},
   docDate : {type: Date},
+  finalDate : {type : Date},
   viva : {type: Schema.Types.ObjectId, ref: 'Viva'},
   vivaDate : {type : String},
   vivaTime : {

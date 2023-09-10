@@ -31,10 +31,10 @@ const ForgotPassword = (props) => {
         const json = await response.json()
         console.log(json);
         if (json.success) {
-            NotificationManager.success('Password Updated Successfully');
+            NotificationManager.success('Password Updated Successfully','',1000);
             setTimeout(() => {
                 history("/");
-            }, 1500)
+            }, 1200)
         }
         else {
             NotificationManager.error('User does not exist');

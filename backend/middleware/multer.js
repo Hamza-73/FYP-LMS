@@ -1,34 +1,15 @@
-const multer = require("multer");
-//configure how the files are stored
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    //where to store the file
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, new Date().toISOString() + file.originalname);
-  },
-});
+const Multer = require('multer')
 
-const fileFilter = (req, file, cb) => {
-  //reject a file if it's not a jpg or png
-  if (
-    file.mimetype === "image/jpeg" ||
-    file.mimetype === "image/png" ||
-    file.mimetype === "application/pdf"
-  ) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
-
-const upload = multer({
-  storage: storage,
+const multer = Multer({
+  storage: Multer.diskStorage({
+    destination: function (req, file, callback) {
+      callback(null, `${__dirname}/audio-files`);
+    },
+    filename: function (req, file, callback) {
+      callback(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
+    },
+  }),
   limits: {
-    fileSize: 1024 * 1024 * 5,
+    fileSize: 5 * 1024 * 1024,
   },
-  fileFilter: fileFilter,
 });
-
-module.exports = upload;

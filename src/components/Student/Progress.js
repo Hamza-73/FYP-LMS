@@ -114,15 +114,34 @@ const Progress = (props) => {
                 groupDetail();
                 setLoading(false);
                 if (groupDetails.group) {
-                    if (groupDetails.group.proposal)
+                    if (groupDetails.group.isProp)
                         setPercentage(percentage + 25);
-                    if (groupDetails.group.documentation)
+                    if (groupDetails.group.iDoc)
                         setPercentage(percentage + 20);
+                    if(groupDetails.group.isFinal)
+                    setPercentage(percentage + 20);
                 }
             }, 1300)
         }
 
     }, [])
+    useEffect(() => {
+        if (groupDetails.group) {
+          let updatedPercentage = 25; // Initialize with a base value
+      
+          if (groupDetails.group.isProp) {
+            updatedPercentage += 25;
+          }
+          if (groupDetails.group.iDoc) {
+            updatedPercentage += 20;
+          }
+          if (groupDetails.group.isFinal) {
+            updatedPercentage += 20;
+          }
+      
+          setPercentage(updatedPercentage);
+        }
+      }, [groupDetails]); // Watch for changes in groupDetails
 
     return (
         <>

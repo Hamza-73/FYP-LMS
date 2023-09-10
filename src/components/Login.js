@@ -35,11 +35,11 @@ const Login = (props) => {
         if (json.success && json.message) {
             // Save the auth token and redirect
             localStorage.setItem('token', json.token);
-            setTimeout(()=>history(props.path), 780)
+            setTimeout(()=>history(props.path), 800)
             
-            NotificationManager.success(json.message);
+            NotificationManager.success(json.message,'',700);
         } else {
-            NotificationManager.error(json.message);
+            NotificationManager.error(json.message,'',700);
         }
     }
 

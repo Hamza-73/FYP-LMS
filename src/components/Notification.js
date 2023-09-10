@@ -42,8 +42,8 @@ const Notification = (props) => {
                 {notification.notification.length > 0 ? notification.notification.map((elm, elmKey) => {
                     return (
                         <div style={{ position: "relative", left: "50px" }} key={elmKey}>
-                            <div style={{ height: "50px", width: "70%" }} class={`alert alert-${elm.type==='Important'?'danger':'primary' } alert-dismissible fade show`} role="alert">
-                                <strong style={{ border: `2px solid ${elm.type==='Important'?'#f6abb6':"blue"}`, borderRadius: "6px", padding: "5px" }}>{elm.type}</strong>    {elm.message}
+                            <div style={{ height: "50px", width: "70%" }} class={`alert alert-${elm.type==='Important' || elm.type==='important'?'danger':'primary' } alert-dismissible fade show`} role="alert">
+                                <strong style={{ border: `2px solid ${elm.type==='Important' || elm.type==='important'?'#f6abb6':"blue"}`, borderRadius: "6px", padding: "5px" }}>{elm.type}</strong>    {elm.message}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </div>

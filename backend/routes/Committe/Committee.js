@@ -102,9 +102,9 @@ router.post('/reset-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-
-    // Update the password and save it to the database
-    user.password = newPassword;
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(newPassword, salt);
+    user.password = secPass;
     await user.save();
     res.status(200).json({ success: true, message: 'Password reset successful' });
   } catch (err) {

@@ -74,13 +74,18 @@ const GroupDetail = () => {
               </div>
 
               <div className="mid">
-                {currentGroup.projects[0].students.map((student, index) => (
-                  <div key={index}>
+                
+                  <div>
                     <h5>
-                      {student.name} <br /> {student.rollNo}
+                      {currentGroup.projects[0].students[0]? currentGroup.projects[0].students[0].name:"No Student Yet"} <br /> {currentGroup.projects[0].students[0]? currentGroup.projects[0].students[0].rollNo:""}
+                    </h5>
+                    </div>
+                    <div>
+                    <h5>
+                      {currentGroup.projects[0].students[1]? currentGroup.projects[0].students[1].name:"No Student Yet"} <br /> {currentGroup.projects[0].students[1]? currentGroup.projects[0].students[1].rollNo:""}
                     </h5>
                   </div>
-                ))}
+               
               </div>
 
               <div className="last">

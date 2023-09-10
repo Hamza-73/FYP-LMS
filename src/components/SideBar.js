@@ -12,9 +12,9 @@ const SideBar = (props) => {
         console.log('Logout successfully localStorage is :', localStorage.getItem('token'))
         setTimeout(()=>{
             history('/');
-        },1000)
+        },1200)
 
-        NotificationManager.success('Logout Successfully');
+        NotificationManager.success('Logout Successfully','',1000);
     }
 
     const [userData, setUserData] = useState({member:[]});

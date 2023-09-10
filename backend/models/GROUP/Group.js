@@ -16,7 +16,9 @@ const groupSchema = new Schema({
   remarks: { type: String },
   marks: { type: Number },
   external: { type: Number },
-  proposal: { data: Buffer, contentType: String },
+  proposal: { type: String },
+  finalSubmission : { type: String},
+  documentation : { type: String},
   isProp: { type: Boolean, default: false },
   isDoc: { type: Boolean, default: false },
   viva: { type: Schema.Types.ObjectId, ref: 'Viva' },
@@ -25,6 +27,8 @@ const groupSchema = new Schema({
   docDate: { type: Date },
   meetingid: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
+  isFinal : {type: Date},
+  finalDate : {type : Date},
 });
 
 module.exports = mongoose.model('Group', groupSchema);

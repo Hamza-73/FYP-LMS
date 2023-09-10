@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Loading from '../Loading';
 import SideBar from '../SideBar';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const ProjectRequests = (props) => {
   const [requests, setRequests] = useState({ request: [] });
@@ -42,7 +44,9 @@ const ProjectRequests = (props) => {
 
   const handleRequests = async (e) => {
     try {
-      e.preventDefault();
+      if(choice.action==='improve'){
+        e.preventDefault();
+      }
       console.log('request is started');
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/supervisor/accept-project-request/${choice.id}/${choice.action}`, {
@@ -61,13 +65,13 @@ const ProjectRequests = (props) => {
       console.log('json in handle requests is ', json);
 
       if (json.message && json.success) {
-        props.showAlert(`Request ${json.message}`, 'success');
+        NotificationManager.success(json.message,'',1000);
       } else {
-        props.showAlert(`Request ${json.message}`, 'danger');
+        NotificationManager.error(json.message,'',1000);;
       }
     } catch (error) {
       console.log('error dealing with requests', error);
-      props.showAlert(`Some error occured try to reload the page/ try again`, 'danger');
+      NotificationManager.error(`Some error occured try to reload the page/ try again`, '', 1000);
     }
   };
 
@@ -150,7 +154,6 @@ const ProjectRequests = (props) => {
                             <td>{group.projectTitle}</td>
                             <td>{group.description}</td>
                             <td>{group.scope}</td>
-                            {/* <td>{group.requestId}</td> */}
                             <td>
                               <div style={{ cursor: 'pointer' }}>
                                 <div className="d-grid gap-2 d-md-flex justify-content-md-end">

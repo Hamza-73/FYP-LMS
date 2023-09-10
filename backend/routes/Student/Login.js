@@ -14,74 +14,92 @@ const Group = require('../../models/GROUP/Group');
 const multer = require('multer');
 const Viva = require('../../models/Viva/Viva');
 const uuid = require('uuid');
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, './uploads')
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-//     cb(null, file.fieldname + '-' + uniqueSuffix)
-//   }
-// })
-// const upload = multer({dest: '../../uploads'});
+const storage = multer.diskStorage({
+  
+  destination: function (req, file, cb) {
+    
+    cb(null, 'uploads/')
+    
+  },
 
-// const cloudinary = require('cloudinary');
+  filename: function (req, file, cb) {
+    console.log(file)
+    cb(null, file.originalname)
+  }
+})
+
+const upload = multer({ storage })
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({ 
+  cloud_name: 'dfexs9qho', 
+  api_key: '798692241663155', 
+  api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8' 
+});
 
 const path = require("path");
 
-// Define storage for uploaded files
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Upload a PDF
-router.post('/proposal', upload.single('proposal'), authenticateUser, async (req, res) => {
+router.post('/upload', authenticateUser,  async (req, res) => {
   try {
-    const { filename, originalname, mimetype, buffer } = req.file;
-
+    const { type } = req.body;
     // Check if the user belongs to the specified group
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'Student Not Found' });
     }
 
-    // Save the uploaded PDF to the group and user
-    const pdfDocument = {
-      filename: originalname,
-      data: buffer,
-      contentType: mimetype,
-    };
-
-    // Update the Group and User models with the uploaded PDF
-    const groupUpdate = Group.findOneAndUpdate(
-      { _id: user.group },
-      { $push: { proposal: pdfDocument } },
-      { new: true }
-    );
-    if(!groupUpdate){
-      return res.status(404).json({ error: 'Group Not Found' });
+    const groupUpdate =  await Group.findById(user.group);
+    if (!groupUpdate) {
+      return res.status(404).json({ success:false, message: 'Group Not Found' });
     }
+    // console.log('group is ', groupUpdate);
+    console.log('type is ', type)
 
+    const file = req.files[type];
+    console.log('file is ', file);
 
-    // groupUpdate.projects.map((project)=>{
-    //   project.students.map(async student=>{
-    //     const stu = await User.findById(student.userId);
-    //     if(!stu){
-    //       return res.status(404).json({message:"Student not found"}); 
-    //     }
-    //     stu.proposal = pdfDocument;
-    //     await stu.save();
-    //   })
-    // })
+    cloudinary.uploader.upload(file.tempFilePath, async (error, result)=>{
+      console.log('result is ', result);
+      groupUpdate.proposal = result.url;
+      
+      const promises = groupUpdate.projects.map(async project => {
+        return Promise.all(project.students.map(async student => {
+          const studentObj = await User.findById(student.userId);
+          if (!studentObj) {
+            return res.status(404).json({ success:false, message: 'Student Not Found' });
+          }
+          
+          studentObj.unseenNotifications.push({
+            type: "Important",
+            message: `${type} For Your Group is Uploaded`
+          });
 
-    
-    await groupUpdate.save();
+          if (type === 'proposal') {
+            studentObj.isProp = true;
+            groupUpdate.isProp = true;
+          } else if (type === 'documentation') {
+            studentObj.isDoc = true;
+            groupUpdate.isDoc = true;
+          } else {
+            studentObj.isFinal = true;
+            groupUpdate.isFinal = true;
+          }
+        }));
+      });
 
-    res.status(201).json({ message: 'PDF uploaded successfully' });
+      await Promise.all(promises);
+
+      // Save groupUpdate and user objects after all updates are done
+      await Promise.all([...promises, groupUpdate.save()]);
+    });
+
+    res.status(201).json({ success:true,  message: 'PDF uploaded successfully' });
   } catch (error) {
     console.error('Error uploading PDF:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success:false,  message: 'Internal server error' });
   }
 });
+
 
 
 
@@ -92,8 +110,8 @@ router.post('/login', async (req, res) => {
   try {
     // Find the user by username
     const user = await User.findOne({ username });
-    if(!user){
-      return res.status(404).json({success:false, message:"Student not found"});
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Student not found" });
     }
 
     const check = await bcrypt.compare(password, user.password)
@@ -144,9 +162,9 @@ router.post('/register', [
     if (existingUser) {
       return res.status(409).json({ success: false, message: 'username already exists' });
     } else {
-      
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(password, salt);
+
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(password, salt);
       // Create a new user if the username is unique
       const newUser = new User({ name, father, username, rollNo, batch, cnic, semester, department, password: secPass });
       await newUser.save();
@@ -212,9 +230,9 @@ router.post('/reset-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-
-    // Update the password and save it to the database
-    user.password = newPassword;
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(newPassword, salt);
+    user.password = secPass;
     await user.save();
     res.status(200).json({ success: true, message: 'Password reset successful' });
   } catch (err) {
@@ -279,7 +297,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
         projectId: projectRequest._id,
         supervisor: supervisor._id
       });
-      user.unseenNotifications.push({ type : "Important", message: `Project request sent to ${supervisor.name}` });
+      user.unseenNotifications.push({ type: "Important", message: `Project request sent to ${supervisor.name}` });
 
       // console.log('project id is ', projectRequest._id, 'type is ', typeof (projectRequest._id))
       // console.log('user id is ', user._id, 'type is ', typeof (user._id))
@@ -289,7 +307,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
         project: projectRequest._id,
         user: user._id
       })
-      supervisor.unseenNotifications.push({ type : "Important", message: `A new proposal for ${projectTitle}` });
+      supervisor.unseenNotifications.push({ type: "Important", message: `A new proposal for ${projectTitle}` });
 
       await Promise.all([user.save(), supervisor.save(), projectRequest.save()]);
 
@@ -306,10 +324,10 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
       // console.log('proje id', pendingProject._id);
       // console.log('req sup is', req.supervisor);
       // console.log('supervisor id', supervisor._id);
-      console.log(req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id) )
-        return (req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id) )
-        
-      })
+      console.log(req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
+      return (req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
+
+    })
     // console.log('requestExists ', requestExists)
 
     if (requestExists) {
@@ -317,15 +335,15 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     }
 
     user.pendingRequests.push({
-      projectId :  pendingProject._id ,
-      supervisor : supervisor._id
+      projectId: pendingProject._id,
+      supervisor: supervisor._id
     })
     supervisor.projectRequest.push({
       isAccepted: false,
       project: pendingProject._id,
       user: user._id
     })
-    supervisor.unseenNotifications.push({ type : "Important", message: `A new proposal for ${projectTitle}` });
+    supervisor.unseenNotifications.push({ type: "Important", message: `A new proposal for ${projectTitle}` });
 
     await Promise.all([user.save(), supervisor.save(), pendingProject.save()]);
 
@@ -430,41 +448,41 @@ router.put('/edit/:id', async (req, res) => {
   }
 });
 
-router.get('/my-group', authenticateUser, async (req,res)=>{
+router.get('/my-group', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id;
     console.log('userId', userId)
     const student = await User.findById(userId);
-    if(!student){
+    if (!student) {
       return res.status(404).json({ message: 'Student Not Found' });
     }
     const group = await Group.findById(student.group);
-    if(!group){
+    if (!group) {
       return res.status(404).json({ message: 'Group Not Found' });
     }
     const viva = await Viva.findById(student.viva);
     const groupDetail = {
-      myDetail : [{
-        name : student.name,
+      myDetail: [{
+        name: student.name,
         rollNo: student.rollNo,
-        myId : student._id
+        myId: student._id
       }],
-      groupId : student.group, supervisor : group.supervisor,
-      supervisorId : group.supervisorId, projectTitle : group.projects[0].projectTitle,      
-      projectId : group.projects[0].projectId,
-      groupMember : group.projects[0].students.filter(stu=>!stu.userId.equals(userId)),
-      proposal : group.isProp, documentation : group.isDoc,
-      docDate : student.docDate ? student.docDate : '----' ,
-      propDate : student.propDate ? student.propDate : '----' ,
-      viva : viva ? viva.vivaDate : '-----'
+      groupId: student.group, supervisor: group.supervisor,
+      supervisorId: group.supervisorId, projectTitle: group.projects[0].projectTitle,
+      projectId: group.projects[0].projectId,
+      groupMember: group.projects[0].students.filter(stu => !stu.userId.equals(userId)),
+      proposal: group.proposal, documentation: group.documentation, finalSubmission : group.finalSubmission,
+      docDate: student.docDate ? student.docDate : '----',
+      propDate: student.propDate ? student.propDate : '----',
+      viva: viva ? viva.vivaDate : '-----'
     }
-    return res.json({success:true, group : groupDetail})
+    return res.json({ success: true, group: groupDetail })
   } catch (error) {
-    
+
   }
 });
 
-router.get('/notification', authenticateUser, async (req,res)=>{
+router.get('/notification', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
