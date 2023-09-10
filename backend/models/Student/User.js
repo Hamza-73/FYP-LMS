@@ -37,6 +37,11 @@ const userSchema = new Schema({
   },
   meetingId: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
+  meetingTime : {
+    type: String,
+    match: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, // Validate as HH:mm format
+  },
+  meetingDate : {type : Date}
 });
 
 module.exports = mongoose.model('User', userSchema);

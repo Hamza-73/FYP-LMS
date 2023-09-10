@@ -24,11 +24,14 @@ const groupSchema = new Schema({
   viva: { type: Schema.Types.ObjectId, ref: 'Viva' },
   vivaDate : {type : String},
   propDate: { type: Date },
+  propSub: { type: Date },
   docDate: { type: Date },
+  docSub: { type: Date },
   meetingid: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
-  isFinal : {type: Date},
+  isFinal : {type: Boolean, default:false},
   finalDate : {type : Date},
+  finalSub : {type : Date},
 });
 
 module.exports = mongoose.model('Group', groupSchema);

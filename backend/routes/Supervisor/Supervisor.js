@@ -17,8 +17,8 @@ router.post('/login', async (req, res) => {
   try {
     // Find the supervisor by username
     const supervisor = await Supervisor.findOne({ username });
-    if(!supervisor){
-      return res.status(404).json({success:false, message:"Supervisor not found"});
+    if (!supervisor) {
+      return res.status(404).json({ success: false, message: "Supervisor not found" });
     }
     const check = await bcrypt.compare(password, supervisor.password)
 
@@ -56,10 +56,10 @@ router.post('/create', [
     const existingSupervisor = await Supervisor.findOne({ username });
     if (existingSupervisor) {
       return res.status(409).json({ success: false, message: 'username already exists' });
-    } else {    
+    } else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
-      const supervisor = new Supervisor({ name, designation, username, password:secPass, slots, department });
+      const supervisor = new Supervisor({ name, designation, username, password: secPass, slots, department });
       await supervisor.save();
       res.json({ success: true, supervisor });
     }
@@ -83,7 +83,7 @@ router.post('/reset-password', async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    
+
     const salt = await bcrypt.genSalt(10);
     const secPass = await bcrypt.hash(newPassword, salt);
     user.password = secPass;
@@ -180,8 +180,9 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       if (student) {
         const updatedPendingRequests = student.pendingRequests.filter(request => !request._id.equals(requestId));
         student.pendingRequests = updatedPendingRequests;
-        student.unseenNotifications.push({
-          message: `${supervisor.name} rejected your request for ${projectRequest.projectTitle}`
+        const request = await ProjectRequest.findById(projectRequest);
+        student.unseenNotifications.push({ type : "Important",
+          message: `${supervisor.name} rejected your request for ${request.projectTitle}`
         });
         await student.save();
       }
@@ -213,7 +214,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       // GetProjectDetail for Project Id
       const projectDetail = await ProjectRequest.findById(projectRequest.project);
-      // console.log("ProjectDetail is ", projectDetail);
 
       // Check if user is already in the group
       if (projectDetail.status) {
@@ -222,6 +222,21 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       // Find or create the relevant group
       let group = supervisor.groups.find(group => group.supervisor === supervisor.name);
+      if (group) {
+        group.projects.push(async project => {
+          project.students.push({
+            name: user.name, rollNo: user.rollNo, userId: user._id
+          });
+          user.group = group._id;
+          user.pendingRequests = [];
+          user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+          supervisor.unseenNotifications.push({ type : "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+          await Promise.all([ group.save(), user.save() , supervisor.save()  ]);
+          return res.jaon({success:true, message:"Accept requested and Student Added to Group"});
+        });
+
+      }
+
       if (!group) {
         // Create the group document and obtain its ObjectId
         const newGroup = new Group({ supervisor: supervisor.name, supervisorId: supervisor._id, projects: [], students: [] });
@@ -229,8 +244,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         group = newGroup._id; // Store the ObjectId of the new group
         supervisor.groups.push(group);
       }
-      // console.log('group is ', group);
-
 
       // Find or create the relevant project in the group
       const groupDoc = await Group.findById(group); // Fetch the group document
@@ -240,39 +253,22 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
         groupDoc.projects.push(project);
       }
-      // console.log("project is after initlialization", project)
-      // console.log('GroupDoc is ', groupDoc);
 
-      // console.log('User is ', user);
-
-      // console.log('Group doc studen is ', groupDoc.projects)
-      // console.log('Group doc studen are ', project.students)
       // Add the user to the project's students array
       groupDoc.projects.map((group) => {
         if (group.projectTitle === projectDetail.projectTitle) {
-          // console.log('Inside map group is ', group)
-          // console.log('inside map', group.projectTitle)
-          // console.log('inside map', user.name)
-          // console.log('Student is ', group.students)
-          // console.log('ID is ', group.projectId)
           group.students.push({
             name: user.name, rollNo: user.rollNo, userId: user._id
           })
           // console.log('After push')
         }
       });
-      // console.log('Project Detail is ', projectDetail)
-      // projectDetail.forEach((proj)=>{
-      //   console.log(proj.projectTitle)
-      // })
-      // console.log('user id is ', user._id)
+
       // Decrease supervisor group by one
       supervisor.slots = supervisor.slots - 1;
       projectDetail.students.push(user._id);
       projectDetail.supervisor = (supervisor._id);
       projectDetail.isAccepted = true;
-      // console.log('Project Supervisor is ', projectDetail.supervisor);
-      // projectDetail.supervisor.push(supervisor._id);
 
       if (projectDetail.students.length === 2) {
         projectDetail.status = true;
@@ -290,8 +286,9 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       // Make user pending request zero and give him a notification
       user.pendingRequests = [];
-      user.unseenNotifications.push({ type: "important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
-      supervisor.unseenNotifications.push({ message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+      user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+      supervisor.unseenNotifications.push({ type : "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+
 
       console.log('Student is ', user)
       // Add group id to user
@@ -337,7 +334,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         group = newGroup._id; // Store the ObjectId of the new group
         supervisor.groups.push(group);
       }
-      // console.log('group is ', group);
 
 
       // Find or create the relevant project in the group
@@ -348,21 +344,10 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
         groupDoc.projects.push(project);
       }
-      // console.log("project is after initlialization", project)
-      // console.log('GroupDoc is ', groupDoc);
 
-      // console.log('User is ', user);
-
-      // console.log('Group doc studen is ', groupDoc.projects)
-      // console.log('Group doc studen are ', project.students)
       // Add the user to the project's students array
       groupDoc.projects.map((group) => {
         if (group.projectTitle === projectDetail.projectTitle) {
-          // console.log('Inside map group is ', group)
-          // console.log('inside map', group.projectTitle)
-          // console.log('inside map', user.name)
-          // console.log('Student is ', group.students)
-          // console.log('ID is ', group.projectId)
           group.students.push({
             name: user.name,
             rollNo: user.rollNo,
@@ -371,11 +356,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
           // console.log('After push')
         }
       });
-      // console.log('Project Detail is ', projectDetail)
-      // projectDetail.forEach((proj)=>{
-      //   console.log(proj.projectTitle)
-      // })
-      // console.log('user id is ', user._id)
       // Decrease supervisor group by one
       supervisor.slots = supervisor.slots - 1;
       projectDetail.students.push(user._id)
@@ -386,9 +366,9 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       }
       // remove request from supervisor projectrequests
       const filteredRequest = supervisor.projectRequest.filter((request) => {
-        console.log('project is ', request.project);
-        console.log('detail filter', projectDetail._id)
-        console.log('tr/false', request.project.equals(projectDetail._id))
+        // console.log('project is ', request.project);
+        // console.log('detail filter', projectDetail._id)
+        // console.log('tr/false', request.project.equals(projectDetail._id))
         return !request.project.equals(projectDetail._id);
       });
 
@@ -396,8 +376,8 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       // Make user pending request zero and give him a notification
       user.pendingRequests = [];
-      user.unseenNotifications.push({ message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
-      supervisor.unseenNotifications.push({ message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+      user.unseenNotifications.push({ type:"Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+      supervisor.unseenNotifications.push({  type:"Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
 
       // console.log('Student is ', user)
       // Add group id to user
@@ -436,27 +416,30 @@ router.put('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, r
       }
     }
 
-    console.log("supervisor group is ", supervisor.groups)
+    // console.log("supervisor group is ", supervisor.groups)
 
     // Find the student by roll number
     const student = await User.findOne({ rollNo: rollNo });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found with the specified roll number' });
+    }
     if (student.isMember) {
       return res.status(404).json({ success: false, message: 'Student is already in group' });
     }
 
     supervisor.groups.map(async (grp) => {
-      console.log('GRP is ', grp);
+      // console.log('GRP is ', grp);
       const group = await Group.findById(grp);
 
       if (!group) {
         return res.status(404).json({ success: false, message: 'Group not found with the specified project title' });
       }
       if (group) {
-        console.log('GROUP is', group)
-        console.log('TITLE is', group.projects)
+        // console.log('GROUP is', group)
+        // console.log('TITLE is', group.projects)
 
         group.projects.map(async (proj) => {
-          console.log('proj is ', proj);
+          // console.log('proj is ', proj);
           console.log('proj Title ', proj.projectTitle);
           if (proj.projectTitle === projectTitle) {
             // Check if there are already two students in the group's project
@@ -464,10 +447,7 @@ router.put('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, r
               return res.status(400).json({ success: false, message: 'Group already has two students' });
             }
 
-            if (!student) {
-              return res.status(404).json({ success: false, message: 'Student not found with the specified roll number' });
-            }
-            console.log('Student is', student)
+            // console.log('Student is', student)
             proj.students.push({
               name: student.name,
               rollNo: student.rollNo,
@@ -476,23 +456,27 @@ router.put('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, r
 
             //Push student to projectRequest
             const request = await ProjectRequest.findOne({ projectTitle: projectTitle });
+            if(!request){
+              return res.status(500).json({success:true, message:"ProjectRequest not found"})
+            }
             if (request) {
-              console.log('Request is ', request);
               request.students.push(student._id);
             }
+            console.log('requets is ', request);
 
-            student.unseenNotifications.push({
-              message: `You've been added to the ${supervisor.name}'s group project is :${proj.projectTitle}`
+            student.unseenNotifications.push({ type : "Important",
+              message: `You've been added to the ${supervisor.name}'s group project is :${request.projectTitle}`
             })
             student.group = group._id;
             student.isMember = true;
 
             supervisor.unseenNotifications.push({
-              message: `You added ${student.name} tto group ${projectTitle} `
+              type : "Important",
+              message: `You added ${student.name} to group ${projectTitle} `
             })
 
             // Save changes to the supervisor's data
-            await Promise.all([supervisor.save(), group.save(), student.save()])
+            await Promise.all([supervisor.save(), group.save(), student.save(), request.save()])
 
             res.json({ success: true, message: 'Student added to the group with the specified project title' });
           }

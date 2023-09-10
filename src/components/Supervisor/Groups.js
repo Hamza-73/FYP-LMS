@@ -53,6 +53,7 @@ const Groups = (props) => {
   const handleAddStudent = async (e, projectTitle, rollNo) => {
     try {
       e.preventDefault();
+      console.log('add stdents starts');
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/supervisor/add-student/${projectTitle}/${rollNo}`, {
         method: 'PUT',

@@ -140,8 +140,8 @@ const ProjectIdeas = () => {
                         <td>{groupKey + 1}</td>
                         <td>{idea.supervisor}</td>
                         <td>{group.projectTitle}</td>
-                        <td>{group.description}</td>
                         <td>{group.scope}</td>
+                        <td>{group.description}</td>
                       </tr>
                     ))}
                   </tbody>

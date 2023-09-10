@@ -17,6 +17,8 @@ const MyGroup = (props) => {
     }
   });
   const [loading, setLoading] = useState(false);
+  const [type, setType] = useState('');
+  const [file,setFile]= useState();
 
 
   useEffect(() => {
@@ -61,10 +63,77 @@ const MyGroup = (props) => {
       }, 1000)
     }
   }, [])
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile); // Set the file immediately
+    console.log('file is ', selectedFile); // Use the selected file immediately
+  }
+  
+  const upload = async (e, type) => {
+    e.preventDefault();
+    try {
+      if (!file) {
+        console.log('No file selected.');
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append('type', type.trim()); // Add the 'type' field to the FormData object
+      formData.append(type.trim(), file); // Make sure to match the field name with your backend route
+  
+      console.log('form data is ', formData);
+  
+      const response = await fetch('http://localhost:5000/student/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: localStorage.getItem('token'),
+        },
+        body: formData, // Set the FormData object as the body
+      });
+      const json = await response.json();
+      console.log('response in uploading proposal is', json);
+      if (json.success) {
+        alert('file uploaded successfully');
+      }
+      setType('');
+      setFile();
+    } catch (error) {
+      console.log('error in uploading file', error);
+    }
+  };
   
 
   return (
     <div>
+      <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Your Request</h1>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              <>
+                <form onSubmit={(e) => upload(e, type)}>
+                  <div className="mb-3">
+                    <label htmlFor="exampleInputEmail163" className="form-label">Type of Document (Documentation/Final Submission)</label>
+                    <small>For documentation : documentation</small>
+                    <small>For Final Submission : final</small>
+                    <input type="text" className="form-control" id="username" name='username' value={type} onChange={(e)=>setType(e.target.value)} />
+                    <input type="file" onChange={(e) => { handleFileChange(e) }} />
+                  </div>
+                  <div className="modal-footer">
+                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>
+                      Submit
+                    </button>
+                  </div>
+                </form>
+              </>
+            </div>
+          </div>
+        </div>
+      </div>
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
@@ -81,7 +150,7 @@ const MyGroup = (props) => {
 
             <div className="mid">
               <h5>{group.group.supervisor}</h5>
-              <h5>{group.group.groupMember.length>0? group.group.groupMember[0].name : "No Group Member Yet"} <br /> {group.group.groupMember[0]?.rollNo}
+              <h5>{group.group.groupMember.length > 0 ? group.group.groupMember[0].name : "No Group Member Yet"} <br /> {group.group.groupMember[0]?.rollNo}
               </h5>
               <h5>{group.group.myDetail[0].name} <br /> {group.group.myDetail[0].rollNo}</h5>
             </div>
@@ -95,7 +164,7 @@ const MyGroup = (props) => {
                   </div>
                 </div>
                 <div>
-                  <a href="">view uploaded document</a>
+                 {group.group.documentation?  <a target='_blank' href={group.group.documentation} style={{textDecoration:"none"}}>View Uploaded Documentation</a>: "Upload Documentation To See"}
                 </div>
               </div><div className="review-box">
                 <div>
@@ -105,12 +174,12 @@ const MyGroup = (props) => {
                   </div>
                 </div>
                 <div>
-                  <a href="">view uploaded document</a>
+                {group.group.finalSubmission?  <a target='_blank' href={group.group.finalSubmission} style={{textDecoration:"none"}}>View Uploaded Final Submission</a>: "Upload Final Submission To See"}
                 </div>
               </div>
             </div>
             <div className="upload-btn">
-              <button className="btn btn-danger">Upload Document</button>
+              <button className="btn btn-danger"  data-bs-toggle="modal" data-bs-target="#exampleModal" disabled={group.group.finalSubmission && group.group.documentation}>Upload Document</button>
             </div>
           </> : <h1 className='text-center my-4'>You're currently not enrolled in any Group.</h1>
         }

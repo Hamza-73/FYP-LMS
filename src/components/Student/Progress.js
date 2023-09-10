@@ -7,7 +7,6 @@ import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Loading from '../Loading';
-import SideBar from '../SideBar';
 
 
 const Progress = (props) => {
@@ -18,11 +17,6 @@ const Progress = (props) => {
     }
     const [percentage, setPercentage] = useState(25);
 
-    const data = [
-        { tasks: "Task1", status: 'Completed', duedate: "27-09-2023", subdate: "02-10-2023" },
-        { tasks: "Task2", status: 'Pending', duedate: "20-05-2023", subdate: "02-10-2023" },
-        { tasks: "Task1", duedate: "09-11-2023", subdate: "02-10-2023" },
-    ]
     // eslint-disable-next-line
     const [request, setRequest] = useState({
         username: "", projectTitle: "", description: "",
@@ -114,34 +108,27 @@ const Progress = (props) => {
                 groupDetail();
                 setLoading(false);
                 if (groupDetails.group) {
-                    if (groupDetails.group.isProp)
-                        setPercentage(percentage + 25);
-                    if (groupDetails.group.iDoc)
-                        setPercentage(percentage + 20);
-                    if(groupDetails.group.isFinal)
-                    setPercentage(percentage + 20);
-                }
+                    let updatedPercentage = 25; // Initialize with a base value
+                
+                    if (groupDetails.group.proposal) {
+                      updatedPercentage += 25;
+                    }
+                    if (groupDetails.group.documentation) {
+                      updatedPercentage += 20;
+                    }
+                    if (groupDetails.group.finalSubmission) {
+                      updatedPercentage += 20;
+                    }
+                    if( groupDetails.group.marks>0)
+                    updatedPercentage += 10;
+                
+                    setPercentage(updatedPercentage);
+                  }
             }, 1300)
         }
 
-    }, [])
-    useEffect(() => {
-        if (groupDetails.group) {
-          let updatedPercentage = 25; // Initialize with a base value
-      
-          if (groupDetails.group.isProp) {
-            updatedPercentage += 25;
-          }
-          if (groupDetails.group.iDoc) {
-            updatedPercentage += 20;
-          }
-          if (groupDetails.group.isFinal) {
-            updatedPercentage += 20;
-          }
-      
-          setPercentage(updatedPercentage);
-        }
-      }, [groupDetails]); // Watch for changes in groupDetails
+    }, []);
+
 
     return (
         <>
@@ -241,7 +228,7 @@ const Progress = (props) => {
                         </>
                     ) : <><h1 className='text-center my-3'>You're not currently enrolled in any Group</h1> </>}
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls" >
-                        <button style={{ background: "maroon" }} type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        <button style={{ background: "maroon" }} type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" disabled={groupDetails.group}>
                             Request Idea
                         </button>
                     </div>

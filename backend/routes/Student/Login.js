@@ -10,25 +10,22 @@ const authenticateUser = require('../../middleware/auth');
 const Supervisor = require('../../models/Supervisor/Supervisor');
 const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 const Group = require('../../models/GROUP/Group');
+const moment = require('moment');
 
 const multer = require('multer');
 const Viva = require('../../models/Viva/Viva');
 const uuid = require('uuid');
 const storage = multer.diskStorage({
-  
-  destination: function (req, file, cb) {
-    
-    cb(null, 'uploads/')
-    
+  destination: function (req, file, cb) {  
+    cb(null, 'uploads/')   
   },
-
   filename: function (req, file, cb) {
     console.log(file)
     cb(null, file.originalname)
   }
 })
 
-const upload = multer({ storage })
+const upload = multer({ storage });
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({ 
@@ -37,7 +34,6 @@ cloudinary.config({
   api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8' 
 });
 
-const path = require("path");
 
 router.post('/upload', authenticateUser,  async (req, res) => {
   try {
@@ -52,15 +48,12 @@ router.post('/upload', authenticateUser,  async (req, res) => {
     if (!groupUpdate) {
       return res.status(404).json({ success:false, message: 'Group Not Found' });
     }
-    // console.log('group is ', groupUpdate);
-    console.log('type is ', type)
 
     const file = req.files[type];
     console.log('file is ', file);
 
     cloudinary.uploader.upload(file.tempFilePath, async (error, result)=>{
       console.log('result is ', result);
-      groupUpdate.proposal = result.url;
       
       const promises = groupUpdate.projects.map(async project => {
         return Promise.all(project.students.map(async student => {
@@ -71,18 +64,26 @@ router.post('/upload', authenticateUser,  async (req, res) => {
           
           studentObj.unseenNotifications.push({
             type: "Important",
-            message: `${type} For Your Group is Uploaded`
+            message: `${type[0].toUpperCase() + type.slice(1,type.length)} For Your Group is Uploaded`
           });
 
           if (type === 'proposal') {
             studentObj.isProp = true;
             groupUpdate.isProp = true;
+            groupUpdate.proposal = result.url;
+            groupUpdate.propSub =  moment(new Date(), 'DD-MM-YYYY').toDate();
           } else if (type === 'documentation') {
             studentObj.isDoc = true;
             groupUpdate.isDoc = true;
-          } else {
+            groupUpdate.documentation = result.url;
+            groupUpdate.docSub = moment(new Date(), 'DD-MM-YYYY').toDate();
+          } else if(type==='final') {
             studentObj.isFinal = true;
             groupUpdate.isFinal = true;
+            groupUpdate.finalSubmission = result.url;
+            groupUpdate.finalSub = moment(new Date(), 'DD-MM-YYYY').toDate();
+          }else{
+            return res.status(404).json({success:false, message:"The Type Is Not Correct"})
           }
         }));
       });
@@ -191,7 +192,40 @@ router.delete('/delete/:id', async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid Student ID' });
     }
+    const student = await User.findById(id);
+    if(!student){
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    const group = await Group.findById(student.group);
+    if(!group){
+      return;
+    }
+    // It will delete student data from all the groups and projectRequests 
+    group.projects.map(async project=>{
+      const filteredGroup = project.students.filter(stu=>{
+        return !stu.userId.equals(student._id)
+      });
+      project.students = filteredGroup;
+      const projectRequest = await ProjectRequest.findOne({projectTitle: project.projectTitle});
+      if(!projectRequest){
+        return;
+      }
+      const FilteredRequest = projectRequest.students.filter(stu=>{
+        return !stu.equals(student._id);
+      })
+      projectRequest.students = FilteredRequest;
+      projectRequest.status = false ;
+      await Promise.all([ group.save(), projectRequest.save() ])
+      
+    });
 
+    // Notify supervisor that his studet is deleted
+    const supervisor = await Supervisor.findById(group.supervisorId);
+    if(!supervisor){
+      return;
+    }
+    supervisor.unseenNotifications.push({ type : "Important", message:`Committee deleted your group student ${student.name}`});
+    await supervisor.save();
     const deletedMember = await User.findByIdAndDelete(id);
 
     if (!deletedMember) {
@@ -315,15 +349,8 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
 
     }
 
-    // console.log('pending request is ', pendingProject)
-    // console.log('id request is ', pendingProject._id)
     // Check if the user has already sent a request to this supervisor
     const requestExists = user.pendingRequests.map(req => {
-      // console.log('req is ', req);
-      // console.log('re proj is', req.projectId);
-      // console.log('proje id', pendingProject._id);
-      // console.log('req sup is', req.supervisor);
-      // console.log('supervisor id', supervisor._id);
       console.log(req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
       return (req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
 
@@ -396,7 +423,7 @@ router.post('/request-to-join/:projectTitle', authenticateUser, async (req, res)
     if (projectRequest.students.length === 2) {
       return res.status(400).json({ success: false, message: 'Student The Group is already filled' });
     }
-
+    console.log('project request in sending request is ', projectRequest.supervisor)
     const supervisor = await Supervisor.findById(projectRequest.supervisor);
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });

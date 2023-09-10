@@ -27,7 +27,7 @@ const StudentMain = (props) => {
             <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress' user='studentMain'
               link2='progress' title3='Tasks' link3='tasks' title4='My Group'
               link4='group' title5='Fyp Ideas' link5='ideas' detailLink='student'
-              title6='Notification' link6='notification'
+              title6='Notification' link6='notification' title7='Meetings' link7='meeting'
             />
           )}
         </div>
@@ -41,6 +41,7 @@ const StudentMain = (props) => {
           <Route path='/tasks' element={<Tasks />} />
           <Route path='/group' element={<MyGroup />} />
           <Route path='/ideas' element={<FypIdeas />} />
+          <Route path='/meeting' element={<StuDash />} />
           <Route path='/notification' element={<Notification user='student' />} />
         </Routes>
       </>

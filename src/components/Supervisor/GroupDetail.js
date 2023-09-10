@@ -9,7 +9,7 @@ const GroupDetail = () => {
         projects: [
           {
             projectTitle: '',
-            students: [ { name: '', rollNo: '', userId: '', _id: '' }, { name: '', rollNo: '', userId: '', _id: '' },
+            students: [{ name: '', rollNo: '', userId: '', _id: '' }, { name: '', rollNo: '', userId: '', _id: '' },
             ],
           },
         ],
@@ -31,7 +31,7 @@ const GroupDetail = () => {
         },
       });
       const json = await response.json();
-      console.log('json is ', json);
+      console.log('json in groupDetail is ', json);
       setGroup(json);
       setLoading(false);
     } catch (error) {
@@ -54,7 +54,7 @@ const GroupDetail = () => {
     setCurrentIndex((prevIndex) => prevIndex - 1);
   };
 
-  const currentGroup = group.groups.length>0 ? group.groups[currentIndex] :  {};
+  const currentGroup = group.groups.length > 0 ? group.groups[currentIndex] : {};
 
   return (
     <div>
@@ -74,18 +74,18 @@ const GroupDetail = () => {
               </div>
 
               <div className="mid">
-                
-                  <div>
-                    <h5>
-                      {currentGroup.projects[0].students[0]? currentGroup.projects[0].students[0].name:"No Student Yet"} <br /> {currentGroup.projects[0].students[0]? currentGroup.projects[0].students[0].rollNo:""}
-                    </h5>
-                    </div>
-                    <div>
-                    <h5>
-                      {currentGroup.projects[0].students[1]? currentGroup.projects[0].students[1].name:"No Student Yet"} <br /> {currentGroup.projects[0].students[1]? currentGroup.projects[0].students[1].rollNo:""}
-                    </h5>
-                  </div>
-               
+
+                <div>
+                  <h5>
+                    {currentGroup.projects[0].students[0] ? currentGroup.projects[0].students[0].name : "No Student Yet"} <br /> {currentGroup.projects[0].students[0] ? currentGroup.projects[0].students[0].rollNo : ""}
+                  </h5>
+                </div>
+                <div>
+                  <h5>
+                    {currentGroup.projects[0].students[1] ? currentGroup.projects[0].students[1].name : "No Student Yet"} <br /> {currentGroup.projects[0].students[1] ? currentGroup.projects[0].students[1].rollNo : ""}
+                  </h5>
+                </div>
+
               </div>
 
               <div className="last">
@@ -97,7 +97,7 @@ const GroupDetail = () => {
                     </div>
                   </div>
                   <div>
-                    <a href="">View uploaded document</a>
+                    {currentGroup.proposal?   <a href={currentGroup.proposal} target='_blank'>View Uploaded Proposal</a> : "No Proosal Uploaded Yet"}
                   </div>
                 </div>
                 <div className="review-box">
@@ -108,32 +108,31 @@ const GroupDetail = () => {
                     </div>
                   </div>
                   <div>
-                    <a href="">View uploaded document</a>
+                  {currentGroup.documentation?   <a href={currentGroup.documentation} target='_blank'>View Uploaded Documentation</a> : "No Documentation Uploaded Yet"}
+                  </div>
+                </div>
+                <div className="review-box">
+                  <div>
+                    <h6>Review</h6>
+                    <div className="form-floating">
+                      <textarea className="form-control" cols="50" placeholder="" id="floatingTextarea"></textarea>
+                    </div>
+                  </div>
+                  <div>
+                  {currentGroup.finalSubmission?   <a href={currentGroup.finalSubmission} target='_blank'>View Final Submission</a> : "No Final Submission Yet"}
                   </div>
                 </div>
               </div>
-
-              <div className="upload-btn">
-                <button className="btn btn-danger">Upload Document</button>
+              <div className='d-flex justify-content-between'>
+                <button className="btn btn-success" onClick={handlePrevClick} disabled={currentIndex <= 0}
+                > Prev </button>
+                <button className="btn btn-success" onClick={handleNextClick} disabled={currentIndex === group.groups.length - 1}
+                > Next </button>
               </div>
 
-              <button
-                className="btn btn-success"
-                onClick={handlePrevClick}
-                disabled={currentIndex <= 0}
-              >
-                Prev
-              </button>
-              <button
-                className="btn btn-success"
-                onClick={handleNextClick}
-                disabled={currentIndex === group.groups.length - 1}
-              >
-                Next
-              </button>
             </div>
           ) : (
-              <h2 className='text-center'>You currently have no group in supervision.</h2>
+            <h2 className='text-center'>You currently have no group in supervision.</h2>
           )}
         </>
       ) : (
