@@ -5,7 +5,7 @@ const groupSchema = new Schema({
   supervisor: { type: String, required: true },
   supervisorId: { type: Schema.Types.ObjectId, ref: 'Supervisor' },
   projects: [{
-    projectTitle: { type: String, required: true },
+    projectTitle: { type: String, required: true, unique:true },
     projectId: { type: Schema.Types.ObjectId, ref: 'ProjectRequest' },
     students: [{
       userId: { type: Schema.Types.ObjectId, ref: 'User' },

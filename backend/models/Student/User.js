@@ -29,6 +29,9 @@ const userSchema = new Schema({
   propDate:{type : Date},
   docDate : {type: Date},
   finalDate : {type : Date},
+  docSub : {type : Date},
+  finalSub : {type : Date},
+  propSub : {type : Date},
   viva : {type: Schema.Types.ObjectId, ref: 'Viva'},
   vivaDate : {type : String},
   vivaTime : {

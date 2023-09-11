@@ -110,20 +110,22 @@ const StudentList = (props) => {
     if (confirmed) {
       try {
         console.log('id is ', id)
-        const response = await axios.delete(`http://localhost:5000/student/delete/${id}`,
+        const response = await fetch(`http://localhost:5000/student/delete/${id}`,
           {
+            method : "DELETE",
             headers: {
               'Content-Type': 'application/json',
             },
           }
         );
+        console.log('response os fetch')
         if (response.status === 200) {
           // Update the UI by removing the deleted student from the data
           setData((prevData) => ({
             ...prevData,
             members: prevData.members.filter((member) => member._id !== id),
           }));
-          NotificationManager.error('Deleted Successfully');
+          NotificationManager.success('Deleted Successfully');
         }
       } catch (error) {
         console.log('Error:', error); // Log the error message

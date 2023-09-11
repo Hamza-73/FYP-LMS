@@ -188,44 +188,42 @@ router.delete('/delete/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if the provided ID is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid Student ID' });
-    }
+    
     const student = await User.findById(id);
     if(!student){
       return res.status(404).json({ message: 'Student not found' });
     }
-    const group = await Group.findById(student.group);
-    if(!group){
-      return;
-    }
+    console.log('student is ', student.name);
     // It will delete student data from all the groups and projectRequests 
-    group.projects.map(async project=>{
-      const filteredGroup = project.students.filter(stu=>{
-        return !stu.userId.equals(student._id)
+    const group = await Group.findById(student.group);
+    if(group){
+      group.projects.map(async project=>{
+        const filteredGroup = project.students.filter(stu=>{
+          return !stu.userId.equals(student._id)
+        });
+        project.students = filteredGroup;
+        const projectRequest = await ProjectRequest.findOne({projectTitle: project.projectTitle});
+        if(!projectRequest){
+          return;
+        }
+        const FilteredRequest = projectRequest.students.filter(stu=>{
+          return !stu.equals(student._id);
+        })
+        projectRequest.students = FilteredRequest;
+        projectRequest.status = false ;
+        await Promise.all([ group.save(), projectRequest.save() ])
+        
       });
-      project.students = filteredGroup;
-      const projectRequest = await ProjectRequest.findOne({projectTitle: project.projectTitle});
-      if(!projectRequest){
-        return;
-      }
-      const FilteredRequest = projectRequest.students.filter(stu=>{
-        return !stu.equals(student._id);
-      })
-      projectRequest.students = FilteredRequest;
-      projectRequest.status = false ;
-      await Promise.all([ group.save(), projectRequest.save() ])
-      
-    });
-
-    // Notify supervisor that his studet is deleted
+      // Notify supervisor that his studet is deleted
     const supervisor = await Supervisor.findById(group.supervisorId);
     if(!supervisor){
       return;
     }
     supervisor.unseenNotifications.push({ type : "Important", message:`Committee deleted your group student ${student.name}`});
     await supervisor.save();
+    }
+    
+    
     const deletedMember = await User.findByIdAndDelete(id);
 
     if (!deletedMember) {
@@ -499,10 +497,14 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       projectId: group.projects[0].projectId,
       groupMember: group.projects[0].students.filter(stu => !stu.userId.equals(userId)),
       proposal: group.proposal, documentation: group.documentation, finalSubmission : group.finalSubmission,
-      docDate: student.docDate ? student.docDate : '----',
-      propDate: student.propDate ? student.propDate : '----',
-      viva: viva ? viva.vivaDate : '-----',
-      meetingReport : group.meetingReport
+      docDate: group.docDate,
+      propDate: group.propDate,
+      finalDate: group.finalDate ,
+      docSub: group.docSub,
+      propSub: group.propSub ,
+      finalSub: group.finalSub,
+      viva: viva,
+      meetingReport : group.meetingReport,
     }
     return res.json({ success: true, group: groupDetail })
   } catch (error) {

@@ -237,24 +237,25 @@ const Progress = (props) => {
                                         <tr>
                                             <td>Project Title</td>
                                             <td>{groupDetails.group.proposal ? "Submitted" : 'Pending'}</td>
-                                            <td>{groupDetails.group.propDate}</td>
-                                            <td>{'-----'}</td>
+                                            <td>{groupDetails.group.propDate?new Date(groupDetails.group.propDate).toLocaleDateString('en-US'):"---"}</td>
+                                            <td>{groupDetails.group.propSub?new Date(groupDetails.group.propSub).toLocaleDateString('en-US'):"---"}</td>
                                         </tr>
                                         <tr>
                                             <td>Proposal</td>
                                             <td>{groupDetails.group.proposal ? "Submitted" : 'Pending'}</td>
-                                            <td>{groupDetails.group.propDate}</td>
-                                            <td>{'-----'}</td>
+                                            <td>{groupDetails.group.propDate?new Date(groupDetails.group.propDate).toLocaleDateString('en-US'):"---"}</td>
+                                            <td>{groupDetails.group.propSub?new Date(groupDetails.group.propSub).toLocaleDateString('en-US'):"---"}</td>
                                         </tr>
                                         <tr>
                                             <td>Project Documentation</td>
                                             <td>{groupDetails.group.documentation ? "Submitted" : 'Pending'}</td>
-                                            <td>{groupDetails.group.docDate}</td>
-                                            <td>{'-----'}</td>
+                                            <td>{groupDetails.group.docDate?new Date(groupDetails.group.docDate).toLocaleDateString('en-US'):"---"}</td>
+                                            <td>{groupDetails.group.docSub?new Date(groupDetails.group).toLocaleDateString('en-US'):"---"}</td>
                                         </tr>
                                         <tr>
                                             <td>Viva</td>
-                                            <td>{groupDetails.group.viva ? "Taken" : 'Pending'}</td>
+                                            <td>{groupDetails.group.vivaDate ? (new Date(groupDetails.group.vivaDate) > new Date() ? "Pending" : "Taken") : "----"}
+</td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>
                                         </tr>

@@ -71,22 +71,21 @@ const SupervisorList = (props) => {
       const id = selectedStudent._id;
       console.log('id is ', id)
 
-      const response = await axios.put(
-        `http://localhost:5000/supervisor/edit/${id}`, // Assuming _id is the correct identifier for a student
+      const response = await fetch( `http://localhost:5000/supervisor/edit/${id}`, // Assuming _id is the correct identifier for a student
         {
-          name: register.name, username: register.username,
-          department: register.department, designation: register.designation,
-          slots: register.slots
-        },
-        {
-          // method:"PUT",
+          method:"PUT",
           headers: {
             'Content-Type': 'application/json',
           },
+          body : JSON.stringify({
+            name: register.name, username: register.username,
+            department: register.department, designation: register.designation,
+            slots: register.slots
+          })
         }
       );
 
-      const updatedStudent = await response.data;
+      const updatedStudent = await response.json();
       // console.log('updatedStudent is ', updatedStudent)
       if (updatedStudent) {
         setData((prevData) => ({

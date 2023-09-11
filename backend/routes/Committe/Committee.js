@@ -379,17 +379,15 @@ router.get('/progress', async (req, res) => {
 router.post('/dueDate/:groupId', async (req, res) => {
   try {
     const { type, dueDate } = req.body;
-    const groupId = req.params;
+    const { groupId } = req.params;
     const group = await Group.findById(groupId);
+
     if (!group) {
-      res.status(404).json({ message: "Group Not Found" });
+      return res.status(404).json({ message: "Group Not Found" });
     }
 
-    // Create an array to store promises
-    const promises = [];
-
-    group.projects.map(proj => {
-      proj.students.map(async student => {
+    const promiseArray = group.projects.map(async (proj) => {
+      return Promise.all(proj.students.map(async (student) => {
         const stu = await User.findById(student.userId);
         if (!stu) {
           return;
@@ -397,30 +395,34 @@ router.post('/dueDate/:groupId', async (req, res) => {
         if (type === 'proposal') {
           group.propDate = dueDate;
           stu.propDate = dueDate;
-        }
-        else if (type === 'documentation') {
+        } else if (type === 'documentation') {
           group.docDate = dueDate;
           stu.docDate = dueDate;
-        }
-        else if (type === 'final') {
+          console.log('documentation');
+        } else if (type === 'final') {
           group.finalDate = dueDate;
           stu.finalDate = dueDate;
+          console.log('final');
         }
-        // Push both group.save() and stu.save() promises into the array
-        promises.push(group.save(), stu.save());
-      })
+      }));
     });
 
     // Use Promise.all to execute all promises in parallel
-    await Promise.all(promises);
+    await Promise.all(promiseArray);
 
-    res.status(200).json({ message: "Due Date Updated Successfully" });
+    await group.save();
+
+    return res.status(200).json({ message: "Due Date Updated Successfully" });
   } catch (error) {
     // Handle errors
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+
+
+
 
 
 module.exports = router;
