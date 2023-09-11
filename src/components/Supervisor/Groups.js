@@ -1,7 +1,8 @@
 import { current } from '@reduxjs/toolkit';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import SideBar from '../SideBar';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const Groups = (props) => {
   const [group, setGroup] = useState({ groups: [] });
@@ -31,22 +32,22 @@ const Groups = (props) => {
 
       if (json.success) {
         if (json.message) {
-          props.showAlert(json.message, 'success');
+          NotificationManager.success(json.message);
         } else {
           // Handle the case where json.message is empty
-          props.showAlert('Student added successfully', 'success');
+          NotificationManager.success('Marks Uploaded Successfully');
         }
       } else {
         // Handle the case where json.success is false
         if (json.message) {
-          props.showAlert(json.message, 'danger');
+          NotificationManager.error(json.message);
         } else {
-          props.showAlert('An error occurred while adding the student', 'danger');
+          NotificationManager.error('Some Error occurred reload page/ try again');
         }
       }
     } catch (error) {
       console.log('error in adding student', error);
-      props.showAlert(`error adding to group: ${error}`, 'danger');
+      NotificationManager.error('Some error occured Try Again');
     }
   };
 
@@ -68,22 +69,22 @@ const Groups = (props) => {
 
       if (json.success) {
         if (json.message) {
-          props.showAlert(json.message, 'success');
+          NotificationManager.error(json.message);
         } else {
           // Handle the case where json.message is empty
-          props.showAlert('Student added successfully', 'success');
+          NotificationManager.success('Student added successfully');
         }
       } else {
         // Handle the case where json.success is false
         if (json.message) {
-          props.showAlert(json.message, 'danger');
+          NotificationManager.error(json.message);
         } else {
-          props.showAlert('An error occurred while adding the student', 'danger');
+          NotificationManager.success('Some Error ocurred Try/Again');
         }
       }
     } catch (error) {
       console.log('error in adding student', error);
-      props.showAlert(`error adding to group: ${error}`, 'danger');
+      NotificationManager.error('Some Error ocurred Try/Again');
     }
   };
 
@@ -239,6 +240,7 @@ const Groups = (props) => {
       <div className="d-grid gap-2 d-md-flex justify-content-md-end">
         <button className="btn" data-toggle="modal" data-target="#exampleModal" style={{ background: "maroon", color: "white", position: "relative", right: "7rem", top: "1rem" }} type="button">Add Student</button>
       </div>
+        <NotificationContainer />
     </div>
   );
 };

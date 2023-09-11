@@ -10,6 +10,7 @@ import SupervisorList from './Committee/SupervisorList'
 import CommitteeMember from './Committee/CommitteeMember'
 import ProjectProgress from './Committee/ProjectProgress'
 import ForgotPassword from './ForgotPassword'
+import Dashboard from './Dashboard'
 
 const CommitteeMain = (props) => {
 
@@ -25,28 +26,30 @@ const CommitteeMain = (props) => {
             <div>
                 {!showSidebar && (
                     <SideBar
-                        title1='FYP Guidelines' link1='commdashboard' user='committeeMain'
-                        title2='Committee Members' link2='members'
-                        title3='Supervisor List' link3='supervisor'
-                        title4='Student List' link4='student'
-                        title5='Project List' link5='project'
-                        title6='Schedule Viva' link6='event'
-                        detailLink='committee' title7='Project Progress' link7='progress'
+                        title1='Home' link1='home'
+                        title2='FYP Guidelines' link2='commdashboard' user='committeeMain'
+                        title3='Committee Members' link3='members'
+                        title4='Supervisor List' link4='supervisor'
+                        title5='Student List' link5='student'
+                        title6='Project List' link6='project'
+                        title7='Schedule Viva' link7='event'
+                        detailLink='committee' title8='Project Progress' link8='progress'
                     />
                 )}
             </div>
             <Routes>
-                <Route path='/' element={<Login showAlert={props.showAlert}
+                <Route path='/' element={<Login
                     formHeading='Committee Login' mainHeading='FYP PROCTORING'
-                    loginRoute='/committee/login' path='/committeeMain/commdashboard' user='committeeMain'
+                    loginRoute='/committee/login' path='/committeeMain/home' user='committeeMain'
                 />} />
-                <Route path='/forgotpassword' exact element={<ForgotPassword detailLink='committee' showAlert={props.showAlert} />} />
-                <Route path='/commdashboard' element={<CumDashboard showAlert={props.showAlert} />} />
-                <Route path='/project' element={<ProjectList showAlert={props.showAlert} />} />
-                <Route path='/student' element={<StudentList showAlert={props.showAlert} />} />
-                <Route path='/event' element={<Event showAlert={props.showAlert} />} />
-                <Route path='/supervisor' element={<SupervisorList showAlert={props.showAlert} />} />
-                <Route path='/members' element={<CommitteeMember showAlert={props.showAlert} />} />
+                <Route path='/forgotpassword' exact element={<ForgotPassword detailLink='committee' />} />
+                <Route path='/commdashboard' element={<CumDashboard />} />
+                <Route path='/home' element={<Dashboard />} />
+                <Route path='/project' element={<ProjectList />} />
+                <Route path='/student' element={<StudentList />} />
+                <Route path='/event' element={<Event />} />
+                <Route path='/supervisor' element={<SupervisorList />} />
+                <Route path='/members' element={<CommitteeMember />} />
                 <Route path='/progress' element={<ProjectProgress />} />
             </Routes>
         </div>

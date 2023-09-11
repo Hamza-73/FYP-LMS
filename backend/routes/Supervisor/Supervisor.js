@@ -224,10 +224,10 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       if (student) {
         const updatedPendingRequests = student.pendingRequests.filter(request => !request._id.equals(requestId));
         student.pendingRequests = updatedPendingRequests;
-        const request = await ProjectRequest.findById(projectRequest);
+        
         student.unseenNotifications.push({
           type: "Important",
-          message: `${supervisor.name} rejected your request for ${request.projectTitle}`
+          message: `${supervisor.name} rejected your request.`
         });
         await student.save();
       }

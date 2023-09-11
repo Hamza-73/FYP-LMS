@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import '../../css/task.css'
 import axios from 'axios';
-import Loading from '../Loading';
+import Loading from '../Loading';import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const Tasks = (props) => {
   const [file, setFile] = useState();
@@ -43,7 +44,7 @@ const Tasks = (props) => {
       const json = await response.json();
       console.log('response in uploading proposal is', json);
       if (json.success) {
-        alert('file uploaded successfully');
+        NotificationManager.success('file Uploaded Sucessfully');
       }
     } catch (error) {
       console.log('error in uploading file', error);
@@ -137,6 +138,7 @@ const Tasks = (props) => {
           </div>
         </>:<h1 className='text-center my-5'>You're Not Currently Enrolled In Any Group</h1>}
       </div> : <Loading />}
+        <NotificationContainer />
     </div>
   )
 }

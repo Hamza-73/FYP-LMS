@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const ProjectList = (props) => {
 
@@ -27,7 +29,7 @@ const ProjectList = (props) => {
       console.log('json is ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
-      props.showAlert(`Some error occurred: ${error.message}`, 'danger');
+      NotificationManager.error('Some Error occured Try/Again');
     }
   }
 
@@ -46,12 +48,12 @@ const ProjectList = (props) => {
       console.log('json is', json)
       if (json) {
         setRemarks(json);
-        props.showAlert('Remarks has been given to the Group', 'success')
+        NotificationManager.sucess('Remarks have been given');
       }
 
     } catch (error) {
       console.log('error is ', error)
-      props.showAlert('some error occured', 'danger')
+      NotificationManager.error('Some error occured Try Again');
     }
   }
 
@@ -62,7 +64,7 @@ const ProjectList = (props) => {
       setRemarks('')
     } catch (error) {
       console.log(' useerror is ', error)
-      props.showAlert(`some error occureed ${error}`, 'danger')
+      NotificationManager.error('Some error occured Try Again');
     }
   }
 
@@ -191,6 +193,7 @@ const ProjectList = (props) => {
           <div>No matching members found.</div>
         )}
       </div>
+      <NotificationContainer />
     </>
   )
 }

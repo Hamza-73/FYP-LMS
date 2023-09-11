@@ -1,21 +1,14 @@
 import './App.css';
 import React, { useState } from 'react';
 import StudentMain from './components/StudentMain';
-import Alert from './components/Alert';
 import CommitteeMain from './components/CommitteeMain';
 import SupervisorMain from './components/SupervisorMain';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import logo from './images/logo.png'
 
 const App = () => {
-  const [alert, setAlert] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation()
-
-  const showAlert = (message, type) => {
-    setAlert({ msg: message, type: type });
-    setTimeout(() => setAlert(null), 2000);
-  }
 
   const path = useNavigate();
 
@@ -91,11 +84,10 @@ const App = () => {
   `
   return (
     <div>
-      <Alert alert={alert} />
       <Routes>
-        <Route path='/studentMain/*' element={<StudentMain showAlert={showAlert} />} />
-        <Route path='/supervisorMain/*' element={<SupervisorMain showAlert={showAlert} />} />
-        <Route path='/committeeMain/*' element={<CommitteeMain showAlert={showAlert} />} />
+        <Route path='/studentMain/*' element={<StudentMain />} />
+        <Route path='/supervisorMain/*' element={<SupervisorMain />} />
+        <Route path='/committeeMain/*' element={<CommitteeMain />} />
       </Routes>
       {showSidebar && (
         <div>

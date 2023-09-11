@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import SideBar from '../SideBar'
 import '../../css/group.css'
 import Loading from '../Loading';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const MyGroup = (props) => {
   const [group, setGroupDetails] = useState({
@@ -94,7 +96,7 @@ const MyGroup = (props) => {
       const json = await response.json();
       console.log('response in uploading proposal is', json);
       if (json.success) {
-        alert('file uploaded successfully');
+        NotificationManager.sucess('File Uploaded successfully');
       }
       setType('');
       setFile();
@@ -185,6 +187,7 @@ const MyGroup = (props) => {
         }
       </div> : <Loading />
       }
+      <NotificationContainer />
     </div>
   )
 }

@@ -31,16 +31,16 @@ const SupervisorMain = (props) => {
         )}
       </div>
       <Routes>
-        <Route path='/' exact element={<Login showAlert={props.showAlert} user='supervisorMain'
+        <Route path='/' exact element={<Login  user='supervisorMain'
           formHeading='Supervisor Login' mainHeading='FYP PROCTORING'
           loginRoute='/supervisor/login' path='/supervisorMain/dashboard' />} />
-        <Route path='/forgotpassword' element={<ForgotPassword detailLink='supervisor' showAlert={props.showAlert} />} />
-        <Route path='/dashboard' element={<Dashboard showAlert={props.showAlert} />} />
-        <Route path='/group' element={<Group showAlert={props.showAlert} />} />
-        <Route path='/groupDetail' element={<GroupDetail showAlert={props.showAlert} />} />
-        <Route path='/meeting' element={<Meeting showAlert={props.showAlert} />} />
-        <Route path='/ideas' element={<ProjectIdeas showAlert={props.showAlert} />} />
-        <Route path='/requests' element={<ProjectRequest showAlert={props.showAlert} />} />
+        <Route path='/forgotpassword' element={<ForgotPassword detailLink='supervisor'  />} />
+        <Route path='/dashboard' element={<Dashboard  />} />
+        <Route path='/group' element={<Group  />} />
+        <Route path='/groupDetail' element={<GroupDetail  />} />
+        <Route path='/meeting' element={<Meeting  />} />
+        <Route path='/ideas' element={<ProjectIdeas  />} />
+        <Route path='/requests' element={<ProjectRequest  />} />
         <Route path='/notification' element={<Notification user='supervisor' />} />
       </Routes>
     </div>
