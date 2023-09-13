@@ -16,8 +16,8 @@ const multer = require('multer');
 const Viva = require('../../models/Viva/Viva');
 const uuid = require('uuid');
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {  
-    cb(null, 'uploads/')   
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/')
   },
   filename: function (req, file, cb) {
     console.log(file)
@@ -28,14 +28,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 const cloudinary = require('cloudinary').v2;
 
-cloudinary.config({ 
-  cloud_name: 'dfexs9qho', 
-  api_key: '798692241663155', 
-  api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8' 
+cloudinary.config({
+  cloud_name: 'dfexs9qho',
+  api_key: '798692241663155',
+  api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8'
 });
 
 
-router.post('/upload', authenticateUser,  async (req, res) => {
+router.post('/upload', authenticateUser, async (req, res) => {
   try {
     const { type } = req.body;
     // Check if the user belongs to the specified group
@@ -44,46 +44,46 @@ router.post('/upload', authenticateUser,  async (req, res) => {
       return res.status(404).json({ error: 'Student Not Found' });
     }
 
-    const groupUpdate =  await Group.findById(user.group);
+    const groupUpdate = await Group.findById(user.group);
     if (!groupUpdate) {
-      return res.status(404).json({ success:false, message: 'Group Not Found' });
+      return res.status(404).json({ success: false, message: 'Group Not Found' });
     }
 
     const file = req.files[type];
     console.log('file is ', file);
 
-    cloudinary.uploader.upload(file.tempFilePath, async (error, result)=>{
+    cloudinary.uploader.upload(file.tempFilePath, async (error, result) => {
       console.log('result is ', result);
-      
+
       const promises = groupUpdate.projects.map(async project => {
         return Promise.all(project.students.map(async student => {
           const studentObj = await User.findById(student.userId);
           if (!studentObj) {
-            return res.status(404).json({ success:false, message: 'Student Not Found' });
+            return res.status(404).json({ success: false, message: 'Student Not Found' });
           }
-          
+
           studentObj.unseenNotifications.push({
             type: "Important",
-            message: `${type[0].toUpperCase() + type.slice(1,type.length)} For Your Group is Uploaded`
+            message: `${type[0].toUpperCase() + type.slice(1, type.length)} For Your Group is Uploaded`
           });
 
           if (type === 'proposal') {
             studentObj.isProp = true;
             groupUpdate.isProp = true;
             groupUpdate.proposal = result.url;
-            groupUpdate.propSub =  moment(new Date(), 'DD-MM-YYYY').toDate();
+            groupUpdate.propSub = moment(new Date(), 'DD-MM-YYYY').toDate();
           } else if (type === 'documentation') {
             studentObj.isDoc = true;
             groupUpdate.isDoc = true;
             groupUpdate.documentation = result.url;
             groupUpdate.docSub = moment(new Date(), 'DD-MM-YYYY').toDate();
-          } else if(type==='final') {
+          } else if (type === 'final') {
             studentObj.isFinal = true;
             groupUpdate.isFinal = true;
             groupUpdate.finalSubmission = result.url;
             groupUpdate.finalSub = moment(new Date(), 'DD-MM-YYYY').toDate();
-          }else{
-            return res.status(404).json({success:false, message:"The Type Is Not Correct"})
+          } else {
+            return res.status(404).json({ success: false, message: "The Type Is Not Correct" })
           }
         }));
       });
@@ -94,10 +94,10 @@ router.post('/upload', authenticateUser,  async (req, res) => {
       await Promise.all([...promises, groupUpdate.save()]);
     });
 
-    res.status(201).json({ success:true,  message: 'PDF uploaded successfully' });
+    res.status(201).json({ success: true, message: 'PDF uploaded successfully' });
   } catch (error) {
     console.error('Error uploading PDF:', error);
-    res.status(500).json({ success:false,  message: 'Internal server error' });
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
@@ -109,8 +109,8 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Find the user by username
-    const user = await User.findOne({ username });
+    // Find the user by rollNo : username
+    const user = await User.findOne({ rollNo : username });
     if (!user) {
       return res.status(404).json({ success: false, message: "Student not found" });
     }
@@ -139,17 +139,26 @@ router.post('/login', async (req, res) => {
 
 // Registration route
 router.post('/register', [
-  body('name', 'Name should be atleast 4 characters').isLength({ min: 4 }),
-  body('father', 'Father Name should be atleast 4 characters').isLength({ min: 4 }),
-  body('username', 'Enter a valid username').isLength({ min: 4 }),
-  body('password', 'Password must be atleast 4 characters').isLength({ min: 4 }),
-  body('rollNo', 'Roll Number cannot not be blank').exists(),
+  body('name', 'Name should be at least 4 characters').isLength({ min: 4 }),
+  body('father', 'Father Name should be at least 4 characters').isLength({ min: 4 }),
+  body('rollNo', 'Invalid Roll Number format').custom((value) => {
+    // Define a regular expression pattern for the desired format
+    const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
+
+    // Check if the provided roll number matches the pattern
+    if (!rollNoPattern.test(value)) {
+      throw new Error('Invalid Roll Number format');
+    }
+
+    // If it matches, it's valid, so return true
+    return true;
+  }),
   body('department', 'Department cannot be left blank').exists(),
   body('batch', 'Batch cannot be left blank').exists(),
-  body('cnic', 'Cnic cannot be left blank').exists(),
+  body('cnic', 'CNIC cannot be left blank').exists(),
   body('semester', 'Semester cannot be left blank').exists(),
 ], async (req, res) => {
-  const { name, father, username, rollNo, batch, cnic, semester, department, password } = req.body;
+  const { name, father, rollNo, batch, cnic, semester, department } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -158,72 +167,75 @@ router.post('/register', [
 
   try {
     // Check if the username already exists in the database
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ rollNo });
 
     if (existingUser) {
-      return res.status(409).json({ success: false, message: 'username already exists' });
+      return res.status(409).json({ success: false, message: 'Username already exists' });
     } else {
-
       const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(password, salt);
-      // Create a new user if the username is unique
-      const newUser = new User({ name, father, username, rollNo, batch, cnic, semester, department, password: secPass });
+      const secPass = await bcrypt.hash(cnic, salt);
+
+      // Create a new user with the formatted roll number
+      const newUser = new User({
+        name, father, rollNo, batch, cnic, semester, department, password: secPass,
+      });
+
       await newUser.save();
       const data = {
         user: {
           id: newUser.id
         }
       }
-      const token = jwt.sign(data, JWT_KEY)
+      const token = jwt.sign(data, JWT_KEY);
       res.json({ success: true, token, message: 'Registration successful' });
     }
   } catch (err) {
+    console.error('errir in ', err)
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
 
 //delete Student
 router.delete('/delete/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    
+
     const student = await User.findById(id);
-    if(!student){
+    if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
     console.log('student is ', student.name);
     // It will delete student data from all the groups and projectRequests 
     const group = await Group.findById(student.group);
-    if(group){
-      group.projects.map(async project=>{
-        const filteredGroup = project.students.filter(stu=>{
+    if (group) {
+      group.projects.map(async project => {
+        const filteredGroup = project.students.filter(stu => {
           return !stu.userId.equals(student._id)
         });
         project.students = filteredGroup;
-        const projectRequest = await ProjectRequest.findOne({projectTitle: project.projectTitle});
-        if(!projectRequest){
+        const projectRequest = await ProjectRequest.findOne({ projectTitle: project.projectTitle });
+        if (!projectRequest) {
           return;
         }
-        const FilteredRequest = projectRequest.students.filter(stu=>{
+        const FilteredRequest = projectRequest.students.filter(stu => {
           return !stu.equals(student._id);
         })
         projectRequest.students = FilteredRequest;
-        projectRequest.status = false ;
-        await Promise.all([ group.save(), projectRequest.save() ])
-        
+        projectRequest.status = false;
+        await Promise.all([group.save(), projectRequest.save()])
+
       });
       // Notify supervisor that his studet is deleted
-    const supervisor = await Supervisor.findById(group.supervisorId);
-    if(!supervisor){
-      return;
+      const supervisor = await Supervisor.findById(group.supervisorId);
+      if (!supervisor) {
+        return;
+      }
+      supervisor.unseenNotifications.push({ type: "Important", message: `Committee deleted your group student ${student.name}` });
+      await supervisor.save();
     }
-    supervisor.unseenNotifications.push({ type : "Important", message:`Committee deleted your group student ${student.name}`});
-    await supervisor.save();
-    }
-    
-    
+
+
     const deletedMember = await User.findByIdAndDelete(id);
 
     if (!deletedMember) {
@@ -256,7 +268,7 @@ router.post('/reset-password', async (req, res) => {
 
   try {
     // Find the user by username
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ rollNo : username });
 
     // Check if user exists
     if (!user) {
@@ -301,7 +313,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // check if user is already in a group 
+    // check if user is already in a group ed
     if (user.isMember) {
       user.pendingRequests = [];
       await user.save()
@@ -309,7 +321,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     }
 
     // Find the supervisor by username
-    const supervisor = await Supervisor.findOne({ username: username });
+    const supervisor = await Supervisor.findOne({ username });
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
@@ -352,7 +364,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
       console.log(req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
       return (req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
 
-    })
+    });
     // console.log('requestExists ', requestExists)
 
     if (requestExists) {
@@ -463,6 +475,25 @@ router.put('/edit/:id', async (req, res) => {
   const updatedDetails = req.body;
 
   try {
+    const student = await User.findById(studentId);
+    if(student){
+      if(student.group){
+        const group = await Group.findById(student.group)
+          if(!group){
+            return;
+        }
+        group.projects.map(proj=>{
+          proj.students.map( async stu=>{
+            if(stu.userId.equals(studentId)){
+              stu.name = updatedDetails.name; // Update the name
+              stu.rollNo = updatedDetails.rollNo; // Update the rollNo
+              await group.save()
+            }
+          })
+        })
+      }
+
+    }
     const updatedStudent = await User.findByIdAndUpdate(studentId, updatedDetails, { new: true });
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
@@ -473,17 +504,18 @@ router.put('/edit/:id', async (req, res) => {
   }
 });
 
+
 router.get('/my-group', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id;
     console.log('userId', userId)
     const student = await User.findById(userId);
     if (!student) {
-      return res.status(404).json({ message: 'Student Not Found' });
+      return res.status(404).json({success:false,  message: 'Student Not Found' });
     }
     const group = await Group.findById(student.group);
     if (!group) {
-      return res.status(404).json({ message: 'Group Not Found' });
+      return res.status(404).json({ success:false,  message: 'Group Not Found' });
     }
     const viva = await Viva.findById(student.viva);
     const groupDetail = {
@@ -496,19 +528,20 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       supervisorId: group.supervisorId, projectTitle: group.projects[0].projectTitle,
       projectId: group.projects[0].projectId,
       groupMember: group.projects[0].students.filter(stu => !stu.userId.equals(userId)),
-      proposal: group.proposal, documentation: group.documentation, finalSubmission : group.finalSubmission,
+      proposal: group.proposal, documentation: group.documentation, finalSubmission: group.finalSubmission,
       docDate: group.docDate,
       propDate: group.propDate,
-      finalDate: group.finalDate ,
+      finalDate: group.finalDate,
       docSub: group.docSub,
-      propSub: group.propSub ,
+      propSub: group.propSub,
       finalSub: group.finalSub,
       viva: viva,
-      meetingReport : group.meetingReport,
+      meetingReport: group.meetingReport,
     }
     return res.json({ success: true, group: groupDetail })
   } catch (error) {
-
+    console.error(`error fetching group`, error);
+    res.json({message : `Internal Server error ${error}`})
   }
 });
 
@@ -526,5 +559,40 @@ router.get('/notification', authenticateUser, async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+// Mark a notification as seen
+router.post('/mark-notification-seen/:notificationIndex', authenticateUser, async (req, res) => {
+  const userId = req.user.id; // Get the user ID from the authenticated user
+  const notificationIndex = req.params; // Assuming you send the notification index in the request body
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the notification index is within the bounds of 'unseenNotifications'
+    if (notificationIndex < 0 || notificationIndex >= user.unseenNotifications.length) {
+      return res.status(404).json({ message: 'Invalid notification index' });
+    }
+
+    // Remove the notification from 'unseenNotifications' and push it to 'seenNotifications'
+    const notification = user.unseenNotifications.splice(notificationIndex, 1)[0];
+    console.log('notification is ', notification);
+    user.seenNotifications.push(notification);
+
+    // Save the updated user document
+    await user.save();
+
+    res.status(200).json({ message: 'Notification marked as seen' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 module.exports = router;

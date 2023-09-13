@@ -470,6 +470,10 @@ router.put('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, r
 
   try {
     const supervisorId = req.user.id;
+    const checkGroup = await Group.findOne({ 'projects.projectTitle': projectTitle });
+    if(!checkGroup){
+      return res.status(404).json({ success: false, message: `Group with specified Project Title doesn't exist` });
+    }
     const supervisor = await Supervisor.findById(supervisorId).populate('groups.projects');
 
     if (!supervisor) {
@@ -479,7 +483,7 @@ router.put('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, r
     const projectDetail = await ProjectRequest.findOne({ projectTitle: projectTitle });
     if (projectDetail) {
       if (!(projectDetail.supervisor.equals(supervisor._id))) {
-        const sup = await Supervisor.findById(projectDetail.supervisor)
+        const sup = await Supervisor.findById(projectDetail.supervisor);
         return res.status(404).json({ success: false, message: `Project is already supervised by ${sup.name}` });
       }
     }
@@ -674,6 +678,12 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' })
     }
     console.log('group is ', group);
+    if( !group.proposal || !group.documentation || !group.finalSubmission ){
+      return res.status(500).json({ success: false, message: 'One of the Documentation is Pending' });
+    }
+    if( group.vivaDate > new Date()){
+      return res.status(201).json({success :false ,message:'VIVA has not been taken yet'});
+    }
 
     group.marks = marks; group.external = external;
     group.projects.map(project => {
@@ -780,5 +790,37 @@ router.get('/notification', authenticateUser, async (req, res) => {
   }
 });
 
+// Mark a notification as seen
+router.post('/mark-notification-seen/:notificationIndex', authenticateUser, async (req, res) => {
+  const userId = req.user.id; // Get the user ID from the authenticated user
+  const notificationIndex = req.params; // Assuming you send the notification index in the request body
+
+  try {
+    // Find the user by ID
+    const user = await Supervisor.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the notification index is within the bounds of 'unseenNotifications'
+    if (notificationIndex < 0 || notificationIndex >= user.unseenNotifications.length) {
+      return res.status(404).json({ message: 'Invalid notification index' });
+    }
+
+    // Remove the notification from 'unseenNotifications' and push it to 'seenNotifications'
+    const notification = user.unseenNotifications.splice(notificationIndex, 1)[0];
+    console.log('notification is ', notification);
+    user.seenNotifications.push(notification);
+
+    // Save the updated user document
+    await user.save();
+
+    res.status(200).json({ message: 'Notification marked as seen' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 module.exports = router;

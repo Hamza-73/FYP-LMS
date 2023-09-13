@@ -16,12 +16,12 @@ const SharedRules = require('../../models/SharedRules')
 
 // Registration route
 router.post('/register', [
-  body('fname', 'First name should be atleast 4 characters').exists(),
-  body('lname', 'Last name Number cannot not be blank').exists(),
+  body('fname', 'First name should be at least 4 characters').exists(),
+  body('lname', 'Last name should not be blank').exists(),
   body('username', 'Enter a valid username').isLength({ min: 4 }),
-  body('department', 'Department cannot be left blank').exists(),
+  body('department', 'Department should only contain alphabetic characters').isAlpha(),
   body('designation', 'Designation cannot be left blank').exists(),
-  body('password', 'Password must be atleast 4 characters').isLength({ min: 4 }),
+  body('password', 'Password must be at least 4 characters').isLength({ min: 4 }),
 ], async (req, res) => {
   const { fname, lname, username, department, designation, password } = req.body;
 
@@ -31,11 +31,11 @@ router.post('/register', [
   }
 
   try {
-    // Check if the username already exists in the database
-    const existingUser = await Committee.findOne({ username });
+    // Check if the username or the combination of first and last name already exists in the database
+    const existingUser = await Committee.findOne({ username: username });
 
     if (existingUser) {
-      return res.status(409).json({ success: false, message: 'username already exists' });
+      return res.status(409).json({ success: false, message: 'Username or name already exists' });
     } else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
@@ -222,7 +222,7 @@ router.get('/detail', authenticateUser, async (req, res) => {
   }
 });
 
-// Define a route to edit rules for a specific role
+// Define a route to  rules for a specific role
 router.put('/editrules/:role', async (req, res) => {
   try {
     const { role } = req.params;
@@ -380,6 +380,12 @@ router.post('/dueDate/:groupId', async (req, res) => {
   try {
     const { type, dueDate } = req.body;
     const { groupId } = req.params;
+    // Validate if the due date is not behind the current date
+    const currentDate = new Date();
+    if (new Date(dueDate) < currentDate) {
+      return res.status(400).json({ message: "Due Date cannot be behind the current date" });
+    }
+
     const group = await Group.findById(groupId);
 
     if (!group) {
@@ -404,6 +410,9 @@ router.post('/dueDate/:groupId', async (req, res) => {
           stu.finalDate = dueDate;
           console.log('final');
         }
+        stu.unseenNotifications.push({
+          type : "Important", message:`Deadline for ${type[0].toUpperCase()+type.slice(1,type.length)} has been added ${dueDate}`
+        })
       }));
     });
 
@@ -419,10 +428,6 @@ router.post('/dueDate/:groupId', async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
-
-
-
 
 
 module.exports = router;

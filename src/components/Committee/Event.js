@@ -12,11 +12,8 @@ import 'react-notifications/lib/notifications.css';
 
 const Event = (props) => {
   const history = useNavigate();
-  const [viva, setViva] = useState({ projectTitle: '', vivaDate: new Date(), vivaTime: '' });
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({ vivas: [] });
-  const [isFieldsModified, setIsFieldsModified] = useState(false);
-  const [editMode, selectEditMode] = useState(false);
 
   const getVivas = async () => {
     try {
@@ -32,6 +29,7 @@ const Event = (props) => {
       } else {
         NotificationManager.error(json.message);
       }
+      setLoading(false)
     } catch (error) {
       console.log('error dealing with requests', error);
       NotificationManager.error('Some Error occurred reload page/ try again');
@@ -40,36 +38,9 @@ const Event = (props) => {
     }
   };
 
-  const editViva = async (e) => {
-    try {
-      e.preventDefault();
-      const response = await fetch(`http://localhost:5000/viva/edit`, {
-        method: "PUT",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectTitle: viva.projectTitle,
-          vivaDate: viva.vivaDate,
-          vivaTime: viva.vivaTime,
-        }),
-      });
-      const json = await response.json();
-      console.log('json in handle requests is ', json);
-
-      if (json.message && json.success) {
-        NotificationManager.success(json.message);
-      } else {
-        NotificationManager.error(json.message);
-      }
-    } catch (error) {
-      console.log('error scheduling viva', error);
-      NotificationManager.error(`Some error occurred try to reload the page/ try again`);
-    }
-  }
 
   useEffect(() => {
-    setLoading(true);
+    // setLoading(true);
     if (localStorage.getItem('token')) {
       setTimeout(() => {
         getVivas();
@@ -77,97 +48,10 @@ const Event = (props) => {
     }
   }, []);
 
-  const scheduleViva = async (e) => {
-    try {
-      e.preventDefault();
-      const response = await fetch(`http://localhost:5000/viva/schedule-viva`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectTitle: viva.projectTitle,
-          vivaDate: viva.vivaDate,
-          vivaTime: viva.vivaTime,
-        }),
-      });
-      const json = await response.json();
-      console.log('json in handle requests is ', json);
-
-      if (json.message && json.success) {
-        NotificationManager.success(json.message);
-      } else {
-        NotificationManager.error(json.message);
-      }
-    } catch (error) {
-      console.log('error scheduling viva', error);
-      NotificationManager.error(`Some error occurred try again/reload page`);
-    }
-  };
-
-  const handleChange1 = (e) => {
-    setViva({ ...viva, [e.target.name]: e.target.value });
-  };
-
-  const handleCalendarChange = (date) => {
-    setViva({ ...viva, vivaDate: date });
-    setIsFieldsModified(true); // Field modified, enable the button
-  };
-
-  const handleTimeChange = (time) => {
-    setViva({ ...viva, vivaTime: time });
-    setIsFieldsModified(true); // Field modified, enable the button
-  };
 
   return (
     <div>
       <>
-        <div className="viva">
-          <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div className="modal-dialog" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Register</h5>
-                </div>
-                <div className="modal-body">
-                  <form onSubmit={editMode ? (e) => editViva(e) : (e) => scheduleViva(e)}>
-                    <div className="mb-3">
-                      <label htmlFor="name" className="form-label">
-                        Project Title
-                      </label>
-                      <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="name" className="form-label">
-                        Viva Date
-                      </label>
-                      <Calendar onChange={handleCalendarChange} value={viva.vivaDate} />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="name" className="form-label">
-                        Viva Time
-                      </label>
-                      <div>
-                        <TimePicker onChange={handleTimeChange} value={viva.vivaTime} />
-                      </div>
-                    </div>
-                    <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" data-dismiss="modal">
-                        Close
-                      </button>
-                      <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                        disabled={!isFieldsModified || !viva.projectTitle}
-                      >
-                        {editMode ? "Edit" : "Schedule"}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {loading ? (
           <Loading />
         ) : (
@@ -205,9 +89,6 @@ const Event = (props) => {
                         <td>{'project Submission'}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
-                        <td style={{ cursor: 'pointer' }} data-toggle="modal" data-target="#exampleModal" onClick={() => { selectEditMode(true); setViva({ projectTitle: val.projectTitle }) }}>
-                          <i className="fa-solid fa-pen-to-square"></i>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -215,11 +96,6 @@ const Event = (props) => {
               ) : (
                 <div>No matching members found.</div>
               )}
-            </div>
-            <div className="d-grid gap-2 col-6 mx-auto my-4">
-              <button style={{ background: 'maroon' }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal">
-                Schedule Viva
-              </button>
             </div>
           </>
         )}

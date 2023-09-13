@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import '../../css/task.css'
 import axios from 'axios';
-import Loading from '../Loading';import { NotificationContainer, NotificationManager } from 'react-notifications';
+import Loading from '../Loading'; import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 
 const Tasks = (props) => {
@@ -15,7 +15,7 @@ const Tasks = (props) => {
       projectTitle: "", projectId: "",
       groupMember: [{ userId: "", name: "", rollNo: "", _id: "" }],
       proposal: false, documentation: false, docDate: "----",
-      propDate: "----", viva: "-----"
+      propDate: "", viva: ""
     }
   });
   const [loading, setLoading] = useState(false);
@@ -75,14 +75,12 @@ const Tasks = (props) => {
           }
         });
         console.log('after fetch')
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
         const json = await response.json();
-        if (!json) {
+        if (!json.success) {
           console.log('group response is ', response);
+          console.log('json in not success is ', json.message);
         } else {
-          console.log('json is ', json);
+          console.log('json in success is ', json.message);
           setGroupDetails(json);
         }
       } catch (error) {
@@ -102,8 +100,9 @@ const Tasks = (props) => {
   return (
     <div>
 
-      {!loading ? <div className="container">
+      {!loading ? <div className={!group.group.propDate ? "" : "container"}>
         {group.group ? <>
+        { group.group.propDate ? <>
           <div className="upper">
             <h1>Task Submission</h1>
             <h4>Instructions:</h4>
@@ -113,32 +112,33 @@ const Tasks = (props) => {
           <div className="last">
             <div className="boxes d-flex justify-content-evenly">
               <div>Submission Status</div>
-              <div>{group.group.proposal? "Submitted" : "Pending" }</div>
+              <div>{group.group.proposal ? "Submitted" : "Pending"}</div>
             </div>
             <div className="boxes d-flex justify-content-evenly">
               <div>Due Date</div>
-              <div>{group.group.propDate?group.group.propDate:'TBA' }</div>
+              <div>{group.group.propDate ? group.group.propDate : 'TBA'}</div>
             </div>
             <div className="boxes d-flex justify-content-evenly">
               <div>Grading Status</div>
-              <div>{group.group.marks? "Graded":"Not Graded"}</div>
+              <div>{group.group.marks ? "Graded" : "Not Graded"}</div>
             </div>
             <div className="boxes d-flex justify-content-evenly">
               <div>Time Remaining</div>
-              <div>{!(Date(group.group.propDate) && isNaN(group.group.propDate))? new Date()- Date(group.group.propDate): '-----' }</div>
+              <div>{!(Date(group.group.propDate) && isNaN(group.group.propDate)) ? new Date() - Date(group.group.propDate) : '-----'}</div>
             </div>
             <div className="boxes d-flex justify-content-evenly">
-              {!group.group.proposal? <>
-              <input type="file" onChange={(e) => { handleFileChange(e) }} name='proposal' />
-              <button className='btn' type='button' style={{ color: "white", fontWeight: "600" }} onClick={upload}>Add Proposal</button>
-              </>: <> <a style={{textDecoration:"none", color:"white"}} href={group.group.proposal} target='_blank'>View Uploaded Proposal</a> </>
+              {!group.group.proposal ? <>
+                <input type="file" onChange={(e) => { handleFileChange(e) }} name='proposal' />
+                <button className='btn' type='button' style={{ color: "white", fontWeight: "600" }} onClick={upload}>Add Proposal</button>
+              </> : <> <a style={{ textDecoration: "none", color: "white" }} href={group.group.proposal} target='_blank'>View Uploaded Proposal</a> </>
               }
             </div>
 
           </div>
-        </>:<h1 className='text-center my-5'>You're Not Currently Enrolled In Any Group</h1>}
+          </> : <h1 className='text-center my-5'>No Task Assigned Yet</h1>}
+        </> : <h1 className='text-center my-5'>You're not enrolled in any group yet</h1>}
       </div> : <Loading />}
-        <NotificationContainer />
+      <NotificationContainer />
     </div>
   )
 }

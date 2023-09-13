@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import '../../css/progress.css'
-import graph from '../../images/graph.png'
+import React, { useEffect, useState } from 'react';
+import '../../css/progress.css';
+import graph from '../../images/graph.png';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import axios from 'axios';
@@ -11,26 +11,22 @@ import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'rec
 
 const Progress = (props) => {
 
-    const graphStyle = {
-        width: "280px",
-        height: "200px"
-    }
     const [percentage, setPercentage] = useState(25);
 
-    // eslint-disable-next-line
     const [request, setRequest] = useState({
-        username: "", projectTitle: "", description: "",
-        scope: "", status: false
+        username: '', projectTitle: '',
+        description: '', scope: '', status: false,
     });
     const [groupDetails, setGroupDetails] = useState({});
     const [loading, setLoading] = useState(false);
-    const [graph, setGraph] = useState({
-        meetingTitle: '', type: '', date: '', time: '', purpose: ''
-    })
+    const [meetingGraph, setMeetingGraph] = useState({
+        meetingTitle: '', type: '',
+        date: '', time: '', purpose: '',
+    });
 
-
-    const sendRequest = async () => {
+    const sendRequest = async (e) => {
         try {
+            e.preventDefault();
             const token = localStorage.getItem('token');
             if (!token) {
                 alert('Authorization token not found', 'danger');
@@ -41,13 +37,13 @@ const Progress = (props) => {
                 method: 'POST', // Change to POST
                 headers: {
                     'Content-Type': 'application/json',
-                    "Authorization": token
+                    Authorization: token,
                 },
                 body: JSON.stringify({
                     username: request.username,
                     projectTitle: request.projectTitle, description: request.description,
-                    scope: request.scope, status: false
-                })
+                    scope: request.scope, status: false,
+                }),
             });
             const json = await response.json();
             if (json.success && json.message) {
@@ -56,12 +52,12 @@ const Progress = (props) => {
                 NotificationManager.error(json.message);
             }
         } catch (error) {
-            console.log('error is ', error)
+            console.log('error is ', error);
             alert(`Some error occurred: ${error.message}`, 'danger');
         } finally {
-            setLoading(true);
+            setLoading(false); // Set loading to false when the request is complete
         }
-    }
+    };
 
     const groupDetail = async () => {
         try {
@@ -70,41 +66,33 @@ const Progress = (props) => {
                 alert('Authorization token not found', 'danger');
                 return;
             }
-            const response = await fetch("http://localhost:5000/student/my-group", {
+            const response = await fetch('http://localhost:5000/student/my-group', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    "Authorization": token
-                }
+                    Authorization: token,
+                },
             });
 
             const json = await response.json();
             if (json) {
-                console.log('group detail is ', json)
+                console.log('group detail is ', json);
                 setGroupDetails(json);
-                setGraph(json.group.meetingReport);
+                setMeetingGraph(json.group.meetingReport);
             }
             if (json.success && json.message) {
                 NotificationManager.success(json.message);
             }
         } catch (error) {
-            console.log('error in fetching progress', error)
+            console.log('error in fetching progress', error);
         }
-    }
+    };
 
     const handleChange = (e) => {
-        setRequest({ ...request, [e.target.name]: e.target.value })
-    }
-
-    const handleRequest = async (e) => {
-        try {
-            console.log('handle request starts')
-            e.preventDefault();
-            await sendRequest();
-        } catch (error) {
-            console.log('handle error is ', error)
-        }
-    }
+        // Use regular expressions to remove consecutive spaces
+        const value = e.target.value.replace(/\s+/g, ' ');
+        setRequest({ ...request, [e.target.name]: value });
+    };
 
 
     useEffect(() => {
@@ -112,10 +100,9 @@ const Progress = (props) => {
         if (localStorage.getItem('token')) {
             setTimeout(() => {
                 groupDetail();
-                setLoading(false)
-            }, 1300)
+                setLoading(false);
+            }, 1300);
         }
-
     }, []);
 
     useEffect(() => {
@@ -131,70 +118,66 @@ const Progress = (props) => {
             if (groupDetails.group.finalSubmission) {
                 updatedPercentage += 20;
             }
-            if (groupDetails.group.marks > 0)
-                updatedPercentage += 10;
+            if (groupDetails.group.marks > 0) updatedPercentage += 10;
 
             setPercentage(updatedPercentage);
         }
     }, [groupDetails]);
 
 
-    const generateRandomMeetingData = (count) => {
-        const meetingData = [];
-
-        for (let i = 1; i <= count; i++) {
-            const meetingName = `Meeting ${i}`;
-            const pv = Math.floor(Math.random() * 30); // Random value for pv (e.g., attendees)
-            const uv = Math.floor(Math.random() * 20); // Random value for uv (e.g., engagement)
-
-            meetingData.push({
-                name: meetingName,
-                pv: pv,
-                uv: uv,
-            });
-        }
-
-        return meetingData;
-    };
-
-    // Generate 5 random meetings for the BarChart
-    const randomMeetingData = generateRandomMeetingData(5);
-
     return (
         <>
-
             {!loading ? (
                 <>
                     <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div className="modal-dialog">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h1 className="modal-title fs-5" id="exampleModalLabel">Your Request</h1>
+                                    <h1 className="modal-title fs-5" id="exampleModalLabel">
+                                        Your Request
+                                    </h1>
                                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div className="modal-body">
                                     <>
-                                        <form onSubmit={(e) => handleRequest(e)}>
+                                        <form onSubmit={sendRequest}>
                                             <div className="mb-3">
-                                                <label htmlFor="exampleInputEmail163" className="form-label">Supervisor Username</label>
-                                                <input type="text" className="form-control" id="username" name='username' value={request.username} onChange={handleChange} />
+                                                <label htmlFor="exampleInputEmail163" className="form-label">
+                                                    Supervisor Username
+                                                </label>
+                                                <input type="text" className="form-control" id="username" name="username" value={request.username} onChange={handleChange}
+                                                />
                                             </div>
                                             <div className="mb-3">
-                                                <label htmlFor="exampleInputPassword331" className="form-label">Project Title</label>
-                                                <input type="text" className="form-control" id="projectTitle" name='projectTitle' value={request.projectTitle} onChange={handleChange} />
+                                                <label htmlFor="exampleInputPassword331" className="form-label">
+                                                    Project Title
+                                                </label>
+                                                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={request.projectTitle} onChange={handleChange}
+                                                />
                                             </div>
                                             <div className="mb-3">
-                                                <label htmlFor="exampleInputPassword13" className="form-label">Scope of Study</label>
-                                                <input type="text" className="form-control" id="scope" name='scope' value={request.scope} onChange={handleChange} />
+                                                <label htmlFor="exampleInputPassword13" className="form-label">
+                                                    Scope of Study
+                                                </label>
+                                                <input type="text" className="form-control" id="scope" name="scope" value={request.scope} onChange={handleChange}
+                                                />
                                             </div>
                                             <div className="mb-3">
-                                                <label htmlFor="exampleInputPassword153" className="form-label">Description</label>
+                                                <label htmlFor="exampleInputPassword153" className="form-label">
+                                                    Description
+                                                </label>
                                                 <div className="form-floating">
-                                                    <textarea className="form-control" id="description" name='description' value={request.description} onChange={handleChange}></textarea>
+                                                    <textarea className="form-control" id="description" name="description" value={request.description} onChange={handleChange}
+                                                    ></textarea>
                                                 </div>
                                             </div>
                                             <div className="modal-footer">
-                                                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>
+                                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                                                <button type="submit"
+                                                    className="btn"
+                                                    style={{ background: 'maroon', color: 'white' }}
+                                                    disabled={!request.projectTitle || !request.scope || !request.description}
+                                                >
                                                     Send Request
                                                 </button>
                                             </div>
@@ -206,10 +189,10 @@ const Progress = (props) => {
                     </div>
                     {groupDetails.group ? (
                         <>
-                            <div className='containar'>
-                                <div className='my-3 box mx-4'>
+                            <div className="container d-flex">
+                                <div className="my-3 box mx-4">
                                     <h3>Meeting Progress</h3>
-                                    <BarChart width={400} height={200} data={graph}>
+                                    <BarChart width={350} height={200} data={meetingGraph}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="meetingTitle" />
                                         <YAxis />
@@ -220,7 +203,7 @@ const Progress = (props) => {
                                 </div>
                                 <div className="box my-3 mx-4">
                                     <h3>Project Report</h3>
-                                    <div style={{ width: "190px", marginLeft: "25%" }}>
+                                    <div style={{ width: '190px', marginLeft: '25%' }}>
                                         <CircularProgressbar value={percentage} text={`${percentage}%`} />
                                     </div>
                                 </div>
@@ -228,52 +211,73 @@ const Progress = (props) => {
                             <div className="table">
                                 <table>
                                     <thead>
-                                        <th><h4>Task</h4></th>
-                                        <th><h4>Status</h4></th>
-                                        <th><h4>Due Date</h4></th>
-                                        <th><h4>Submission Date</h4></th>
+                                        <tr>
+                                            <th>
+                                                <h4>Task</h4>
+                                            </th>
+                                            <th>
+                                                <h4>Status</h4>
+                                            </th>
+                                            <th>
+                                                <h4>Due Date</h4>
+                                            </th>
+                                            <th>
+                                                <h4>Submission Date</h4>
+                                            </th>
+                                        </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td>Project Title</td>
-                                            <td>{groupDetails.group.proposal ? "Submitted" : 'Pending'}</td>
-                                            <td>{groupDetails.group.propDate?new Date(groupDetails.group.propDate).toLocaleDateString('en-US'):"---"}</td>
-                                            <td>{groupDetails.group.propSub?new Date(groupDetails.group.propSub).toLocaleDateString('en-US'):"---"}</td>
+                                            <td>{groupDetails.group.proposal ? 'Submitted' : 'Pending'}</td>
+                                            <td>{groupDetails.group.propDate ? new Date(groupDetails.group.propDate).toLocaleDateString('en-US') : '---'}</td>
+                                            <td>{groupDetails.group.propSub ? new Date(groupDetails.group.propSub).toLocaleDateString('en-US') : '---'}</td>
                                         </tr>
                                         <tr>
                                             <td>Proposal</td>
-                                            <td>{groupDetails.group.proposal ? "Submitted" : 'Pending'}</td>
-                                            <td>{groupDetails.group.propDate?new Date(groupDetails.group.propDate).toLocaleDateString('en-US'):"---"}</td>
-                                            <td>{groupDetails.group.propSub?new Date(groupDetails.group.propSub).toLocaleDateString('en-US'):"---"}</td>
+                                            <td>{groupDetails.group.proposal ? 'Submitted' : 'Pending'}</td>
+                                            <td>{groupDetails.group.propDate ? new Date(groupDetails.group.propDate).toLocaleDateString('en-US') : '---'}</td>
+                                            <td>{groupDetails.group.propSub ? new Date(groupDetails.group.propSub).toLocaleDateString('en-US') : '---'}</td>
                                         </tr>
                                         <tr>
                                             <td>Project Documentation</td>
-                                            <td>{groupDetails.group.documentation ? "Submitted" : 'Pending'}</td>
-                                            <td>{groupDetails.group.docDate?new Date(groupDetails.group.docDate).toLocaleDateString('en-US'):"---"}</td>
-                                            <td>{groupDetails.group.docSub?new Date(groupDetails.group).toLocaleDateString('en-US'):"---"}</td>
+                                            <td>{groupDetails.group.documentation ? 'Submitted' : 'Pending'}</td>
+                                            <td>{groupDetails.group.docDate ? new Date(groupDetails.group.docDate).toLocaleDateString('en-US') : '---'}</td>
+                                            <td>{groupDetails.group.docSub ? new Date(groupDetails.group.docSub).toLocaleDateString('en-US') : '---'}</td>
                                         </tr>
                                         <tr>
                                             <td>Viva</td>
-                                            <td>{groupDetails.group.vivaDate ? (new Date(groupDetails.group.vivaDate) > new Date() ? "Pending" : "Taken") : "----"}
-</td>
+                                            <td>
+                                                {groupDetails.group.vivaDate ? (new Date(groupDetails.group.vivaDate) > new Date() ? 'Pending' : 'Taken') : '----'}
+                                            </td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>
                                         </tr>
                                     </tbody>
                                 </table>
-
                             </div>
                         </>
-                    ) : <><h1 className='text-center my-3'>You're not currently enrolled in any Group</h1> </>}
-                    <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls" >
-                        <button style={{ background: "maroon" }} type="button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" disabled={groupDetails.group}>
+                    ) : (
+                        <h1 className="text-center my-3">You're not currently enrolled in any Group</h1>
+                    )}
+                    <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls">
+                        <button
+                            type="button"
+                            style={{ background: 'maroon' }}
+                            className="btn btn-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                            disabled={groupDetails.group}
+                        >
                             Request Idea
                         </button>
                     </div>
                 </>
-            ) : <Loading />}
+            ) : (
+                <Loading />
+            )}
         </>
-    )
-}
+    );
+};
 
 export default Progress;

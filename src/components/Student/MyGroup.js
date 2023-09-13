@@ -15,7 +15,7 @@ const MyGroup = (props) => {
       projectTitle: "", projectId: "",
       groupMember: [{ userId: "", name: "", rollNo: "", _id: "" }],
       proposal: false, documentation: false, docDate: "----",
-      propDate: "----", viva: "-----"
+      propDate: "", viva: ""
     }
   });
   const [loading, setLoading] = useState(false);
@@ -138,7 +138,7 @@ const MyGroup = (props) => {
       </div>
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
-          group.group ? <>
+          group.group.length>0 ? <>
             <div className="upperpart">
               <div className="proj-detail d-flex justify-content-between">
                 <h4>Project Title</h4>

@@ -25,7 +25,73 @@ const FypIdeas = () => {
     const [filteredGroups, setFilteredGroups] = useState([]); // State to store the filtered groups
     const [projectTitle, setProject] = useState('');
 
+    const [groupDetails, setGroupDetails] = useState({
+        success: false,
+        group: {
+            myDetail: [{ name: "", rollNo: "", myId: "" }],
+
+            groupId: "", supervisor: "", supervisorId: "",
+            projectTitle: "", projectId: "",
+            groupMember: [{ userId: "", name: "", rollNo: "", _id: "" }],
+            proposal: false, documentation: false, docDate: "----",
+            propDate: "----", viva: "-----"
+        }
+    });
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [recordsPerPage, setRecordsPerPage] = useState(5);
+
+    const paginate = (array, page_size, page_number) => {
+        return array.slice((page_number - 1) * page_size, page_number * page_size);
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < Math.ceil(filteredGroups.length / recordsPerPage)) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+
     useEffect(() => {
+
+        const getGroup = async () => {
+            try {
+                setLoading(true);
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Authorization token not found', 'danger');
+                    return;
+                }
+                console.log('before fetch')
+                const response = await fetch("http://localhost:5000/student/my-group", {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": token
+                    }
+                });
+                console.log('after fetch')
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const json = await response.json();
+                if (!json) {
+                    console.log('group response is ', response);
+                } else {
+                    console.log('json is in group details', json);
+                    setGroupDetails(json);
+                }
+            } catch (error) {
+                console.log('error fetching group ', error)
+            }
+        }
+
         const getAvailableGroups = async () => {
             try {
                 setLoading(true);
@@ -52,12 +118,14 @@ const FypIdeas = () => {
         if (localStorage.getItem('token')) {
             setLoading(true);
             setTimeout(() => {
+                getGroup();
                 getAvailableGroups();
                 setLoading(false);
                 console.log('group', group)
             }, 1000)
         }
     }, []);
+
 
     const sendRequest = async () => {
         try {
@@ -82,31 +150,45 @@ const FypIdeas = () => {
         }
     }
 
-    // Handle the change event of the number of rows selector
-    const handleNumRowsChange = (event) => {
-        setNumRows(parseInt(event.target.value, 10));
-    }
-
     // Handle the change event of the search input
     const handleSearchInputChange = (event) => {
-        setSearchQuery(event.target.value);
-        filterGroups(event.target.value);
+        const query = event.target.value;
+        setSearchQuery(query);
+
+        // Filter groups only if the search query is not empty
+        if (query.trim() === '') {
+            setFilteredGroups(group.projectDetails); // Show all records when search query is empty
+        } else {
+            filterGroups(query); // Apply filtering when the search query is not empty
+        }
+
+        setCurrentPage(1); // Reset to the first page when performing a new search
     }
 
     // Filter groups based on the search query
     const filterGroups = (query) => {
         if (group.projectDetails) {
-            const filtered = group.projectDetails.filter((group) =>
-                group.studentsDetail.some((student) =>
-                    student.name.toLowerCase().includes(query.toLowerCase()) ||
-                    (group.supervisor && group.supervisor.toLowerCase().includes(query.toLowerCase())) ||
-                    (group.supUsername && group.supUsername.toLowerCase().includes(query.toLowerCase())) ||
-                    group.projectDetails.projectTitle.toLowerCase().includes(query.toLowerCase())
-                )
-            );
+            const filtered = group.projectDetails.filter((group) => {
+                const lowerQuery = query.toLowerCase();
+                return (
+                    group.studentsDetail.some((student) =>
+                        student.name.toLowerCase().includes(lowerQuery)
+                    ) ||
+                    (group.supervisor && group.supervisor.toLowerCase().includes(lowerQuery)) ||
+                    (group.supUsername && group.supUsername.toLowerCase().includes(lowerQuery)) ||
+                    group.projectDetails.projectTitle.toLowerCase().includes(lowerQuery) ||
+                    group.projectDetails.description.toLowerCase().includes(lowerQuery) ||
+                    group.projectDetails.scope.toLowerCase().includes(lowerQuery)
+                );
+            });
+
             setFilteredGroups(filtered);
         }
     }
+
+
+
+    const filteredDataPaginated = paginate(filteredGroups, recordsPerPage, currentPage);
 
 
     return (
@@ -116,17 +198,23 @@ const FypIdeas = () => {
                     {group.projectDetails ? (
                         <>
                             <h3 className='text-center my-4'>FYP Available Groups</h3>
-                            <div className='text-center'>
-                                <label htmlFor="numRows"><strong>Records Per Page: </strong></label>
-                                <select class="form-select" style={{ width: "6%", textAlign: "center", position: "relative", left: "57%", marginTop: "-30px" }} aria-label="Default select example" id="numRows" value={numRows} onChange={handleNumRowsChange}>
-                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                                        <option key={num} value={num}>{num}</option>
-                                    ))}
-                                </select>
-                            </div>
                             <div className='container' style={{ width: '100%' }}>
                                 <div>
                                     <div>
+                                        <div className="mb-3">
+                                            <label htmlFor="recordsPerPage" className="form-label">Records per page:</label>
+                                            <select id="recordsPerPage" className="form-select" value={recordsPerPage} onChange={(e) => {
+                                                setRecordsPerPage(Number(e.target.value));
+                                                setCurrentPage(1);
+                                            }}
+                                            >
+                                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                         <div class="mb-3">
                                             <input type="text" class="form-control text-center" placeholder="Search by name, supervisor, username, or project title"
                                                 value={searchQuery}
@@ -145,7 +233,7 @@ const FypIdeas = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className='text-center'>
-                                                {filteredGroups.slice(0, numRows).map((group, groupIndex) => (
+                                                {filteredDataPaginated.map((group, groupIndex) => (
                                                     <tr key={groupIndex}>
                                                         <td>
                                                             {group.studentsDetail.length > 0 ? group.studentsDetail.map((student, studentKey) => (
@@ -159,7 +247,7 @@ const FypIdeas = () => {
                                                         <td>{group.projectDetails.projectTitle}</td>
                                                         <td>{group.projectDetails.scope}</td>
                                                         <td>{group.projectDetails.description}</td>
-                                                        <td><button type='button' className='btn' style={{ background: "maroon", color: "white" }} onClick={() => {
+                                                        <td><button type='button' className='btn btn-sm' disabled={groupDetails.group.groupId || group.supervisor === null} style={{ background: "maroon", color: "white" }} onClick={() => {
                                                             setProject(group.projectDetails.projectTitle); sendRequest();
                                                         }}>request to join</button></td>
                                                     </tr>
@@ -168,7 +256,14 @@ const FypIdeas = () => {
                                         </table>
                                     </div>
                                 </div>
+                                <div className="d-flex justify-content-between">
+                                    <button type="button" className="btn btn-success" disabled={currentPage === 1} onClick={handlePrevPage}
+                                    >  Previous </button>
+                                    <button type="button" className="btn btn-success" disabled={currentPage === Math.ceil(filteredGroups.length / recordsPerPage)} onClick={handleNextPage}
+                                    >  Next </button>
+                                </div>
                             </div>
+
                         </>
                     ) : (
                         <h2 className='text-center'>Currently No Project Idea/ Group is Available.</h2>

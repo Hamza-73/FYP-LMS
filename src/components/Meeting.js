@@ -93,7 +93,7 @@ const Meeting = (props) => {
 
         <div className="link">
           <h1>Link</h1>
-          <textarea name="meetingLink" id="" cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
+          <textarea name="meetingLink" id="" disabled={meeting.type==='In Person'} cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
         </div>
 
         <button className="btn btn-danger" style={{ background: "maroon" }} onClick={scheduleMeeting}>Schedule Metting</button>

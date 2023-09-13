@@ -2,10 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
+  rollNo: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   father: { type: String, required: true },
-  username: { type: String, required: true, unique:true },
-  rollNo: { type: String, required: true, unique: true },
   batch: { type: String, required: true },
   semester: { type: String, required: true },
   cnic: { type: String, required: true, unique:true },

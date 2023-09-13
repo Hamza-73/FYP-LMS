@@ -106,7 +106,7 @@ const StuDash = () => {
               </div>
             </div>
           ) : (
-            <div>You have no meeting scheduled</div>
+            <h1 className='text-center my-5'>You have no meeting scheduled</h1>
           )}
         </div>
       ) : (

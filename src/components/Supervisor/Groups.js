@@ -30,20 +30,11 @@ const Groups = (props) => {
       const json = await response.json();
       console.log('response is ', json);
 
-      if (json.success) {
-        if (json.message) {
-          NotificationManager.success(json.message);
-        } else {
-          // Handle the case where json.message is empty
-          NotificationManager.success('Marks Uploaded Successfully');
-        }
-      } else {
-        // Handle the case where json.success is false
-        if (json.message) {
-          NotificationManager.error(json.message);
-        } else {
-          NotificationManager.error('Some Error occurred reload page/ try again');
-        }
+      if(json.success){
+        NotificationManager.success(json.message);
+      }
+      else{
+        NotificationManager.error(json.message);
       }
     } catch (error) {
       console.log('error in adding student', error);
@@ -51,43 +42,7 @@ const Groups = (props) => {
     }
   };
 
-  const handleAddStudent = async (e, projectTitle, rollNo) => {
-    try {
-      e.preventDefault();
-      console.log('add stdents starts');
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/supervisor/add-student/${projectTitle}/${rollNo}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token,
-        },
-      });
-
-      const json = await response.json();
-      console.log('response is ', json);
-
-      if (json.success) {
-        if (json.message) {
-          NotificationManager.error(json.message);
-        } else {
-          // Handle the case where json.message is empty
-          NotificationManager.success('Student added successfully');
-        }
-      } else {
-        // Handle the case where json.success is false
-        if (json.message) {
-          NotificationManager.error(json.message);
-        } else {
-          NotificationManager.success('Some Error ocurred Try/Again');
-        }
-      }
-    } catch (error) {
-      console.log('error in adding student', error);
-      NotificationManager.error('Some Error ocurred Try/Again');
-    }
-  };
-
+ 
 
   const getGroup = async () => {
     try {
@@ -153,37 +108,6 @@ const Groups = (props) => {
         </div>
       </div>
 
-      <div className="fypIdea">
-        <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Add Student To Existing Group</h5>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={(e) => { handleAddStudent(e, addStudent.projectTitle, addStudent.rollNo); }}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Project Title</label>
-                    <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Student Roll No</label>
-                    <input type="text" className="form-control" id="rollNo" name="rollNo" value={addStudent.rollNo} onChange={handleChange} />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!addStudent.projectTitle || !addStudent.rollNo}>
-                      Add Student
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
       { current.length > 0 ? (
         <>
           <h3 className='text-center my-4'>Students Under Me</h3>
@@ -237,9 +161,6 @@ const Groups = (props) => {
       ) : (
         <h2 className='text-center'>You currently have no group in supervision.</h2>
       )}
-      <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-        <button className="btn" data-toggle="modal" data-target="#exampleModal" style={{ background: "maroon", color: "white", position: "relative", right: "7rem", top: "1rem" }} type="button">Add Student</button>
-      </div>
         <NotificationContainer />
     </div>
   );

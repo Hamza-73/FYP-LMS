@@ -11,6 +11,7 @@ import CommitteeMember from './Committee/CommitteeMember'
 import ProjectProgress from './Committee/ProjectProgress'
 import ForgotPassword from './ForgotPassword'
 import Dashboard from './Dashboard'
+import EligibleGroup from './Supervisor/EligibleGroup'
 
 const CommitteeMain = (props) => {
 
@@ -32,8 +33,9 @@ const CommitteeMain = (props) => {
                         title4='Supervisor List' link4='supervisor'
                         title5='Student List' link5='student'
                         title6='Project List' link6='project'
-                        title7='Schedule Viva' link7='event'
+                        title7='Scheduled Vivas' link7='event'
                         detailLink='committee' title8='Project Progress' link8='progress'
+                        title9='Eligible Groups' link9='eligible'
                     />
                 )}
             </div>
@@ -51,6 +53,7 @@ const CommitteeMain = (props) => {
                 <Route path='/supervisor' element={<SupervisorList />} />
                 <Route path='/members' element={<CommitteeMember />} />
                 <Route path='/progress' element={<ProjectProgress />} />
+                <Route path='/eligible' element={<EligibleGroup />} />
             </Routes>
         </div>
     )
