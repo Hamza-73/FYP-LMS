@@ -13,6 +13,7 @@ const Meeting = (props) => {
     projectTitle : "", meetingLink:"", purpose:"",
     time: "", date: "", type : ""
   });
+  const [isLinkValid, setIsLinkValid] = useState(true);
 
   const scheduleMeeting = async () => {
     try {
@@ -20,6 +21,7 @@ const Meeting = (props) => {
         method : "POST",
         headers:{
           "Content-Type" : "application/json",
+          "Authorization" : localStorage.getItem('token')
         },
         body : JSON.stringify({
           projectTitle : meeting.projectTitle, meetingLink: meeting.meetingLink, purpose: meeting.purpose,
@@ -31,20 +33,29 @@ const Meeting = (props) => {
       console.log('json meeting is ', json);
 
       if (json.message && json.success) {
-        props.showAlert(`Request ${json.message}`, 'success');
+        alert(`Request ${json.message}`, 'success');
       } else {
-        props.showAlert(`Request ${json.message}`, 'danger');
+       alert(`Request ${json.message}`, 'danger');
       }
     } catch (error) {
       console.log('error dealing with requests', error);
-      props.showAlert(`Some error occured try to reload the page/ try again`, 'danger');
+      alert(`Some error occured try to reload the page/ try again`, 'danger');
     }
   }
   
 
-  const handleInputChange = (e)=>{
-    setMeeting({...meeting, [e.target.name]: e.target.value})
-  }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'meetingLink') {
+      // Use a regular expression to check if the input value is a valid link
+      const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+      const isValid = linkRegex.test(value);
+      setIsLinkValid(isValid);
+    }
+
+    setMeeting({ ...meeting, [name]: value });
+  };
 
   return (
     <div>
@@ -95,6 +106,7 @@ const Meeting = (props) => {
           <h1>Link</h1>
           <textarea name="meetingLink" id="" disabled={meeting.type==='In Person'} cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
         </div>
+        {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
 
         <button className="btn btn-danger" style={{ background: "maroon" }} onClick={scheduleMeeting}>Schedule Metting</button>
 

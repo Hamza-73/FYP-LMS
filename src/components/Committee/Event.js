@@ -12,8 +12,42 @@ import 'react-notifications/lib/notifications.css';
 
 const Event = (props) => {
   const history = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [data, setData] = useState({ vivas: [] });
+  
+  const [viva, setViva] = useState({ projectTitle: '', vivaDate: new Date(), vivaTime: '' });
+  const [loading, setLoading] = useState(false);
+  const [isFieldsModified, setIsFieldsModified] = useState(false);
+
+  const [isInvalidDate, setIsInvalidDate] = useState(false);
+
+  
+  const editViva = async (e) => {
+    try {
+      e.preventDefault();
+      const response = await fetch(`http://localhost:5000/viva/edit`, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectTitle: viva.projectTitle,
+          vivaDate: viva.vivaDate,
+          vivaTime: viva.vivaTime,
+        }),
+      });
+      const json = await response.json();
+      console.log('json in handle requests is ', json);
+
+      if (json.message && json.success) {
+        NotificationManager.success(json.message);
+      } else {
+        NotificationManager.error(json.message);
+      }
+    } catch (error) {
+      console.log('error scheduling viva', error);
+      NotificationManager.error(`Some error occurred try to reload the page/ try again`);
+    }
+  }
 
   const getVivas = async () => {
     try {
@@ -48,9 +82,79 @@ const Event = (props) => {
     }
   }, []);
 
+  const handleChange1 = (e) => {
+    setViva({ ...viva, [e.target.name]: e.target.value });
+  };
+
+  const handleCalendarChange = (date) => {
+    // Prevent selecting dates behind the current date
+    const currentDate = new Date();
+    if (date < currentDate) {
+      setIsInvalidDate(true); // Set invalid date flag to true
+      return; // Don't update the state if the selected date is behind the current date
+    }
+
+    setViva({ ...viva, vivaDate: date });
+    setIsFieldsModified(true); // Field modified, enable the button
+    setIsInvalidDate(false); // Reset invalid date flag
+  };
+
+  const handleTimeChange = (time) => {
+    setViva({ ...viva, vivaTime: time });
+    setIsFieldsModified(true); // Field modified, enable the button
+  };
 
   return (
     <div>
+
+      <div className="viva">
+        <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Register</h5>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={(e) => editViva(e)}>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      Project Title
+                    </label>
+                    <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      Viva Date
+                    </label>
+                    <Calendar onChange={handleCalendarChange} value={viva.vivaDate} />
+                  </div>
+                  {isInvalidDate && (
+                    <div className="text-danger">Please enter a valid date (not in the past).</div>
+                  )}
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      Viva Time
+                    </label>
+                    <div>
+                      <TimePicker onChange={handleTimeChange} value={viva.vivaTime} />
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal">
+                      Close
+                    </button>
+                    <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
+                      disabled={!isFieldsModified || !viva.projectTitle}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <>
         {loading ? (
           <Loading />
@@ -89,6 +193,7 @@ const Event = (props) => {
                         <td>{'project Submission'}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
+                        <td data-toggle="modal" data-target="#exampleModal1"><i class="fa-solid fa-pen-to-square"></i></td>
                       </tr>
                     ))}
                   </tbody>

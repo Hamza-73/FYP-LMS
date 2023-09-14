@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const meetingSchema = new Schema({
   groupId: { type: Schema.Types.ObjectId, ref: 'Group' },
   supervisor : {type:String},
-  projectTitle : {type:String},
+  projectTitle : {type:String },
   meetingLink:{type : String},
   purpose:{type : String},
   time: {

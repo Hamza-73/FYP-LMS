@@ -95,25 +95,29 @@ const SideBar = (props) => {
                                 <Link className="nav-link" to={`/${props.user}/${props.link7}`}>{props.title7}</Link>
                             </li>
                             <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link00}`}>{props.title00}</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link01}`}>{props.title01}</Link>
+                            </li>
+                            {/* <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link8}`}>{props.title8}</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link9}`}>{props.title9}</Link>
-                            </li>
-                            {/* <li className="nav-item dropdown">
+                            </li> */}
+                            <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     {props.title0}
                                 </Link>
-                                <ul className="dropdown-menu">
-                                    <li><Link className="dropdown-item" to='/'>Action</Link></li>
-                                    <li><Link className="dropdown-item" to='/'>Another action</Link></li>
-                                    <li><hr className="dropdown-divider"/></li>
-                                    <li><Link className="dropdown-item" to='/'>Something else here</Link></li>
+                                <div className={props.hide}>
+                                <ul className={`dropdown-menu`}>
+                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link8}`}>{props.title8}</Link></li>
+                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link9}`}>{props.title9}</Link></li>
+                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link10}`}>{props.title10}</Link></li>
                                 </ul>
+                                </div>
                             </li>
-                            <li className="nav-item">
-                                <Link className="nav-link disabled" aria-disabled="true">Disabled</Link>
-                            </li> */}
                         </ul>
                         <form className={`d-flex ${!localStorage.getItem('token') ? 'd-none' : ''} `} role="search">
                             <h6 className={`text-center`}>{

@@ -20,44 +20,44 @@ const StudentList = (props) => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-  
+
     // Check if any of the fields are empty
     if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim()) {
       NotificationManager.error('Please fill in all required fields.');
       return;
     }
-  
+
     // Check for consecutive spaces in any field
     const consecutiveSpacesPattern = /\s{2,}/;
     if (consecutiveSpacesPattern.test(register.name) || consecutiveSpacesPattern.test(register.rollNo) || consecutiveSpacesPattern.test(register.department) || consecutiveSpacesPattern.test(register.cnic) || consecutiveSpacesPattern.test(register.batch) || consecutiveSpacesPattern.test(register.father)) {
       NotificationManager.error('Fields should not contain consecutive spaces.');
       return;
     }
-  
+
     // Validate the rollNo format
     const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
-  
+
     if (!rollNoPattern.test(register.rollNo)) {
       setRollNoError(true);
       return;
     } else {
       setRollNoError(false); // Clear the error flag if the format is correct
     }
-    
+
     // Validate CNIC length (exactly 13 characters) and that it contains only numbers
     const cnicPattern = /^[0-9]{13}$/;
     if (!cnicPattern.test(register.cnic)) {
       NotificationManager.error('CNIC should be exactly 13 digits long and contain only numbers');
       return;
     }
-  
+
     // Validate semester (1 to 8)
     const semesterValue = parseInt(register.semester, 10);
     if (isNaN(semesterValue) || semesterValue < 1 || semesterValue > 8) {
       NotificationManager.error('Semester should be a number between 1 and 8');
       return;
     }
-  
+
     try {
       const response = await fetch("http://localhost:5000/student/register", {
         method: 'POST',
@@ -84,13 +84,13 @@ const StudentList = (props) => {
             batch: register.batch, semester: register.semester, cnic: register.cnic, rollNo: register.rollNo,
           }]
         }));
-  
+
         // Clear the register form fields
         setRegister({
           name: "", father: "", department: "", batch: "", semester: "", cnic: "", rollNo: "",
         });
         setRollNoError(false);
-  
+
       }
       else {
         NotificationManager.error(json.message);
@@ -99,8 +99,8 @@ const StudentList = (props) => {
       NotificationManager.error('Error in Registering');
     }
   }
-  
-  
+
+
   const openEditModal = (student) => {
     setSelectedStudent(student);
     setEditMode(true); // Set edit mode when opening the modal
@@ -116,39 +116,39 @@ const StudentList = (props) => {
       const id = selectedStudent._id;
       // console.log('id is ', id)
       const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
-  
+
       // Check if any of the fields are empty
       if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim()) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
-  
+
       // Check for consecutive spaces in any field
       const consecutiveSpacesPattern = /\s{2,}/;
       if (consecutiveSpacesPattern.test(register.name) || consecutiveSpacesPattern.test(register.rollNo) || consecutiveSpacesPattern.test(register.department) || consecutiveSpacesPattern.test(register.cnic) || consecutiveSpacesPattern.test(register.batch) || consecutiveSpacesPattern.test(register.father)) {
         NotificationManager.error('Fields should not contain consecutive spaces.');
         return;
       }
-  
+
       if (!rollNoPattern.test(register.rollNo)) {
         setRollNoError('Roll Number should be in the format XXXX-BSCS-XX');
         return;
       }
-  
+
       // Validate CNIC length (exactly 13 characters) and that it contains only numbers
       const cnicPattern = /^[0-9]{13}$/;
       if (!cnicPattern.test(register.cnic)) {
         NotificationManager.error('CNIC should be exactly 13 digits long and contain only numbers');
         return;
       }
-  
+
       // Validate semester (1 to 8)
       const semesterValue = parseInt(register.semester, 10);
       if (isNaN(semesterValue) || semesterValue < 1 || semesterValue > 8) {
         NotificationManager.error('Semester should be a number between 1 and 8');
         return;
       }
-  
+
       const response = await fetch(`http://localhost:5000/student/edit/${id}`, // Assuming _id is the correct identifier for a student
         {
           method: "PUT",
@@ -162,7 +162,7 @@ const StudentList = (props) => {
           })
         }
       );
-  
+
       const updatedStudent = await response.json();
       // console.log('updatedStudent is ', updatedStudent)
       if (updatedStudent) {
@@ -185,7 +185,7 @@ const StudentList = (props) => {
       NotificationManager.error('Error in Editing');
     }
   };
-  
+
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this student?');
@@ -279,7 +279,7 @@ const StudentList = (props) => {
   const handleChange1 = (e) => {
     const { name, value } = e.target;
     const trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and trim
-  
+
     setRegister((prevRegister) => ({
       ...prevRegister,
       [name]: trimmedValue,

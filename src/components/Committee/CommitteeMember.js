@@ -419,6 +419,7 @@ const CommitteeMember = (props) => {
               Register
             </button>
           </div>
+        <NotificationContainer />
       </>)}
     </>
   );

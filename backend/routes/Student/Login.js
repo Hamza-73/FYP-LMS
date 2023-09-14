@@ -48,6 +48,7 @@ router.post('/upload', authenticateUser, async (req, res) => {
     if (!groupUpdate) {
       return res.status(404).json({ success: false, message: 'Group Not Found' });
     }
+    console.log('type is ', type);
 
     const file = req.files[type];
     console.log('file is ', file);
@@ -87,9 +88,7 @@ router.post('/upload', authenticateUser, async (req, res) => {
           }
         }));
       });
-
       await Promise.all(promises);
-
       // Save groupUpdate and user objects after all updates are done
       await Promise.all([...promises, groupUpdate.save()]);
     });
@@ -102,15 +101,13 @@ router.post('/upload', authenticateUser, async (req, res) => {
 });
 
 
-
-
 // Login route
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
     // Find the user by rollNo : username
-    const user = await User.findOne({ rollNo : username });
+    const user = await User.findOne({ rollNo: username });
     if (!user) {
       return res.status(404).json({ success: false, message: "Student not found" });
     }
@@ -268,7 +265,7 @@ router.post('/reset-password', async (req, res) => {
 
   try {
     // Find the user by username
-    const user = await User.findOne({ rollNo : username });
+    const user = await User.findOne({ rollNo: username });
 
     // Check if user exists
     if (!user) {
@@ -476,15 +473,15 @@ router.put('/edit/:id', async (req, res) => {
 
   try {
     const student = await User.findById(studentId);
-    if(student){
-      if(student.group){
+    if (student) {
+      if (student.group) {
         const group = await Group.findById(student.group)
-          if(!group){
-            return;
+        if (!group) {
+          return;
         }
-        group.projects.map(proj=>{
-          proj.students.map( async stu=>{
-            if(stu.userId.equals(studentId)){
+        group.projects.map(proj => {
+          proj.students.map(async stu => {
+            if (stu.userId.equals(studentId)) {
               stu.name = updatedDetails.name; // Update the name
               stu.rollNo = updatedDetails.rollNo; // Update the rollNo
               await group.save()
@@ -511,11 +508,11 @@ router.get('/my-group', authenticateUser, async (req, res) => {
     console.log('userId', userId)
     const student = await User.findById(userId);
     if (!student) {
-      return res.status(404).json({success:false,  message: 'Student Not Found' });
+      return res.status(404).json({ success: false, message: 'Student Not Found' });
     }
     const group = await Group.findById(student.group);
     if (!group) {
-      return res.status(404).json({ success:false,  message: 'Group Not Found' });
+      return res.status(404).json({ success: false, message: 'Group Not Found' });
     }
     const viva = await Viva.findById(student.viva);
     const groupDetail = {
@@ -541,7 +538,7 @@ router.get('/my-group', authenticateUser, async (req, res) => {
     return res.json({ success: true, group: groupDetail })
   } catch (error) {
     console.error(`error fetching group`, error);
-    res.json({message : `Internal Server error ${error}`})
+    res.json({ message: `Internal Server error ${error}` })
   }
 });
 
@@ -593,6 +590,219 @@ router.post('/mark-notification-seen/:notificationIndex', authenticateUser, asyn
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+router.get('/getRequests', authenticateUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const requests = [];
+
+    for (const reqId of user.requests) {
+      const request = await ProjectRequest.findById(reqId);
+
+      if (!request) {
+        continue; // Skip requests that couldn't be found
+      }
+
+      const supervisor = await Supervisor.findById(request.supervisor);
+      if (!supervisor) {
+        continue; // Skip requests with supervisors that couldn't be found
+      }
+      requests.push({
+        projectId : request._id,
+        projectTitle: request.projectTitle,
+        description: request.description,
+        scope: request.scope,
+        supervisorName: supervisor.name,
+      });
+    }
+
+    res.json({ success: true, requests });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Route to accept, reject, or improve project requests
+router.put('/process-request/:projectId/:action', authenticateUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const { projectId, action } = req.params;
+    const request = await ProjectRequest.findById(projectId);
+
+    if (!request) {
+      return res.status(404).json({ message: 'Project Request not found' });
+    }
+
+    const supervisor = await Supervisor.findById(request.supervisor);
+
+    // Remove the request from the student's request array
+    const filterRequests = user.requests.filter(reqId => !reqId.equals(projectId));
+    user.requests = filterRequests;
+    await user.save()
+
+    if (action === 'accept') {
+      // Check if a group with the same title exists
+      const existingGroup = await Group.findOne({ 'projects.projectTitle': request.projectTitle });
+
+      if (existingGroup) {
+        // Check if the group has fewer than 2 students
+        if (existingGroup.projects[0].students.length < 2) {
+          // Add student to the existing group
+          existingGroup.projects[0].students.push({
+            name: user.name,
+            rollNo: user.rollNo,
+            userId: user._id
+          });
+
+          // Update user properties
+          user.group = existingGroup._id;
+          user.isMember = true;
+          user.pendingRequests = [];
+
+          // Notify the supervisor
+
+          if (supervisor) {
+            supervisor.unseenNotifications.push({
+              type: 'Important',
+              message: `${user.name} accepted your request to join ${request.projectTitle}'s group`
+            });
+            await supervisor.save();
+          }
+          request.status = true ;
+
+          await Promise.all([existingGroup.save(), user.save(), request.save()]);
+          return res.json({ success: true, message: 'Student added to the existing group' });
+        }
+      }
+
+      // If no existing group or group is full, create a new group
+      const newGroup = new Group({
+        supervisor: supervisor.name,
+        supervisorId: supervisor._id,
+        projects: [{
+          projectTitle: request.projectTitle,
+          students: [{
+            name: user.name,
+            rollNo: user.rollNo,
+            userId: user._id
+          }]
+        }],
+      });
+
+      // Update user properties
+      user.group = newGroup._id;
+      user.isMember = true;
+
+      // Notify the supervisor
+      if (supervisor) {
+        supervisor.unseenNotifications.push({
+          type: 'Important',
+          message: `${user.name} accepted your request to join ${request.projectTitle}'s group`
+        });
+        await supervisor.save();
+      }
+
+      await Promise.all([newGroup.save(), user.save()]);
+      return res.json({ success: true, message: 'Student added to a new group' });
+    } else if (action === 'reject') {
+      // Notify the supervisor about rejection
+      const supervisor = await Supervisor.findById(request.supervisor);
+      if (supervisor) {
+        supervisor.unseenNotifications.push({
+          type: 'Important',
+          message: `${user.name} rejected your request to join ${request.projectTitle}'s group`
+        });
+        await supervisor.save();
+      }
+
+      return res.json({ success: true, message: 'Request rejected successfully' });
+    } else if (action === 'improve') {
+      // Update project request details
+      if (projectTitle) request.projectTitle = projectTitle;
+      if (scope) request.scope = scope;
+      if (description) request.description = description;
+      await request.save();
+
+      // Check if a group with the same title exists
+      const existingGroup = await Group.findOne({ 'projects.projectTitle': request.projectTitle });
+
+      if (existingGroup) {
+        // Check if the group has fewer than 2 students
+        if (existingGroup.projects[0].students.length < 2) {
+          // Add student to the existing group
+          existingGroup.projects[0].students.push({
+            name: user.name,
+            rollNo: user.rollNo,
+            userId: user._id
+          });
+
+          // Update user properties
+          user.group = existingGroup._id;
+          user.isMember = true;
+
+          // Notify the supervisor
+          const supervisor = await Supervisor.findById(request.supervisor);
+          if (supervisor) {
+            supervisor.unseenNotifications.push({
+              type: 'Important',
+              message: `${user.name} improved and accepted your request to join ${request.projectTitle}'s group`
+            });
+            await supervisor.save();
+          }
+          request.status = true ;
+
+          await Promise.all([existingGroup.save(), user.save() , request.save()]);
+          return res.json({ success: true, message: 'Student added to the existing group after improving the request' });
+        }
+      }
+
+      // If no existing group or group is full, create a new group
+      const newGroup = new Group({
+        projects: [{
+          projectTitle: request.projectTitle,
+          students: [{
+            name: user.name,
+            rollNo: user.rollNo,
+            userId: user._id
+          }]
+        }],
+        supervisorId: request.supervisor,
+        supervisor: supervisor.name,
+      });
+
+      // Update user properties
+      user.group = newGroup._id;
+      user.isMember = true;
+
+      // Notify the supervisor
+      // const supervisor = await Supervisor.findById(request.supervisor);
+      if (supervisor) {
+        supervisor.unseenNotifications.push({
+          type: 'Important',
+          message: `${user.name} improved and accepted your request to join ${request.projectTitle}'s group`
+        });
+        await supervisor.save();
+      }
+
+      await Promise.all([newGroup.save(), user.save()]);
+      return res.json({ success: true, message: 'Student added to a new group after improving the request' });
+    }
+
+    res.status(400).json({ success: false, message: 'Invalid action' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 
 module.exports = router;

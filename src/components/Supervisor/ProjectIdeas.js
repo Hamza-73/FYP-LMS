@@ -8,7 +8,10 @@ const ProjectIdeas = () => {
   const [fypIdea, setFypIdea] = useState({
     projectTitle: '', description: '', scope: ''
   });
-  const [idea, setIdea] = useState({ supervisor: "", ideas: [] });
+  const [idea, setIdea] = useState({ supervisor: "", ideas: [{
+    projectTitle: '', description: '', scope: '',
+    time : '', date : '',
+  }] });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -83,7 +86,7 @@ const ProjectIdeas = () => {
       console.log('add stdents starts');
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/supervisor/add-student/${projectTitle}/${rollNo}`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           Authorization: token,
         },
@@ -209,6 +212,8 @@ const ProjectIdeas = () => {
                       <th scope="col">Project Title</th>
                       <th scope="col">Scope</th>
                       <th scope="col">Description</th>
+                      <th scope="col">Time</th>
+                      <th scope="col">Date</th>
                       <th scope="col">Add Student</th>
                     </tr>
                   </thead>
@@ -220,6 +225,8 @@ const ProjectIdeas = () => {
                         <td>{group.projectTitle}</td>
                         <td>{group.scope}</td>
                         <td>{group.description}</td>
+                        <td>{group.time}</td>
+                        <td>{group.date}</td>
                         <td> <button className="btn btn-sm" data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white"}} type="button" onClick={()=>{
                           setAddStudent({projectTitle:group.projectTitle})
                         }}>Add Student</button>

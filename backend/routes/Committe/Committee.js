@@ -376,56 +376,109 @@ router.get('/progress', async (req, res) => {
   }
 });
 
-router.post('/dueDate/:groupId', async (req, res) => {
+// Add due date
+router.post('/dueDate', async (req, res) => {
   try {
     const { type, dueDate } = req.body;
-    const { groupId } = req.params;
     // Validate if the due date is not behind the current date
     const currentDate = new Date();
     if (new Date(dueDate) < currentDate) {
       return res.status(400).json({ message: "Due Date cannot be behind the current date" });
     }
 
-    const group = await Group.findById(groupId);
+    const groups = await Group.find();
 
-    if (!group) {
-      return res.status(404).json({ message: "Group Not Found" });
+    if (!groups || groups.length === 0) {
+      return res.status(404).json({ message: "Groups Not Found" });
     }
 
-    const promiseArray = group.projects.map(async (proj) => {
-      return Promise.all(proj.students.map(async (student) => {
-        const stu = await User.findById(student.userId);
-        if (!stu) {
-          return;
+    const promiseArray = [];
+
+    for (const group of groups) {
+      for (const project of group.projects) {
+        for (const student of project.students) {
+          // console.log('project is ', project)
+          const stu = await User.findById(student.userId);
+          if (!stu) {
+            continue; // Skip this student and continue with the next one
+          }
+          // console.log('students is ', stu);
+          if (type === 'proposal') {
+            group.propDate = dueDate;
+            stu.propDate = dueDate;
+          } else if (type === 'documentation') {
+            group.docDate = dueDate;
+            stu.docDate = dueDate;
+            console.log('documentation');
+          } else if (type === 'final') {
+            group.finalDate = dueDate;
+            stu.finalDate = dueDate;
+            console.log('final');
+          }
+          stu.unseenNotifications.push({
+            type: "Important",
+            message: `Deadline for ${type[0].toUpperCase() + type.slice(1, type.length)} has been added ${dueDate}`
+          });
+          promiseArray.push(stu.save()); // Push the save promise to the array
         }
-        if (type === 'proposal') {
-          group.propDate = dueDate;
-          stu.propDate = dueDate;
-        } else if (type === 'documentation') {
-          group.docDate = dueDate;
-          stu.docDate = dueDate;
-          console.log('documentation');
-        } else if (type === 'final') {
-          group.finalDate = dueDate;
-          stu.finalDate = dueDate;
-          console.log('final');
-        }
-        stu.unseenNotifications.push({
-          type : "Important", message:`Deadline for ${type[0].toUpperCase()+type.slice(1,type.length)} has been added ${dueDate}`
-        })
-      }));
-    });
+      }
+      promiseArray.push(group.save()); // Push the save promise to the array
+    }
 
     // Use Promise.all to execute all promises in parallel
     await Promise.all(promiseArray);
-
-    await group.save();
 
     return res.status(200).json({ message: "Due Date Updated Successfully" });
   } catch (error) {
     // Handle errors
     console.error(error);
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.put('/allocate-group',  async (req, res) => {
+  try {
+    const { projectTitle, newSupervisor } = req.body;
+
+    // Check if a group with the provided projectTitle exists
+    const group = await Group.findOne({ 'projects.projectTitle': projectTitle }).populate('supervisor');
+
+    if (!group) {
+      return res.status(404).json({ success: false, message: 'Group not found' });
+    }
+    // Remove the group ID from the previous supervisor's groups
+    const previousSupervisor = await Supervisor.findById(group.supervisorId);
+    if (previousSupervisor) {
+      previousSupervisor.groups = previousSupervisor.groups.filter(groupId => !groupId.equals(group._id));
+      previousSupervisor.slots +=1;
+      await previousSupervisor.save();
+    }
+
+    // Check if the new supervisor has slots left
+    const supervisor = await Supervisor.findOne({username : newSupervisor});
+
+    if (!supervisor) {
+      return res.status(404).json({ success: false, message: 'New supervisor not found' });
+    }
+
+    if (supervisor.slots.length == 0) {
+      return res.status(400).json({ success: false, message: 'New supervisor does not have available slots' });
+    }
+
+    // Allocate the group to the new supervisor
+    group.supervisor = supervisor.name;
+    group.supervisorId = supervisor._id;
+
+    // Add the group ID to the new supervisor's groups
+    supervisor.groups.push(group._id);
+    supervisor.slots -=1;
+
+    await Promise.all([group.save(), supervisor.save()]);
+
+    res.json({ success: true, message: 'Group allocated to the new supervisor' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

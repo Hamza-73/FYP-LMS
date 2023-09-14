@@ -51,7 +51,7 @@ router.post('/schedule-viva', async (req, res) => {
         vivaTime: vivaTime
       });
       group.viva = viva._id;
-      group.vivaDate = newDate(parsedDate);
+      group.vivaDate = new Date(parsedDate);
 
       await Promise.all([group.save(), viva.save()]);
       console.log('Viva is ', viva)
@@ -62,7 +62,7 @@ router.post('/schedule-viva', async (req, res) => {
       project.students.forEach(async (student) => {
         const user = await User.findById(student.userId);
         if (user) {
-          user.unseenNotifications.push({ message: notificationMessage });
+          user.unseenNotifications.push({ type:"Reminder", message: notificationMessage });
           user.vivaTime = vivaTime;
           user.vivaDate = parsedDate;
           user.viva = viva._id;

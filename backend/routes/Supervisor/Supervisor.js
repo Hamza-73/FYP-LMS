@@ -107,49 +107,9 @@ router.delete('/delete/:id', async (req, res) => {
     }
 
     const supervisor = await Supervisor.findById(id);
-    if(supervisor){
-      supervisor.groups.map(async group=>{
-        const grp = await Group.findById(group);
-        if(grp){
-          console.log('group enters')
-          grp.projects.map(async (proj) => {
-            console.log('supervisor project is ', proj);
-            proj.students.map(async (groups) => {
-              console.log('student is ', groups);
-              const stuObj = await User.findById(groups.userId);
-              if (stuObj) {
-                  console.log('groups.group is not empty:');
-                  // Check if groups.group is not an empty string
-                  stuObj.group = groups.group;
-                  stuObj.isMember = false;
-                  stuObj.propDate = '';
-                  stuObj.propSub = '';
-                  stuObj.docDate = '';
-                  stuObj.docSub = '';
-                  stuObj.finalDate = '';
-                  stuObj.finalSub = '';
-                  console.log('notifictaion is about to send');
-                  stuObj.unseenNotifications.push({
-                    type: "Important",
-                    message: `You Supervisor has been deleted by the Committee, Find another group/supervisor`
-                  });
-                  await stuObj.save();
-                
-          
-                const projectRequest = await ProjectRequest.findOneAndDelete({ supervisor: supervisor._id });
-              }
-            });
-          });
-        }else{
-          return ;
-        }
-        const deleteGroup = await Group.findByIdAndDelete(group);
-        if(!deleteGroup){
-          return res.status(404).json({ message: 'Supervisor not found' });
-        }
-      })
+    if(supervisor.groups.length>0){
+      return res.status(500).json({ success:true, message: `First Allocate groups under ${supervisor.name} to someone else.` });
     }
-
     const deletedMember = await Supervisor.findByIdAndDelete(id);
 
     if (!deletedMember) {
@@ -464,104 +424,58 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 });
 
 
-// Supervisor adds a student to their group for a specific project using student's rollNo
-router.put('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, res) => {
+// Supervisor sends a project request to a student for a specific project using student's rollNo
+router.post('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, res) => {
   const { projectTitle, rollNo } = req.params;
 
   try {
     const supervisorId = req.user.id;
-    const checkGroup = await Group.findOne({ 'projects.projectTitle': projectTitle });
-    if(!checkGroup){
-      return res.status(404).json({ success: false, message: `Group with specified Project Title doesn't exist` });
-    }
-    const supervisor = await Supervisor.findById(supervisorId).populate('groups.projects');
+    const supervisor = await Supervisor.findById(supervisorId);
 
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
 
-    const projectDetail = await ProjectRequest.findOne({ projectTitle: projectTitle });
-    if (projectDetail) {
-      if (!(projectDetail.supervisor.equals(supervisor._id))) {
-        const sup = await Supervisor.findById(projectDetail.supervisor);
-        return res.status(404).json({ success: false, message: `Project is already supervised by ${sup.name}` });
-      }
-    }
-
-    // console.log("supervisor group is ", supervisor.groups)
-
-    // Find the student by roll number
+    // Check if the student is already in a group
     const student = await User.findOne({ rollNo: rollNo });
+
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student not found with the specified roll number' });
     }
+
     if (student.isMember) {
-      return res.status(404).json({ success: false, message: 'Student is already in group' });
+      return res.status(400).json({ success: false, message: 'Student is already in a group' });
     }
 
-    supervisor.groups.map(async (grp) => {
-      // console.log('GRP is ', grp);
-      const group = await Group.findById(grp);
-
-      if (!group) {
-        return res.status(404).json({ success: false, message: 'Group not found with the specified project title' });
-      }
-      if (group) {
-        // console.log('GROUP is', group)
-        // console.log('TITLE is', group.projects)
-
-        group.projects.map(async (proj) => {
-          // console.log('proj is ', proj);
-          console.log('proj Title ', proj.projectTitle);
-          if (proj.projectTitle === projectTitle) {
-            // Check if there are already two students in the group's project
-            if (proj.students.length >= 2) {
-              return res.status(400).json({ success: false, message: 'Group already has two students' });
-            }
-
-            // console.log('Student is', student)
-            proj.students.push({
-              name: student.name,
-              rollNo: student.rollNo,
-              userId: student._id
-            })
-
-            //Push student to projectRequest
-            const request = await ProjectRequest.findOne({ projectTitle: projectTitle });
-            if (!request) {
-              return res.status(500).json({ success: true, message: "ProjectRequest not found" })
-            }
-            if (request) {
-              request.students.push(student._id);
-            }
-            console.log('requets is ', request);
-
-            student.unseenNotifications.push({
-              type: "Important",
-              message: `You've been added to the ${supervisor.name}'s group project is :${request.projectTitle}`
-            })
-            student.group = group._id;
-            student.isMember = true;
-
-            supervisor.unseenNotifications.push({
-              type: "Important",
-              message: `You added ${student.name} to group ${projectTitle} `
-            })
-
-            // Save changes to the supervisor's data
-            await Promise.all([supervisor.save(), group.save(), student.save(), request.save()])
-
-            res.json({ success: true, message: 'Student added to the group with the specified project title' });
-          }
-        })
-      }
+    // Create a new project request without specifying the student
+    const projectRequest = await ProjectRequest.findOne({projectTitle : projectTitle});
+    if(!projectRequest){
+      return res.status(404).json({ success: false, message: 'FYP Idea not found' });
     }
-    )
+
+    // Notify the student about the new project request
+    student.unseenNotifications.push({
+      type: 'Important',
+      message: `${supervisor.name} sent you a project request for the project: ${projectTitle}`
+    });
+
+    supervisor.unseenNotifications.push({
+      type : "Important", message: `You've send request to ${student.name} to join ${projectTitle}`
+    })
+
+    student.requests.push(projectRequest._id);
+
+    // Save the changes to the student and project request
+    await Promise.all([ student.save() , supervisor.save() ]);
+
+    res.json({ success: true, message: 'Project request sent to the student' });
+
   } catch (err) {
-    console.error('Error adding student to group:', err);
+    console.error('Error sending project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 
 // Supervisor sends a project request and notifies all users
@@ -596,8 +510,12 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
       user.unseenNotifications.push({ type: "Important", message: notificationMessage });
       await user.save();
     });
-
-    supervisor.myIdeas.push(projectRequest._id);
+    const currentDate = new Date();
+    supervisor.myIdeas.push({
+      projectId : projectRequest._id,
+      time : currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds() ,
+      date : new Date()
+    });
     await supervisor.save();
     res.json({ success: true, message: 'Project idea sent and users notified' });
 
@@ -710,6 +628,62 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
   }
 });
 
+router.put('/editProposal/:projectId', authenticateUser, async (req,res)=>{
+  try {
+    const supervisor = await Supervisor.findOne({ _id: req.user.id });
+    const updatedDetails = req.body;
+    const  {projectId}  = req.params;
+
+    if (!supervisor) {
+      return res.status(404).json({ success: false, message: 'Supervisor not found' });
+    }
+
+    const idea = await ProjectRequest.findByIdAndUpdate({ _id : projectId }, updatedDetails, { new: true });
+    if(!idea){
+      return res.status(404).json({ success: false, message: 'Project Idea not found' });
+    }
+
+    supervisor.unseenNotifications.push({
+      type : "Important",
+      message:`FYP Idea edited Successfully`
+    });
+
+    await Promise.all([ supervisor.save(), idea.save() ]);
+
+    res.json({ success:true, message:"Idea Edited Successfully"});
+
+  } catch (error) {
+    
+  }
+});
+
+router.delete('/deleteProposal/:projectId', authenticateUser, async (req,res)=>{
+  const supervisor = await Supervisor.findOne({ _id: req.user.id });
+  const projectId = req.params;
+  if (!supervisor) {
+    return res.status(404).json({ success: false, message: 'Supervisor not found' });
+  }
+
+  const idea = await ProjectRequest.findByIdAndDelete(projectId);
+  if(!idea){
+    return res.status(404).json({ success: false, message: 'Idea not deleted' });
+  }
+
+  supervisor.unseenNotifications.push({
+    type : "Important",
+    message:`FYP Idea deleted Successfully`
+  });
+  
+  const filteredRequest = supervisor.myIdeas.filter(ideas=>{
+    ! ideas.projectId.equals(idea._id);
+  });
+
+  await Promise.all([ supervisor.save(), idea.save() ]);
+
+  supervisor.myIdeas = filteredRequest;
+
+});
+
 router.get('/my-groups', authenticateUser, async (req, res) => {
   try {
     // Find the supervisor by user ID and populate the groups field
@@ -755,12 +729,21 @@ router.get('/myIdeas', authenticateUser, async (req, res) => {
       return res.status(404).json({ message: 'Supervisor not found' });
     }
 
+    const myIdea = [];
+
     const ideaPromises = supervisor.myIdeas.map(async (idea) => {
-      const project = await ProjectRequest.findById(idea);
+      const project = await ProjectRequest.findById(idea.projectId);
       if (!project) {
         return null; // Return null if project not found
       }
-      return project; // Return the project if found
+      myIdea.push({
+        projectId : project._id,
+         projectTitle : project.projectTitle,
+         description  : project.description ,
+         scope : project.scope,
+         time : idea.time,
+         date : idea.date
+      }); // Return the project if found
     });
 
     const ideas = await Promise.all(ideaPromises);
@@ -768,7 +751,7 @@ router.get('/myIdeas', authenticateUser, async (req, res) => {
     // Filter out null values (projects not found)
     const validIdeas = ideas.filter((idea) => idea !== null);
 
-    return res.json({ success: true, supervisor: supervisor.name, ideas: validIdeas });
+    return res.json({ success: true, supervisor: supervisor.name, ideas: myIdea });
   } catch (error) {
     console.error('error is ', error);
     return res.status(500).json({ message: 'Server error' });

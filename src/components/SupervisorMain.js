@@ -10,6 +10,7 @@ import ProjectIdeas from './Supervisor/ProjectIdeas'
 import ProjectRequest from './Supervisor/ProjectRequests'
 import Notification from './Notification'
 import ForgotPassword from './ForgotPassword'
+import StuDash from './Student/StuDash'
 
 const SupervisorMain = (props) => {
   
@@ -26,7 +27,7 @@ const SupervisorMain = (props) => {
         {!showSidebar && (
           <SideBar detailLink='supervisor' title1='Dashboard' link1='dashboard' title2='Groups Under Me' user='supervisorMain'
             link2='group' title3='Groups' link3='groupDetail' title4='Meeting' link4='meeting'
-            title5='FYP Ideas' link5='ideas' title6='FYP Requests' link6='requests'
+            title5='FYP Ideas' link5='ideas' title6='FYP Requests' link6='requests' title00='Sceduled Meeting' link00='see-meeting' hide='d-none'
             title7='Notifications' link7='notification' />
         )}
       </div>
@@ -41,6 +42,7 @@ const SupervisorMain = (props) => {
         <Route path='/meeting' element={<Meeting  />} />
         <Route path='/ideas' element={<ProjectIdeas  />} />
         <Route path='/requests' element={<ProjectRequest  />} />
+        <Route path='/see-meeting' element={<StuDash user='supervisor' />} />
         <Route path='/notification' element={<Notification user='supervisor' />} />
       </Routes>
     </div>

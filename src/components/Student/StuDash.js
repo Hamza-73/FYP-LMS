@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SideBar from '../SideBar';
 import Loading from '../Loading';
 
-const StuDash = () => {
+const StuDash = (props) => {
   const [userData, setUserData] = useState({ member: [] });
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ const StuDash = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:5000/student/detail`, {
+        const response = await fetch(`http://localhost:5000/${props.user}/detail`, {
           method: 'GET',
           headers: {
             'Authorization': token,
