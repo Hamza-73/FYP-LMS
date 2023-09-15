@@ -12,6 +12,7 @@ import StuDash from './Student/StuDash'
 import Dashboard from './Dashboard'
 import Meeting from './Meeting'
 import StuRequest from './Student/StuRequest'
+import Supervisors from './Student/Supervisors'
 
 const StudentMain = (props) => {
   const location = useLocation();
@@ -29,7 +30,7 @@ const StudentMain = (props) => {
             <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress' user='studentMain'
               link2='progress' title3='Tasks' link3='tasks' title4='My Group'
               link4='group' title5='Fyp Ideas' link5='ideas' detailLink='student' title00='Scedule Meeting'
-              link00='schedule-meeting' title01='Requests' link01='requests'
+              link00='schedule-meeting' title01='Requests' link01='requests' link02='supervisors' title02='Supervisors'
               title6='Notification' link6='notification' title7='Meetings' link7='meeting' hide='d-none'
             />
           )}
@@ -48,6 +49,7 @@ const StudentMain = (props) => {
           <Route path='/schedule-meeting' element={<Meeting user='student' />} />
           <Route path='/notification' element={<Notification user='student' />} />
           <Route path='/requests' element={<StuRequest />} />
+          <Route path='/supervisors' element={<Supervisors />} />
         </Routes>
       </>
 

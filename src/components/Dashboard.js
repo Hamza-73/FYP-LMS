@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from './Navbar';
-import SideBar from './SideBar';
 import Loading from './Loading';
 import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';

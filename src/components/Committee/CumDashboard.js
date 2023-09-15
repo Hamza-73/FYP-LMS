@@ -70,7 +70,6 @@ const CumDashboard = (props) => {
   const editRule = async (e) => {
     try {
       e.preventDefault();
-      setLoading(true);
       setCheck(true);
       const response = await axios.put(`http://localhost:5000/committee/editrules/${defineRole}`, {
         rules: modalRules,
@@ -141,20 +140,39 @@ const CumDashboard = (props) => {
     return word[0].toUpperCase() + word.slice(1, word.length)
   }
 
+   // Function to reset the modal state
+   const resetModalState = () => {
+    setDefineRole('');
+    setModalRules([]);
+    setEditRuleIndex(-1);
+  };
+
   return (
     <div>
       <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Edit Rules</h1>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
               <form>
                 <div className="mb-3">
                   <label htmlFor="role" className="form-label">Role</label>
-                  <input type="text" className="form-control" id="role" name='role' value={defineRole} onChange={(e) => setDefineRole(e.target.value)} />
+                  <select
+                    className="form-select"
+                    id="role"
+                    name='role'
+                    value={defineRole}
+                    onChange={(e) => setDefineRole(e.target.value)}
+                  >
+                    <option value="">Select Role</option>
+                    <option value="student">Student</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="evaluation criteria">Evaluation Criteria</option>
+                    <option value="extension rule">Extension Rule</option>
+                  </select>
                 </div>
                 {modalRules.map((val, key) => (
                   <div className="mb-3" key={key}>
@@ -178,7 +196,9 @@ const CumDashboard = (props) => {
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={()=>{
+                setLoading(false); resetModalState()
+              }}>Close</button>
               <button type="button" className="btn btn-warning" onClick={() => getRole(defineRole)} disabled={!defineRole}>Get Roles</button>
               <button type="button" className="btn" style={{ background: "maroon", color: "white" }} onClick={(e) => editRule(e)} disabled={!modalRules || !check}>Edit Rules</button>
             </div>
@@ -206,7 +226,7 @@ const CumDashboard = (props) => {
           Edit Rules
         </button>
       </div>
-        <NotificationContainer />
+      <NotificationContainer />
     </div>
   );
 };

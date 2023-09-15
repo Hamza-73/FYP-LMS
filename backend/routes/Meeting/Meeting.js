@@ -34,8 +34,9 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
-
-    const parsedDate = moment(date, 'DD-MM-YYYY').toDate();
+    console.log('reuest date s ', date)
+    const parsedDate = moment(date, 'YYYY-MM-DD').toDate();
+    console.log('parsed date is ', parsedDate)
 
     // Check if parsedDate is a valid date
     if (!moment(parsedDate).isValid()) {
@@ -62,8 +63,6 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     const studentIds = group.projects.flatMap(proj => proj.students.map(student => student.userId));
     const supervisor = await Supervisor.findById(req.user.id);
     const user = await User.findById(req.user.id);
-
-    const currentUser = req.user; // Assuming you have a user object in req
 
     // Check if the current user is a supervisor or a student
     if (supervisor) {
@@ -92,19 +91,24 @@ router.post('/meeting', authenticateUser, async (req, res) => {
       // Send notifications to other group members
       const messageToGroupMembers = `Meeting Scheduled for ${projectTitle} on ${date} at ${time}`;
       await Promise.all(studentIds.map(async (studentId) => {
-        if (studentId !== currentUser.id) {
           const student = await User.findById(studentId);
           if (student) {
+            student.meetingId = meeting._id,
+            student.meetingLink = meetingLink;
+            student.meetingTime = time;
+            student.meetingDate = parsedDate;
             student.unseenNotifications.push({ type: 'Reminder', message: messageToGroupMembers });
             await student.save();
-          }
         }
       }));
-
+      const sup = await Supervisor.findById(group.supervisorId);
+      if (!sup) {
+        return;
+      }
       // Send a notification to the supervisor
-      const messageToSupervisor = `${currentUser.name} scheduled a meeting for group ${projectTitle}`;
-      supervisor.unseenNotifications.push({ type: 'Reminder', message: messageToSupervisor });
-      await supervisor.save();
+      const messageToSupervisor = `${user.name} scheduled a meeting for group ${projectTitle}`;
+      sup.unseenNotifications.push({ type: 'Reminder', message: messageToSupervisor });
+      await sup.save();
     }
 
     // Update group and supervisor
@@ -118,7 +122,7 @@ router.post('/meeting', authenticateUser, async (req, res) => {
       purpose: purpose,
     };
     group.meetingReport.push(meetingReport);
-    await Promise.all([group.save(), supervisor.save()]);
+    await Promise.all([group.save()]);
 
     return res.json({ success: true, message: `Meeting Scheduled with group of ${projectTitle}` });
 

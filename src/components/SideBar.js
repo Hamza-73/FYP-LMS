@@ -100,6 +100,9 @@ const SideBar = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link01}`}>{props.title01}</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link02}`}>{props.title02}</Link>
+                            </li>
                             {/* <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link8}`}>{props.title8}</Link>
                             </li>
