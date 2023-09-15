@@ -490,10 +490,16 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
     // Notify all users about the new project idea
+    const checkRequest = await ProjectRequest.findOne({projectTitle});
+    if(checkRequest){
+      return res.status(500).json({ success: false, message: 'FYP Idea with this Project Title already exists.' });
+    }
+  
     const users = await User.find();
 
     const userIds = users.map(user => user._id)
-    console.log(userIds)
+    console.log(userIds);
+
 
     // Create a new project request without specifying the student
     const projectRequest = new ProjectRequest({

@@ -59,7 +59,12 @@ const ProjectIdeas = () => {
           scope: fypIdea.scope
         })
       });
-      const json = response.json();
+      const json = await response.json();
+      if(!json.success){
+        NotificationManager.error(json.message);
+        console.log('json message is ', json)
+        return;
+      }
       if (json) {
         // Create a new idea object from the fypIdea state
         const newIdea = {
@@ -67,7 +72,7 @@ const ProjectIdeas = () => {
           description: fypIdea.description,
           scope: fypIdea.scope,
         };
-
+        NotificationManager.success(json.message);
         // Update the state with the new idea
         setIdea((prevState) => ({
           ...prevState,
