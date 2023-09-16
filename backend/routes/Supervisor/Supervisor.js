@@ -107,8 +107,8 @@ router.delete('/delete/:id', async (req, res) => {
     }
 
     const supervisor = await Supervisor.findById(id);
-    if(supervisor.groups.length>0){
-      return res.status(500).json({ success:true, message: `First Allocate groups under ${supervisor.name} to someone else.` });
+    if (supervisor.groups.length > 0) {
+      return res.status(500).json({ success: true, message: `First Allocate groups under ${supervisor.name} to someone else.` });
     }
     const deletedMember = await Supervisor.findByIdAndDelete(id);
 
@@ -184,7 +184,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       if (student) {
         const updatedPendingRequests = student.pendingRequests.filter(request => !request._id.equals(requestId));
         student.pendingRequests = updatedPendingRequests;
-        
+
         student.unseenNotifications.push({
           type: "Important",
           message: `${supervisor.name} rejected your request.`
@@ -247,17 +247,17 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
           });
           user.group = group._id;
           user.pendingRequests = [];
-          user.isMember = true ;
+          user.isMember = true;
           const filteredRequest = supervisor.projectRequest.filter((request) => {
             return !request.project.equals(projectDetail._id);
           });
-    
+
           supervisor.projectRequest = filteredRequest;
           projectDetail.students.push(user._id);
           projectDetail.status = true;
           user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
           supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
-  
+
         });
         await Promise.all([group.save(), user.save(), supervisor.save(), projectDetail.save()]);
         return res.json({ success: true, message: "Accept requested and Student Added to Group" });
@@ -448,8 +448,8 @@ router.post('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, 
     }
 
     // Create a new project request without specifying the student
-    const projectRequest = await ProjectRequest.findOne({projectTitle : projectTitle});
-    if(!projectRequest){
+    const projectRequest = await ProjectRequest.findOne({ projectTitle: projectTitle });
+    if (!projectRequest) {
       return res.status(404).json({ success: false, message: 'FYP Idea not found' });
     }
 
@@ -460,13 +460,13 @@ router.post('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, 
     });
 
     supervisor.unseenNotifications.push({
-      type : "Important", message: `You've send request to ${student.name} to join ${projectTitle}`
+      type: "Important", message: `You've send request to ${student.name} to join ${projectTitle}`
     })
 
     student.requests.push(projectRequest._id);
 
     // Save the changes to the student and project request
-    await Promise.all([ student.save() , supervisor.save() ]);
+    await Promise.all([student.save(), supervisor.save()]);
 
     res.json({ success: true, message: 'Project request sent to the student' });
 
@@ -490,11 +490,11 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
     // Notify all users about the new project idea
-    const checkRequest = await ProjectRequest.findOne({projectTitle});
-    if(checkRequest){
+    const checkRequest = await ProjectRequest.findOne({ projectTitle });
+    if (checkRequest) {
       return res.status(500).json({ success: false, message: 'FYP Idea with this Project Title already exists.' });
     }
-  
+
     const users = await User.find();
 
     const userIds = users.map(user => user._id)
@@ -518,9 +518,9 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     });
     const currentDate = new Date();
     supervisor.myIdeas.push({
-      projectId : projectRequest._id,
-      time : currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds() ,
-      date : new Date()
+      projectId: projectRequest._id,
+      time: currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds(),
+      date: new Date()
     });
     await supervisor.save();
     res.json({ success: true, message: 'Project idea sent and users notified' });
@@ -602,11 +602,11 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' })
     }
     console.log('group is ', group);
-    if( !group.proposal || !group.documentation || !group.finalSubmission ){
+    if (!group.proposal || !group.documentation || !group.finalSubmission) {
       return res.status(500).json({ success: false, message: 'One of the Documentation is Pending' });
     }
-    if( group.vivaDate > new Date()){
-      return res.status(201).json({success :false ,message:'VIVA has not been taken yet'});
+    if (group.vivaDate > new Date()) {
+      return res.status(201).json({ success: false, message: 'VIVA has not been taken yet' });
     }
 
     group.marks = marks; group.external = external;
@@ -634,61 +634,93 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
   }
 });
 
-router.put('/editProposal/:projectId', authenticateUser, async (req,res)=>{
+router.put('/editProposal/:projectId', authenticateUser, async (req, res) => {
   try {
     const supervisor = await Supervisor.findOne({ _id: req.user.id });
     const updatedDetails = req.body;
-    const  {projectId}  = req.params;
+    const { projectId } = req.params;
 
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
 
-    const idea = await ProjectRequest.findByIdAndUpdate({ _id : projectId }, updatedDetails, { new: true });
-    if(!idea){
+    const idea = await ProjectRequest.findByIdAndUpdate({ _id: projectId }, updatedDetails, { new: true });
+    if (!idea) {
       return res.status(404).json({ success: false, message: 'Project Idea not found' });
     }
 
+
     supervisor.unseenNotifications.push({
-      type : "Important",
-      message:`FYP Idea edited Successfully`
+      type: "Important",
+      message: `FYP Idea edited Successfully`
     });
 
-    await Promise.all([ supervisor.save(), idea.save() ]);
+    await Promise.all([supervisor.save(), idea.save()]);
 
-    res.json({ success:true, message:"Idea Edited Successfully"});
+    res.json({ success: true, message: "Idea Edited Successfully", idea });
 
   } catch (error) {
-    
+
   }
 });
 
-router.delete('/deleteProposal/:projectId', authenticateUser, async (req,res)=>{
-  const supervisor = await Supervisor.findOne({ _id: req.user.id });
-  const projectId = req.params;
-  if (!supervisor) {
-    return res.status(404).json({ success: false, message: 'Supervisor not found' });
+// Delete your idea
+router.delete('/deleteProposal/:projectId', authenticateUser, async (req, res) => {
+  try {
+    const supervisor = await Supervisor.findById(req.user.id);
+    const projectId = req.params.projectId;
+
+    if (!supervisor) {
+      return res.status(404).json({ success: false, message: 'Supervisor not found' });
+    }
+
+    // check if idea belong to this supervisor or not
+    const check = supervisor.myIdeas.forEach(idea=>{
+      if(idea.equals(projectId))
+        return true;
+      else
+        return false;
+    });
+    if(!check){
+      return res.status(500).json({success:false, message:"This Idea Doesnot belong to you"});
+    }
+
+    // Attempt to delete the idea
+    const idea = await ProjectRequest.findByIdAndDelete({_id : projectId});
+
+    // console.log('idea is ', idea);
+
+    // Handle the case where there was an error during deletion
+    if (!idea) {
+      return res.status(404).json({ success: false, message: 'Idea not found or already deleted' });
+    }
+
+    // Update supervisor's notifications and myIdeas
+    supervisor.unseenNotifications.push({
+      type: 'Important',
+      message: 'FYP Idea deleted Successfully'
+    });
+
+    const filteredRequest = supervisor.myIdeas.filter((ideas) => {
+      return !ideas.projectId.equals(idea._id);
+    });
+    // console.log('filtered request is ', filteredRequest)
+
+    supervisor.myIdeas = filteredRequest;
+    // console.log('supervisor idea is ',supervisor.myIdeas )
+
+    // Save both supervisor and idea, and wait for both promises to resolve
+    // console.log('before save')
+    await Promise.all([supervisor.save()]);
+    // console.log('after save')
+    return res.json({ success: true, message: 'Idea deleted Successfully' });
+  } catch (error) {
+    console.error('error in deleting fyp', error);
+    return res.status(500).json({ success: false, message: `Internal server error` });
   }
-
-  const idea = await ProjectRequest.findByIdAndDelete(projectId);
-  if(!idea){
-    return res.status(404).json({ success: false, message: 'Idea not deleted' });
-  }
-
-  supervisor.unseenNotifications.push({
-    type : "Important",
-    message:`FYP Idea deleted Successfully`
-  });
-  
-  const filteredRequest = supervisor.myIdeas.filter(ideas=>{
-    ! ideas.projectId.equals(idea._id);
-  });
-
-  await Promise.all([ supervisor.save(), idea.save() ]);
-
-  supervisor.myIdeas = filteredRequest;
-
 });
+
+
 
 router.get('/my-groups', authenticateUser, async (req, res) => {
   try {
@@ -743,12 +775,12 @@ router.get('/myIdeas', authenticateUser, async (req, res) => {
         return null; // Return null if project not found
       }
       myIdea.push({
-        projectId : project._id,
-         projectTitle : project.projectTitle,
-         description  : project.description ,
-         scope : project.scope,
-         time : idea.time,
-         date : idea.date
+        projectId: project._id,
+        projectTitle: project.projectTitle,
+        description: project.description,
+        scope: project.scope,
+        time: idea.time,
+        date: idea.date
       }); // Return the project if found
     });
 
