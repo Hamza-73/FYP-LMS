@@ -14,6 +14,35 @@ const Groups = (props) => {
     projectTitle: '',
   });
 
+  
+  const handleAddStudent = async (e) => {
+    try {
+      e.preventDefault();
+      console.log('add stdents starts');
+      const token = localStorage.getItem('token');
+      console.log('add student is ', addStudent)
+      const response = await fetch(`http://localhost:5000/supervisor/add-student/${addStudent.projectTitle}/${addStudent.rollNo}`, {
+        method: 'POST',
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      const json = await response.json();
+      console.log('response is ', json);
+
+      if (json.success) {
+        NotificationManager.success(json.message);
+      }
+      else {
+        NotificationManager.error(json.message);
+      }
+    } catch (error) {
+      console.log('error in adding student', error);
+      NotificationManager.error('Some Error ocurred Try/Again');
+    }
+  };
+
   const handleMarks = async (e) => {
     try {
       e.preventDefault();
@@ -108,6 +137,40 @@ const Groups = (props) => {
         </div>
       </div>
 
+      <div className="fypIdea">
+        <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModal" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add Student To Existing Group</h5>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleAddStudent}>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">Project Title</label>
+                    <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="rollNo" className="form-label">Student Roll No</label>
+                    <input type="text" className="form-control" id="rollNo" name="rollNo" value={addStudent.rollNo} onChange={handleChange} />
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                      setAddStudent({
+                        projectTitle: "", rollNo: ""
+                      })
+                    }}>Close</button>
+                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} >
+                      Add Student
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       { current.length > 0 ? (
         <>
           <h3 className='text-center my-4'>Students Under Me</h3>
@@ -122,6 +185,7 @@ const Groups = (props) => {
                       <th scope="col">Meeting</th>
                       <th scope="col">Project Proposal</th>
                       <th scope="col">Documentation</th>
+                      <th scope="col">Add Student</th>
                       <th scope="col">Viva</th>
                       <th scope="col">Grade</th>
                     </tr>
@@ -143,6 +207,7 @@ const Groups = (props) => {
                           <td>{project.meetingDate? project.meetingDate : "---"}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
+                          <td><button onClick={()=>setAddStudent({projectTitle:project.projectTitle})} className="btn btn-sm" style={{background:"maroon", color:"white"}} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
                           <td>{(project.vivaDate? (new Date() > project.vivaDate ? "Pending" : "Taken") : "---" ) }</td>
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">

@@ -105,8 +105,9 @@ router.get('/vivas', async (req, res) => {
       return {
         ...viva.toObject(), // Convert Mongoose document to plain object
         documentation: {
-          isProps: group.isProp,
-          isDoc: group.isDoc
+          proposal: group.proposal,
+          documentation: group.documentation,
+          finalSubmission : group.finalSubmission
         }
       };
     });

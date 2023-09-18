@@ -94,29 +94,34 @@ const MyGroup = (props) => {
       });
       const json = await response.json();
       console.log('response in uploading proposal is', json);
+      if (!json.success) {
+        console.log('json is ');
+        NotificationManager.error(json.message);
+      }
       if (json.success) {
         NotificationManager.success('File Uploaded successfully');
         // Update the state with the uploaded file URL
-      if (type === 'documentation') {
-        setGroupDetails(prevGroup => ({
-          ...prevGroup,
-          group: {
-            ...prevGroup.group,
-            documentation: json.url, // Assuming the URL is returned in the response
-          },
-        }));
-      } else if (type === 'final') {
-        setGroupDetails(prevGroup => ({
-          ...prevGroup,
-          group: {
-            ...prevGroup.group,
-            finalSubmission: json.url, // Assuming the URL is returned in the response
-          },
-        }));
+        if (type === 'documentation') {
+          setGroupDetails(prevGroup => ({
+            ...prevGroup,
+            group: {
+              ...prevGroup.group,
+              documentation: json.url, // Assuming the URL is returned in the response
+            },
+          }));
+        } else if (type === 'final') {
+          setGroupDetails(prevGroup => ({
+            ...prevGroup,
+            group: {
+              ...prevGroup.group,
+              finalSubmission: json.url, // Assuming the URL is returned in the response
+            },
+          }));
+        }
+        setType('');
+        setFile();
       }
-      setType('');
-      setFile();
-    } }catch (error) {
+    } catch (error) {
       console.log('error in uploading file', error);
     }
   };

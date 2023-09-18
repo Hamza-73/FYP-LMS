@@ -7,6 +7,8 @@ const fileUpload = require('express-fileupload');
 const app = express();
 const port = process.env.PORT || 5000;
 
+app.set("view engine", "ejs");
+
 // Middlewares
 const corsOptions = {
   origin: 'http://localhost:3000', // Replace with your frontend's URL
@@ -22,9 +24,11 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+
 app.use(fileUpload({
   useTempFiles:true
 }));
+
 app.use (bodyParser.urlencoded ({extended: true}));
 
 // Paste your mongodb link

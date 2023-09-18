@@ -228,7 +228,9 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       const findFirstExistingGroup = async (groupIds) => {
         for (const groupId of groupIds) {
-          const group = await Group.findById(groupId);
+          const group = await Group.findOne({
+            'projects.projectTitle': projectRequest.projectTitle
+          }).populate('supervisor projects.students');
           if (group) {
             return group; // Return the first existing group
           }
@@ -435,6 +437,17 @@ router.post('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, 
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
+    console.log('rollNo i s', rollNo);
+
+    // check request is available or not
+    const projectRequest = await ProjectRequest.findOne({ projectTitle: projectTitle });
+    if (!projectRequest) {
+      return res.status(404).json({ success: false, message: 'FYP Idea not found' });
+    }
+    console.log('project is', projectRequest)
+    if (projectRequest.status) {
+      return res.status(500).json({ success: false, message: 'Gotp is already filled' });
+    }
 
     // Check if the student is already in a group
     const student = await User.findOne({ rollNo: rollNo });
@@ -445,12 +458,6 @@ router.post('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, 
 
     if (student.isMember) {
       return res.status(400).json({ success: false, message: 'Student is already in a group' });
-    }
-
-    // Create a new project request without specifying the student
-    const projectRequest = await ProjectRequest.findOne({ projectTitle: projectTitle });
-    if (!projectRequest) {
-      return res.status(404).json({ success: false, message: 'FYP Idea not found' });
     }
 
     // Notify the student about the new project request
@@ -489,6 +496,9 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
+    if (supervisor.slots <= 0) {
+      return res.status(500).json({ success: false, message: `You're Slots are full you cannot end any requests now` });
+    }
     // Notify all users about the new project idea
     const checkRequest = await ProjectRequest.findOne({ projectTitle });
     if (checkRequest) {
@@ -497,8 +507,8 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
 
     const users = await User.find();
 
-    const userIds = users.map(user => user._id)
-    console.log(userIds);
+    // const userIds = users.map(user => user._id)
+    // console.log(userIds);
 
 
     // Create a new project request without specifying the student
@@ -513,8 +523,10 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     const notificationMessage = `A new project idea has been posted by Supervisor ${supervisor.name}`;
 
     users.forEach(async (user) => {
-      user.unseenNotifications.push({ type: "Important", message: notificationMessage });
-      await user.save();
+      if (!user.isMember) {
+        user.unseenNotifications.push({ type: "Important", message: notificationMessage });
+        await user.save();
+      }
     });
     const currentDate = new Date();
     supervisor.myIdeas.push({
@@ -675,18 +687,16 @@ router.delete('/deleteProposal/:projectId', authenticateUser, async (req, res) =
     }
 
     // check if idea belong to this supervisor or not
-    const check = supervisor.myIdeas.forEach(idea=>{
-      if(idea.equals(projectId))
-        return true;
-      else
-        return false;
+    const check = supervisor.myIdeas.map(idea => {
+      return idea.projectId.equals(projectId)
     });
-    if(!check){
-      return res.status(500).json({success:false, message:"This Idea Doesnot belong to you"});
+    console.log('check is ', check);
+    if (!check) {
+      return res.status(500).json({ success: false, message: "This Idea Doesnot belong to you" });
     }
 
     // Attempt to delete the idea
-    const idea = await ProjectRequest.findByIdAndDelete({_id : projectId});
+    const idea = await ProjectRequest.findByIdAndDelete({ _id: projectId });
 
     // console.log('idea is ', idea);
 

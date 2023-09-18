@@ -84,6 +84,7 @@ router.post('/meeting', authenticateUser, async (req, res) => {
       supervisor.meetingLink = meetingLink;
       supervisor.meetingTime = time;
       supervisor.meetingDate = parsedDate;
+      supervisor.meetingGroup = projectTitle;
       const messageToSupervisor = `You scheduled a meeting with group ${projectTitle}`;
       supervisor.unseenNotifications.push({ type: 'Reminder', message: messageToSupervisor });
       await supervisor.save();

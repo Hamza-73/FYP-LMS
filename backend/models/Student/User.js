@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   rollNo: { type: String, required: true, unique: true },
   name: { type: String, required: true },
+  email: { type: String, unique: true },
   father: { type: String, required: true },
   batch: { type: String, required: true },
   semester: { type: String, required: true },

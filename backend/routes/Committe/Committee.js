@@ -392,6 +392,14 @@ router.post('/dueDate', async (req, res) => {
       return res.status(404).json({ message: "Groups Not Found" });
     }
 
+    if( (type==='documentation' || type==='final') && !groups.propDate ){
+      return res.status(500).json({ success:false, message: "Due Date For Propsal Has Not been announced Yet."});
+    }
+
+    else if( type==='final' && !groups.docDate){
+      return res.status(500).json({ success:false, message: "Due Date For Documentation Has Not been announced Yet."});
+    }
+
     const promiseArray = [];
 
     for (const group of groups) {

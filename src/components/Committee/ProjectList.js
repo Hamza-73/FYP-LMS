@@ -103,7 +103,7 @@ const ProjectList = (props) => {
   return (
     <>
       <div>
-        <div className="register"  >
+        <div className="remarks"  >
           <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div className="modal-dialog" role="document">
               <div className="modal-content">
@@ -118,7 +118,7 @@ const ProjectList = (props) => {
                       <textarea className="form-control" id="remarks" name='remarks' value={remarks} onChange={(e) => setRemarks(e.target.value)} />
                     </div>
                     <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={()=>setRemarks('')}>Close</button>
                       <button type="submit" className="btn btn-success" disabled={!remarks}> Give Remarks </button>
                     </div>
                   </form>

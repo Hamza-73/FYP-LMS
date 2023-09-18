@@ -34,6 +34,7 @@ cloudinary.config({
   api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8'
 });
 
+var nodemailer = require('nodemailer');
 
 router.post('/upload', authenticateUser, async (req, res) => {
   try {
@@ -48,7 +49,16 @@ router.post('/upload', authenticateUser, async (req, res) => {
     if (!groupUpdate) {
       return res.status(404).json({ success: false, message: 'Group Not Found' });
     }
+
     console.log('type is ', type);
+
+    if (type === 'documentation' && !groupUpdate.docDate) {
+      return res.status(500).json({ success: false, message: 'Deadline for Documentation Has Not Been Announced Yet.' });
+    }
+
+    if (type === 'final' && !groupUpdate.finalDate) {
+      return res.status(500).json({ success: false, message: 'Deadline for Final Submission Has Not Been Announced Yet.' });
+    }
 
     const file = req.files[type];
     console.log('file is ', file);
@@ -155,7 +165,7 @@ router.post('/register', [
   body('cnic', 'CNIC cannot be left blank').exists(),
   body('semester', 'Semester cannot be left blank').exists(),
 ], async (req, res) => {
-  const { name, father, rollNo, batch, cnic, semester, department } = req.body;
+  const { name, father, rollNo, batch, cnic, semester, department, email } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -174,7 +184,7 @@ router.post('/register', [
 
       // Create a new user with the formatted roll number
       const newUser = new User({
-        name, father, rollNo, batch, cnic, semester, department, password: secPass,
+        name, father, rollNo, batch, cnic, semester, department, password: secPass, email
       });
 
       await newUser.save();
@@ -189,6 +199,103 @@ router.post('/register', [
   } catch (err) {
     console.error('errir in ', err)
     res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.post("/forgot-passwords", async (req, res) => {
+  console.log('forgot starts')
+  const { email } = req.body;
+  try {
+    const oldUser = await User.findOne({ email });
+    if (!oldUser) {
+      return res.json({ status: "User Not Exists!!" });
+    }
+    console.log('user found');
+    console.log('1');
+    console.log('secret is is ', JWT_KEY + oldUser.password);
+    console.log('12');
+    const secret = JWT_KEY + oldUser.password;
+    console.log('secret is ', secret);
+    const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret);
+    console.log('token generated');
+    const link = `http://localhost:5000/reset-password/${oldUser._id}/${token}`;
+    console.log('link is ', link);
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "khurramkhan8819@gmail.com",
+        pass: "hamzakhan0073@mir0073",
+      },
+    });
+
+    var mailOptions = {
+      from: "youremail@gmail.com",
+      to: "azharhassankhan1975@gmail.com",
+      subject: "Password Reset",
+      text: link,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log("Email error:", error);
+        return res.status(500).json({ status: "Email could not be sent." });
+      } else {
+        console.log("Email sent: " + info.response);
+        return res.status(200).json({ status: "Email sent successfully." });
+      }
+    });
+    console.log(link);
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ status: "An error occurred." });
+  }
+});
+
+
+router.get("/reset-password/:id/:token", async (req, res) => {
+  const { id, token } = req.params;
+  console.log(req.params);
+  const oldUser = await User.findOne({ _id: id });
+  if (!oldUser) {
+    return res.json({ status: "User Not Exists!!" });
+  }
+  const secret = JWT_SECRET + oldUser.password;
+  try {
+    const verify = jwt.verify(token, secret);
+    res.render("index", { email: verify.email, status: "Not Verified" });
+  } catch (error) {
+    console.log(error);
+    res.send("Not Verified");
+  }
+});
+
+router.post("/reset-password/:id/:token", async (req, res) => {
+  const { id, token } = req.params;
+  const { password } = req.body;
+
+  const oldUser = await User.findOne({ _id: id });
+  if (!oldUser) {
+    return res.json({ status: "User Not Exists!!" });
+  }
+  const secret = JWT_SECRET + oldUser.password;
+  try {
+    const verify = jwt.verify(token, secret);
+    const encryptedPassword = await bcrypt.hash(password, 10);
+    await User.updateOne(
+      {
+        _id: id,
+      },
+      {
+        $set: {
+          password: encryptedPassword,
+        },
+      }
+    );
+
+    res.render("index", { email: verify.email, status: "verified" });
+  } catch (error) {
+    console.log(error);
+    res.json({ status: "Something Went Wrong" });
   }
 });
 
@@ -271,6 +378,29 @@ router.post('/reset-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'youremail@gmail.com',
+        pass: 'yourpassword'
+      }
+    });
+
+    var mailOptions = {
+      from: 'youremail@gmail.com',
+      to: 'myfriend@yahoo.com',
+      subject: 'Sending Email using Node.js',
+      text: 'That was easy!'
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
     const salt = await bcrypt.genSalt(10);
     const secPass = await bcrypt.hash(newPassword, salt);
     user.password = secPass;
@@ -612,7 +742,7 @@ router.get('/getRequests', authenticateUser, async (req, res) => {
         continue; // Skip requests with supervisors that couldn't be found
       }
       requests.push({
-        projectId : request._id,
+        projectId: request._id,
         projectTitle: request.projectTitle,
         description: request.description,
         scope: request.scope,
@@ -642,6 +772,7 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
     }
 
     const supervisor = await Supervisor.findById(request.supervisor);
+    // console.log('supervisor is ', supervisor);
 
     // Remove the request from the student's request array
     const filterRequests = user.requests.filter(reqId => !reqId.equals(projectId));
@@ -653,6 +784,8 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
       const existingGroup = await Group.findOne({ 'projects.projectTitle': request.projectTitle });
 
       if (existingGroup) {
+        console.log('existing group is ', existingGroup.projects[0].students)
+        console.log('existing group is ', existingGroup.projects[0].students.length)
         // Check if the group has fewer than 2 students
         if (existingGroup.projects[0].students.length < 2) {
           // Add student to the existing group
@@ -670,15 +803,20 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           // Notify the supervisor
 
           if (supervisor) {
+            console.log('if state ment is running');
             supervisor.unseenNotifications.push({
               type: 'Important',
               message: `${user.name} accepted your request to join ${request.projectTitle}'s group`
             });
             await supervisor.save();
           }
-          request.status = true ;
+          request.students.push(user._id)
+          if (request.students.length === 2) {
+            request.status = true;
+          }
 
           await Promise.all([existingGroup.save(), user.save(), request.save()]);
+          console.log('promise returns');
           return res.json({ success: true, message: 'Student added to the existing group' });
         }
       }
@@ -707,12 +845,17 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           type: 'Important',
           message: `${user.name} accepted your request to join ${request.projectTitle}'s group`
         });
+        const filteredIdea = supervisor.myIdeas.filter(idea=>{
+          return !idea.projectId.equals(request);
+        })
+        supervisor.myIdeas = filteredIdea;
         await supervisor.save();
       }
 
       await Promise.all([newGroup.save(), user.save()]);
       return res.json({ success: true, message: 'Student added to a new group' });
     } else if (action === 'reject') {
+      console.log('reject statement starts')
       // Notify the supervisor about rejection
       const supervisor = await Supervisor.findById(request.supervisor);
       if (supervisor) {
@@ -757,9 +900,9 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
             });
             await supervisor.save();
           }
-          request.status = true ;
+          request.status = true;
 
-          await Promise.all([existingGroup.save(), user.save() , request.save()]);
+          await Promise.all([existingGroup.save(), user.save(), request.save()]);
           return res.json({ success: true, message: 'Student added to the existing group after improving the request' });
         }
       }
@@ -788,7 +931,10 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
         supervisor.unseenNotifications.push({
           type: 'Important',
           message: `${user.name} improved and accepted your request to join ${request.projectTitle}'s group`
-        });
+        });const filteredIdea = supervisor.myIdeas.filter(idea=>{
+          return !idea.projectId.equals(request);
+        })
+        supervisor.myIdeas = filteredIdea;
         await supervisor.save();
       }
 
@@ -802,7 +948,5 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
 
 module.exports = router;

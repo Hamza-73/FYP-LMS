@@ -56,6 +56,7 @@ const Event = (props) => {
         method: 'GET',
       });
       const json = await response.json();
+      console.log('json is ', json)
 
       if (json.message && json.success) {
         setData(json);
@@ -188,12 +189,14 @@ const Event = (props) => {
                           </div>
                         </td>
                         <td>{val.projectTitle}</td>
-                        <td>{val.documentation.isProps ? 'Submitted' : 'Pending'}</td>
-                        <td>{val.documentation.isDoc ? 'Submitted' : 'Pending'}</td>
-                        <td>{'project Submission'}</td>
+                        <td> <a target='_blank' href={val.documentation.proposal}>Proposal</a></td>
+                        <td> <a target='_blank' href={val.documentation.documentation}>Documentation</a></td>
+                        <td> <a target='_blank' href={val.documentation.finalSubmission}>Project</a></td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
-                        <td data-toggle="modal" data-target="#exampleModal1"><i class="fa-solid fa-pen-to-square"></i></td>
+                        <td data-toggle="modal" data-target="#exampleModal1" onClick={()=>{
+                          setViva({projectTitle:val.projectTitle, date:val.vivaDate, time:val.vivaTime})
+                        }}><i class="fa-solid fa-pen-to-square"></i></td>
                       </tr>
                     ))}
                   </tbody>
