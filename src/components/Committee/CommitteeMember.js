@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 
 const CommitteeMember = (props) => {
   const history = useNavigate();
+  const [userData, setUserData] = useState({ member: [] });
 
   const [data, setData] = useState({ members: [] });
   const [loading, setLoading] = useState(true);
@@ -38,13 +39,13 @@ const CommitteeMember = (props) => {
         NotificationManager.error('Username must contain at least one underscore (_).');
         return;
       }
-      
+
       // Check if any required field is empty
       if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim() || !register.password.trim()) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
-  
+
       const response = await fetch("http://localhost:5000/committee/register", {
         method: 'POST',
         headers: {
@@ -68,7 +69,7 @@ const CommitteeMember = (props) => {
             designation: register.designation, password: register.password, department: register.department
           }]
         }));
-  
+
         // Clear the register form fields
         setRegister({
           fname: "", lname: "", username: "", department: "", designation: "", password: ""
@@ -82,7 +83,7 @@ const CommitteeMember = (props) => {
       NotificationManager.error('Error in Registering');
     }
   }
-  
+
   // Function to handle edit
   const handleEdit = async (e) => {
     e.preventDefault();
@@ -91,13 +92,13 @@ const CommitteeMember = (props) => {
         NotificationManager.error('Username must contain at least one underscore (_).');
         return;
       }
-  
+
       // Check if any required field is empty
-      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim() ) {
+      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim()) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
-  
+
       const id = selectedStudent._id;
       const response = await fetch(`http://localhost:5000/committee/edit/${id}`,
         {
@@ -111,7 +112,7 @@ const CommitteeMember = (props) => {
           })
         }
       );
-  
+
       const updatedStudent = await response.json();
       if (updatedStudent) {
         setData((prevData) => ({
@@ -128,13 +129,13 @@ const CommitteeMember = (props) => {
         closeModal();
         NotificationManager.success('Edited Successfully');
       }
-  
+
     } catch (error) {
       console.log('Error:', error); // Log the error message
       NotificationManager.error('Error in Editing');
     }
   };
-  
+
 
   // Function to open edit modal
   const openEditModal = (student) => {
@@ -146,7 +147,7 @@ const CommitteeMember = (props) => {
     });
   };
 
-  
+
 
   // Function to handle delete
   const handleDelete = async (id) => {
@@ -192,13 +193,48 @@ const CommitteeMember = (props) => {
     }
   }
 
+  const getDetail = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('token not found');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/${props.detailLink}/detail`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token
+        },
+      });
+
+      if (!response.ok) {
+        console.log('error fetching detail', response);
+        return; // Exit early on error
+      }
+
+      const json = await response.json();
+      console.log('json is in sidebar: ', json);
+      if (json) {
+        //   console.log('User data is: ', json);
+        setUserData(json);
+        setLoading(false)
+      }
+    } catch (err) {
+      console.log('error is in sidebar: ', err);
+    }
+  };
+
   useEffect(() => {
     if (!localStorage.getItem('token')) {
       history('/');
 
     } else {
+
       // Set loading to true when starting data fetch
       setLoading(true);
+      getDetail();
       getMembers()
         .then(() => {
           // Once data is fetched, set loading to false
@@ -287,6 +323,12 @@ const CommitteeMember = (props) => {
       setCurrentPage(currentPage - 1);
     }
   };
+
+  const location = useLocation();
+  const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members'];
+
+  // Check if the current location is in the pathsWithoutSidebar array
+  const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
   return (
     <>
@@ -380,14 +422,16 @@ const CommitteeMember = (props) => {
             />
           </div>
           {filteredDataPaginated.length > 0 ? (
-            <table className="table table-hover">
+            <table className="table table-hover text-center">
               <thead>
                 <tr>
                   <th scope="col">Name</th>
                   <th scope="col">Department</th>
                   <th scope="col">Designation</th>
                   <th scope="col">Edit</th>
-                  <th scope="col">Remove</th>
+                  {(!showSidebar && !userData.member.isAdmin) && (
+                    <th scope="col">Remove</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -399,7 +443,7 @@ const CommitteeMember = (props) => {
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
                       <i className="fa-solid fa-pen-to-square"></i>
                     </td>
-                    <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
+                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>}
                   </tr>
                 ))}
               </tbody>
@@ -414,11 +458,13 @@ const CommitteeMember = (props) => {
             >  Next </button>
           </div>
         </div>
-        <div className="d-grid gap-2 col-6 mx-auto my-4">
+        {(!showSidebar && !userData.member.isAdmin) && (
+          <div className="d-grid gap-2 col-6 mx-auto my-4">
             <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
               Register
             </button>
           </div>
+        )}
         <NotificationContainer />
       </>)}
     </>

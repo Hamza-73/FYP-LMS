@@ -50,7 +50,6 @@ const StudentMain = (props) => {
           <Route path='/supervisors' element={<Supervisors />} />
         </Routes>
       </>
-
     </div>
   )
 }

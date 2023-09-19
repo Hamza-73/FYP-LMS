@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
@@ -240,6 +240,7 @@ const StudentList = (props) => {
     if (localStorage.getItem('token')) {
       // Set loading to true when starting data fetch
       setLoading(true);
+      getDetail()
       getMembers().then(() => {
         // Once data is fetched, set loading to false
         setLoading(false);
@@ -306,6 +307,46 @@ const StudentList = (props) => {
       semester: "", cnic: "", rollNo: "",
     })
   }
+
+  const getDetail = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('token not found');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/${props.detailLink}/detail`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token
+        },
+      });
+
+      if (!response.ok) {
+        console.log('error fetching detail', response);
+        return; // Exit early on error
+      }
+
+      const json = await response.json();
+      console.log('json is in sidebar: ', json);
+      if (json) {
+        //   console.log('User data is: ', json);
+        setUserData(json);
+        setLoading(false)
+      }
+    } catch (err) {
+      console.log('error is in sidebar: ', err);
+    }
+  };
+  
+  const location = useLocation();
+  const [userData , setUserData] = useState({member:[]})
+  const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members', '/committeeMain/student'];
+
+  // Check if the current location is in the pathsWithoutSidebar array
+  const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
   return (
     <>
@@ -432,7 +473,7 @@ const StudentList = (props) => {
                   <th scope="col">Semester</th>
                   <th scope="col">Cnic</th>
                   <th scope="col">Edit</th>
-                  <th scope="col">Remove</th>
+                 { (!showSidebar && !userData.member.isAdmin) && <th scope="col">Remove</th>}
                 </tr>
               </thead>
               <tbody className='text-center'>
@@ -447,7 +488,7 @@ const StudentList = (props) => {
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
                       <i class="fa-solid fa-pen-to-square"></i>
                     </td>
-                    <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
+                    { (!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>}
 
                   </tr>
                 ))}
@@ -464,11 +505,11 @@ const StudentList = (props) => {
           </div>
         </div>
 
-        <div className="d-grid gap-2 col-6 mx-auto my-4">
+        { (!showSidebar && !userData.member.isAdmin) && <div className="d-grid gap-2 col-6 mx-auto my-4">
           <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
             Register
           </button>
-        </div>
+        </div>}
         <NotificationContainer />
       </>)}
     </>

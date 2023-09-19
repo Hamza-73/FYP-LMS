@@ -49,10 +49,10 @@ const CommitteeMain = (props) => {
                 <Route path='/commdashboard' element={<CumDashboard />} />
                 <Route path='/home' element={<Dashboard />} />
                 <Route path='/project' element={<ProjectList />} />
-                <Route path='/student' element={<StudentList />} />
+                <Route path='/student' element={<StudentList  detailLink='committee' />} />
                 <Route path='/event' element={<Event />} />
-                <Route path='/supervisor' element={<SupervisorList />} />
-                <Route path='/members' element={<CommitteeMember />} />
+                <Route path='/supervisor' element={<SupervisorList  detailLink='committee' />} />
+                <Route path='/members' element={<CommitteeMember detailLink='committee' />} />
                 <Route path='/progress' element={<ProjectProgress />} />
                 <Route path='/eligible' element={<EligibleGroup />} />
                 <Route path='/allocate' element={<Allocate />} />

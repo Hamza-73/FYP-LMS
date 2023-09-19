@@ -45,7 +45,11 @@ const userSchema = new Schema({
     match: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, // Validate as HH:mm format
   },
   meetingDate : {type : Date},
-  requests : {type: Array, default : []}
+  requests : {type: Array, default : []},
+  docs:[{
+    docLink : {type : String},
+    review : {type : String}
+  }]
 });
 
 module.exports = mongoose.model('User', userSchema);

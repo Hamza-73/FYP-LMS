@@ -5,6 +5,7 @@ import CommitteeMain from './components/CommitteeMain';
 import SupervisorMain from './components/SupervisorMain';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import logo from './images/logo.png'
+import AdminMain from './components/AdminMain';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,6 +23,9 @@ const App = () => {
 
   const handleCommittee = () => {
     path('/committeeMain');
+  }
+  const handleAdmin = () => {
+    path('/adminMain')
   }
 
   const pathsWithoutSidebar = ['/'];
@@ -46,7 +50,7 @@ const App = () => {
     margin: 8px;
     border-radius : 10px;
     height: 340px;
-    width : 400px;
+    width : 500px !important;
     display: flex;
     flex-direction : column;
     justify-content: center;
@@ -88,12 +92,17 @@ const App = () => {
         <Route path='/studentMain/*' element={<StudentMain />} />
         <Route path='/supervisorMain/*' element={<SupervisorMain />} />
         <Route path='/committeeMain/*' element={<CommitteeMain />} />
+        <Route path='/adminMain/*' element={<AdminMain />} />
       </Routes>
       {showSidebar && (
         <div>
           <style>{style}</style>
           <div className="cards text-center container">
             <div className='m-box'>
+              <div className="boxs" onClick={handleAdmin}>
+                <img src={logo} alt="" />
+                <h5>I'm Admin</h5>
+              </div>
               <div className="boxs" onClick={handleCommittee}>
                 <img src={logo} alt="" />
                 <h5>I'm A Committee Member</h5>
