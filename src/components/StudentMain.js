@@ -29,8 +29,8 @@ const StudentMain = (props) => {
           {!showSidebar && (
             <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress' user='studentMain'
               link2='progress' title3='Tasks' link3='tasks' title4='My Group'
-              link4='group' title5='Fyp Ideas' link5='ideas' detailLink='student'
-              link01='requests' link02='supervisors' title02='Supervisors'
+              link4='group' title5='Fyp Ideas' link5='ideas' detailLink='student' title7='Requests'
+              link7='requests' link00='supervisors' title00='Supervisors'
               title6='Notification' link6='notification' hide='d-none'
             />
           )}

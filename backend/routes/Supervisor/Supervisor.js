@@ -9,7 +9,8 @@ const JWT_KEY = 'hamzakhan1';
 const bcrypt = require('bcryptjs');
 var jwt = require("jsonwebtoken");
 const Group = require('../../models/GROUP/Group')
-const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest')
+const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
+const Meeting = require('../../models/Meeting');
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;

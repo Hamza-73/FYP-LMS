@@ -380,8 +380,8 @@ router.get('/progress', async (req, res) => {
 router.post('/dueDate', async (req, res) => {
   try {
     const { type, dueDate } = req.body;
-    // Validate if the due date is not behind the current date
     const currentDate = new Date();
+    // Validate if the due date is not behind the current date
     if (new Date(dueDate) < currentDate) {
       return res.status(400).json({ message: "Due Date cannot be behind the current date" });
     }
@@ -396,9 +396,18 @@ router.post('/dueDate', async (req, res) => {
       return res.status(500).json({ success:false, message: "Due Date For Propsal Has Not been announced Yet."});
     }
 
+    else if((type==='documentation' || type==='final') && groups.propDate> currentDate  ){
+      return res.status(500).json({ success:false, message: "Due Date For Propsal is not ended yet."});
+    }
+    
     else if( type==='final' && !groups.docDate){
       return res.status(500).json({ success:false, message: "Due Date For Documentation Has Not been announced Yet."});
     }
+
+    else if ( (type==='final') && groups.docDate> currentDate  ){
+      return res.status(500).json({ success:false, message: "Due Date For Documentation is not ended yet."});
+    }
+
 
     const promiseArray = [];
 

@@ -147,13 +147,9 @@ const SideBar = (props) => {
     )
 }
 SideBar.defaultProps = {
-    title5: "",
-    title6: "",
-    title7: "",
-    title8: "",
-    link5: "/",
-    link6: "/",
-    link7: "/",
-    link8: "/",
+    title5: "" , title6: "" , title7: "" , title8: "",
+    title00: "", title01: "", title02: "", link5: "/",
+    link6: "/", link7: "/", link8: "/", link00: "/", link01: "/",
+    link01: "/",
 }
 export default SideBar

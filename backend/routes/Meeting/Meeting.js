@@ -34,9 +34,18 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
-    console.log('reuest date s ', date)
+    const supervisor = await Supervisor.findById(req.user.id);
+
+    if(!supervisor){
+      return res.status(404).json({ message: 'Supervisor not found' });
+    }
+
+    if(!supervisor._id.equals(group.supervisorId)){
+      return res.status(404).json({ message: 'Group doesnot belong to you' });
+    }
+
     const parsedDate = moment(date, 'YYYY-MM-DD').toDate();
-    console.log('parsed date is ', parsedDate)
+
 
     // Check if parsedDate is a valid date
     if (!moment(parsedDate).isValid()) {
@@ -44,14 +53,9 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     }
 
     const meeting = new Meeting({
-      projectTitle: projectTitle,
-      supervisor: group.supervisor,
-      supervisorId: group.supervisorId,
-      meetingLink: meetingLink,
-      purpose: purpose,
-      time: time,
-      date: parsedDate,
-      type: type
+      projectTitle: projectTitle, supervisor: group.supervisor,
+      supervisorId: group.supervisorId, meetingLink: meetingLink,
+      purpose: purpose, time: time, date: parsedDate, type: type
     });
     await meeting.save();
 
@@ -61,74 +65,130 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     }
 
     const studentIds = group.projects.flatMap(proj => proj.students.map(student => student.userId));
-    const supervisor = await Supervisor.findById(req.user.id);
-    const user = await User.findById(req.user.id);
 
-    // Check if the current user is a supervisor or a student
-    if (supervisor) {
-      // Send notifications to students
-      const messageToStudents = `Meeting Scheduled for ${projectTitle} on ${date} at ${time} by ${supervisor.name}`;
-      await Promise.all(studentIds.map(async (studentId) => {
-        const student = await User.findById(studentId);
-        if (student) {
-          student.meetingId = meeting._id;
-          student.meetingLink = meetingLink;
-          student.meetingTime = time;
-          student.meetingDate = parsedDate;
-          student.unseenNotifications.push({ type: 'Reminder', message: messageToStudents });
-          await student.save();
-        }
-      }));
-
-      // Send a notification to the supervisorsupervisor.meetingId = meeting._id;
-      supervisor.meetingLink = meetingLink;
-      supervisor.meetingTime = time;
-      supervisor.meetingDate = parsedDate;
-      supervisor.meetingGroup = projectTitle;
-      const messageToSupervisor = `You scheduled a meeting with group ${projectTitle}`;
-      supervisor.unseenNotifications.push({ type: 'Reminder', message: messageToSupervisor });
-      await supervisor.save();
-    } else if (user) {
-      // Send notifications to other group members
-      const messageToGroupMembers = `Meeting Scheduled for ${projectTitle} on ${date} at ${time}`;
-      await Promise.all(studentIds.map(async (studentId) => {
-          const student = await User.findById(studentId);
-          if (student) {
-            student.meetingId = meeting._id,
-            student.meetingLink = meetingLink;
-            student.meetingTime = time;
-            student.meetingDate = parsedDate;
-            student.unseenNotifications.push({ type: 'Reminder', message: messageToGroupMembers });
-            await student.save();
-        }
-      }));
-      const sup = await Supervisor.findById(group.supervisorId);
-      if (!sup) {
-        return;
+    // Send notifications to students
+    const messageToStudents = `Meeting Scheduled for ${projectTitle} on ${date} at ${time} by ${supervisor.name}`;
+    await Promise.all(studentIds.map(async (studentId) => {
+      const student = await User.findById(studentId);
+      if (student) {
+        student.meetingId = meeting._id; student.meetingLink = meetingLink;
+        student.meetingTime = time; student.meetingDate = parsedDate;
+        student.unseenNotifications.push({ type: 'Reminder', message: messageToStudents });
+        await student.save();
       }
-      // Send a notification to the supervisor
-      const messageToSupervisor = `${user.name} scheduled a meeting for group ${projectTitle}`;
-      sup.unseenNotifications.push({ type: 'Reminder', message: messageToSupervisor });
-      await sup.save();
-    }
+    }));
 
-    // Update group and supervisor
-    group.meetingLink = meetingLink;
-    group.meetingid = meeting._id;
-    const meetingReport = {
-      meetingTitle: projectTitle, // You can use the projectTitle as the meeting title
-      date: parsedDate,
-      time: time,
-      type: type,
-      purpose: purpose,
-    };
-    group.meetingReport.push(meetingReport);
-    await Promise.all([group.save()]);
+    // Send a notification to the supervisorsupervisor.meetingId = meeting._id;
+    supervisor.meeting.push(meeting._id);
 
-    return res.json({ success: true, message: `Meeting Scheduled with group of ${projectTitle}` });
+    const messageToSupervisor = `You scheduled a meeting with group ${projectTitle}`;
+    supervisor.unseenNotifications.push({ type: 'Reminder', message: messageToSupervisor });
+    await supervisor.save();
 
   } catch (error) {
     console.error('Error scheduling meeting:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Update a meeting by ID
+router.put('/edit-meeting/:id', async (req, res) => {
+  const { id } = req.params;
+  const updatedMeetingData = req.body;
+
+  try {
+    const updatedMeeting = await Meeting.findByIdAndUpdate(id, updatedMeetingData, {
+      new: true, // Return the updated meeting
+    });
+
+    if (!updatedMeeting) {
+      return res.status(404).json({ message: 'Meeting not found' });
+    }
+
+    const group = await Group.findOne({'projects.projectTitle' : updatedMeeting.projectTitle});
+    if(!group){
+      return;
+    }
+    group.projects[0].students.map( async stu=>{
+      const studentObj = await User.findById(stu.userId);
+      if(studentObj){
+        studentObj.unseenNotifications.push({
+          type : "Important", message : "You're Meeting Time has been updated "
+        });
+        await studentObj.save();
+      }
+    })
+
+    return res.json({ success: true, meeting: updatedMeeting });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.get('/get-meeting', authenticateUser, async (req, res) => {
+  try {
+    const supervisor = await Supervisor.findById(req.user.id);
+    if (!supervisor) {
+      return res.status(404).json({ message: 'Supervisor not Found' });
+    }
+
+    const meetingPromises = supervisor.meeting.map(async (id) => {
+      console.log('meeting id is ', id);
+      const meet = await Meeting.findById(id);
+      if (!meet) {
+        console.log('not found');
+        return null; // Return null for meetings that are not found
+      }
+      return {
+        meetingId: meet._id, meetingGroup: meet.projectTitle,
+        meetingTime: meet.time, meetingDate: meet.date,
+        meetingLink: meet.meetingLink,
+      };
+    });
+
+    // Use Promise.all to await all the promises
+    const meetingData = await Promise.all(meetingPromises);
+
+    // Remove null entries (meetings that were not found)
+    const validMeetings = meetingData.filter((meeting) => meeting !== null);
+
+    return res.json({ success: true, meeting: validMeetings });
+  } catch (error) {
+    // Handle errors appropriately
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Delete a meeting by ID
+router.delete('/delete-meeting/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedMeeting = await Meeting.findByIdAndDelete(id);
+
+    const group = await Group.findOne({'projects.projectTitle' : deletedMeeting.projectTitle});
+    if(group){
+      group.projects[0].students.map( async stu=>{
+        const studentObj = await User.findById(stu.userId);
+        if(studentObj){
+          studentObj.unseenNotifications.push({
+            type : "Important", message : "You're Meeting Time has been Cancelled "
+          });
+          await studentObj.save();
+        }
+      });
+    }
+
+    if (!deletedMeeting) {
+      return res.status(404).json({ message: 'Meeting not found' });
+    }
+
+
+    return res.json({ success: true, message: 'Meeting Cancelled successfully' });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
