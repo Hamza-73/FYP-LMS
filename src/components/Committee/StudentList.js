@@ -22,7 +22,7 @@ const StudentList = (props) => {
     e.preventDefault();
 
     // Check if any of the fields are empty
-    if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim()) {
+    if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim() || !register.email) {
       NotificationManager.error('Please fill in all required fields.');
       return;
     }
@@ -67,7 +67,7 @@ const StudentList = (props) => {
         body: JSON.stringify({
           name: register.name, cnic: register.cnic, batch: register.batch, semester: register.semester,
           rollNo: register.rollNo, department: register.department,
-          father: register.father
+          father: register.father, email: register.email
         })
       });
       const json = await response.json();
@@ -80,14 +80,15 @@ const StudentList = (props) => {
         setData(prevData => ({
           ...prevData,
           members: [...prevData.members, {
-            name: register.name, father: register.father, department: register.department,
-            batch: register.batch, semester: register.semester, cnic: register.cnic, rollNo: register.rollNo,
+            name: register.name, father: register.father,
+            department: register.department, batch: register.batch,
+            semester: register.semester, cnic: register.cnic, rollNo: register.rollNo,
           }]
         }));
 
         // Clear the register form fields
         setRegister({
-          name: "", father: "", department: "", batch: "", semester: "", cnic: "", rollNo: "",
+          name: "", father: "", department: "", batch: "", semester: "", cnic: "", rollNo: "", email:""
         });
         setRollNoError(false);
 
@@ -105,7 +106,7 @@ const StudentList = (props) => {
     setSelectedStudent(student);
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
-      name: student.name, father: student.father, department: student.department, batch: student.batch, semester: student.semester, cnic: student.cnic, rollNo: student.rollNo,
+      name: student.name, father: student.father, department: student.department, batch: student.batch, semester: student.semester, cnic: student.cnic, rollNo: student.rollNo, email : register.email
     });
   };
 
@@ -118,7 +119,7 @@ const StudentList = (props) => {
       const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
 
       // Check if any of the fields are empty
-      if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim()) {
+      if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim() || !register.email) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
@@ -158,7 +159,7 @@ const StudentList = (props) => {
           body: JSON.stringify({
             name: register.name, father: register.father, department: register.department,
             batch: register.batch, semester: register.semester,
-            cnic: register.cnic, rollNo: register.rollNo
+            cnic: register.cnic, rollNo: register.rollNo, email:register.email
           })
         }
       );
@@ -175,7 +176,7 @@ const StudentList = (props) => {
         console.log('updated student is ', updatedStudent)
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
-          name: '', father: '', department: '', batch: '', semester: '', cnic: '', rollNo: '',
+          name: '', father: '', department: '', batch: '', semester: '', cnic: '', rollNo: '', email:""
         });
         NotificationManager.success('Edited Successfully');
         setRollNoError(false);
@@ -274,7 +275,7 @@ const StudentList = (props) => {
 
   const [register, setRegister] = useState({
     name: "", father: "", department: "", batch: "",
-    semester: "", cnic: "", rollNo: "",
+    semester: "", cnic: "", rollNo: "", email:""
   });
 
   const handleChange1 = (e) => {
@@ -304,7 +305,7 @@ const StudentList = (props) => {
   const handleClose = () => {
     setRegister({
       name: "", father: "", department: "", batch: "",
-      semester: "", cnic: "", rollNo: "",
+      semester: "", cnic: "", rollNo: "", email:""
     })
   }
 
@@ -371,6 +372,10 @@ const StudentList = (props) => {
                   <div className="mb-3">
                     <label htmlFor="department" className="form-label">Department</label>
                     <input type="text" className="form-control" id="department" name='department' value={register.department} onChange={handleChange1} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email</label>
+                    <input type="email" className="form-control" id="email" name='email' value={register.email} onChange={handleChange1} />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="batch" className="form-label">Batch</label>

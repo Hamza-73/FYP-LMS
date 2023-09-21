@@ -32,7 +32,6 @@ const Progress = (props) => {
                 alert('Authorization token not found', 'danger');
                 return;
             }
-            setLoading(true);
             const response = await fetch(`http://localhost:5000/student/send-project-request`, {
                 method: 'POST', // Change to POST
                 headers: {
@@ -54,8 +53,6 @@ const Progress = (props) => {
         } catch (error) {
             console.log('error is ', error);
             alert(`Some error occurred: ${error.message}`, 'danger');
-        } finally {
-            setLoading(false); // Set loading to false when the request is complete
         }
     };
 

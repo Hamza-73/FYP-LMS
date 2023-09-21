@@ -17,7 +17,7 @@ router.post('/register', [
     body('email', 'Enter a valid email address').isEmail(),
     body('password', 'Password must be at least 4 characters').isLength({ min: 4 }),
 ], async (req, res) => {
-    const { username, email, password } = req.body;
+    const { fname, lname ,username, email, password } = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -35,7 +35,7 @@ router.post('/register', [
             const hashedPassword = await bcrypt.hash(password, salt);
 
             // Create a new admin if the username and email are unique
-            const newAdmin = new Admin({ username, email, password: hashedPassword });
+            const newAdmin = new Admin({ fname, lname, username, email, password: hashedPassword });
             await newAdmin.save();
 
             const data = {
@@ -109,6 +109,9 @@ router.post('/make-admin', async (req, res) => {
         if (!committeeMember) {
             return res.status(404).json({ success: false, message: "Committee member not found" });
         }
+        if(committeeMember.isAdmin){
+            return res.status(201).json({success:true , message:"Committee Member is Already Admin"});
+        }
 
         // Update the committee member's role to "admin"
         committeeMember.isAdmin = true;
@@ -124,33 +127,109 @@ router.post('/make-admin', async (req, res) => {
 // get detail of admin
 router.get('/detail', authenticateUser, async (req, res) => {
     try {
-      const userId = req.user.id; // Get the authenticated user's ID from the token payload
-  
-      // Check if the user is an admin
-      const admin = await Admin.findById(userId);
-  
-      if (admin) {
-        let member = admin;
-        // User is an admin, return admin details
-        return res.json({ success: true, member  });
-      }
-  
-      // User is not an admin, check if they are a committee member
-      const committeeMember = await Committee.findById(userId);
-  
-      if (committeeMember) {
-        let member = committeeMember;
-        // User is a committee member, return committee member details
-        return res.json({ success: true, member  });
-      }
-  
-      // User not found
-      return res.status(404).json({ message: 'User not found' });
+        const userId = req.user.id; // Get the authenticated user's ID from the token payload
+
+        // Check if the user is an admin
+        const admin = await Admin.findById(userId);
+
+        if (admin) {
+            console.log('admin is ')
+            let member = admin;
+            // User is an admin, return admin details
+            return res.json({ success: true, member });
+        }
+
+        // User is not an admin, check if they are a committee member
+        const committeeMember = await Committee.findById(userId);
+
+        if (committeeMember) {
+            let member = committeeMember;
+            // User is a committee member, return committee member details
+            return res.json({ success: true, member });
+        }
+
+        // User not found
+        return res.status(404).json({ message: 'Admin not found' });
     } catch (error) {
-      console.error('Error in detail route:', error);
-      return res.status(500).json({ message: 'Server error' });
+        console.error('Error in detail route:', error);
+        return res.status(500).json({ message: 'Server error' });
     }
-  });
-  
+});
+
+// Route to delete an admin by ID
+router.delete('/delete/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const admin = await Admin.findByIdAndDelete(id);
+        if(!admin){
+            const committee = await Committee.findById(id);
+            if(committee){
+                committee.isAdmin = false ;
+                await committee.save();
+                return res.json({success:true, message:"Admin Deleted Successfully"});
+            }else{
+                return res.json({ success:false, message:"Admin Not Found"})
+            }
+        }
+        res.json({ message: 'Admin deleted' });
+    } catch (error) {
+        console.error('error is ', error)
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// Route to edit an admin by ID
+router.put('/edit/:id', async (req, res) => {
+    const { id } = req.params;
+    const updatedDetail = req.body;
+
+    try {
+        const updatedAdmin = await Admin.findByIdAndUpdate(
+            id, updatedDetail, { new: true }
+        );
+        if(!updatedAdmin){
+            const committeeMember = await Committee.findByIdAndUpdate(
+                 id , updatedDetail , { new : true }
+            );
+            if(committeeMember){
+                await committeeMember.save();
+                console.log('comiitte edited')
+                return res.json({ success: true, message : "Edited Sucessfully"});
+            }else{
+                return res.status(404).json({ message: 'Admin Not Found' });
+            }
+        }
+        await updatedAdmin.save();
+        return res.json({ success: true, message : "Edited Sucessfully"});
+    } catch (error) {
+        console.error('error is ', error)
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// Route to get a list of all admins and committee members
+router.get('/get-members', async (req, res) => {
+    try {
+        const allAdmins = await Admin.find();
+        const committeeMembers = await Committee.find({ isAdmin: true  });
+
+        // Merge admin and committee members into the members array
+        const members = [...allAdmins, ...committeeMembers];
+
+        if (members.length === 0) {
+            res.status(404).json({ message: 'Members Not Found' });
+        } else {
+            res.json({
+                success: true,
+                members
+            });
+        }
+    } catch (error) {
+        console.error('error is ', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 
 module.exports = router;  

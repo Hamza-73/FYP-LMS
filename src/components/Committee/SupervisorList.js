@@ -30,16 +30,24 @@ const SupervisorList = (props) => {
         NotificationManager.error('Username must contain at least one underscore (_).');
         return;
       }
-      const response = await axios.post("http://localhost:5000/supervisor/create", {
-        name: register.name.trim(),
-        username: register.username.trim(),
-        designation: register.designation,
-        password: register.password,
-        department: register.department.trim(),
-        slots: parseInt(register.slots, 10)
+      console.log('registering ', register)
+      const response = await fetch("http://localhost:5000/supervisor/create",{
+        method:"POST",
+        headers:{
+          "Content-Type" : "application/json"
+        },
+        body : JSON.stringify( {
+          name: register.name.trim(),
+          username: register.username.trim(),
+          designation: register.designation,
+          password: register.password,
+          department: register.department.trim(),
+          slots: parseInt(register.slots, 10),
+          email : register.email
+        })
       });
-      const json = response.data;
-      console.log(json);
+      const json = await response.json();
+      console.log('json in registering', json);
       if (json.success) {
         // Save the auth token and redirect
         localStorage.setItem('token', json.token);
@@ -49,13 +57,13 @@ const SupervisorList = (props) => {
           members: [...prevData.members, {
             name: register.name, username: register.username,
             designation: register.designation, department: register.department,
-            slots: parseInt(register.slots, 10)
+            slots: parseInt(register.slots, 10), email: register.email
           }]
         }));
 
         // Clear the register form fields
         setRegister({
-          name: "", username: "", department: "", designation: "", password: "", slots: ""
+          name: "", username: "", department: "", designation: "", password: "", slots: "", email:""
         });
       } else {
         NotificationManager.error(json.message);
@@ -70,7 +78,7 @@ const SupervisorList = (props) => {
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
       name: supervisor.name, username: supervisor.username, department: supervisor.department,
-      designation: supervisor.designation, slots: supervisor.slots.toString()
+      designation: supervisor.designation, slots: supervisor.slots.toString(), email : supervisor.email
     });
   };
 
@@ -78,7 +86,7 @@ const SupervisorList = (props) => {
     e.preventDefault();
     try {
       console.log('Register state:', register); // Debugging statement
-      if (!register.name || !register.username || !register.department || !register.designation) {
+      if (!register.name || !register.username || !register.department || !register.designation || !register.email) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
@@ -98,7 +106,8 @@ const SupervisorList = (props) => {
           username: register.username.trim(),
           designation: register.designation.trim(),
           department: register.department.trim(),
-          slots: parseInt(register.slots, 10)
+          slots: parseInt(register.slots, 10),
+          email : register.email
         })
       });
   
@@ -116,7 +125,7 @@ const SupervisorList = (props) => {
         NotificationManager.success('Edited Successfully');
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
-          name: '', username: '', department: '', designation: '', slots: ''
+          name: '', username: '', department: '', designation: '', slots: '', email:''
         });
       }
     } catch (error) {
@@ -129,14 +138,22 @@ const SupervisorList = (props) => {
     const confirmed = window.confirm('Are you sure you want to delete this supervisor?');
     if (confirmed) {
       try {
-        const response = await axios.delete(`http://localhost:5000/supervisor/delete/${id}`);
+        const response = await fetch(`http://localhost:5000/supervisor/delete/${id}`,{
+          method:"DELETE"
+        });
+        const json = await response.json();
+        console.log('json in deleting supervisor is ', json)
         if (response.status === 200) {
           // Update the UI by removing the deleted supervisor from the data
           setData((prevData) => ({
             ...prevData,
             members: prevData.members.filter((member) => member._id !== id),
           }));
-          NotificationManager.success('Deleted Successfully');
+          if(json.success)
+            NotificationManager.success('Deleted Successfully');
+          if(!json.success){
+            NotificationManager.success(json.message);
+          }
         }
       } catch (error) {
         console.log('Error:', error); // Log the error message
@@ -157,7 +174,7 @@ const SupervisorList = (props) => {
           'Content-Type': 'application/json'
         }
       });
-      const json = response.data;
+      const json = await response.data;
       console.log('supervisors are ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
@@ -195,7 +212,7 @@ const SupervisorList = (props) => {
   );
 
   const [register, setRegister] = useState({
-    name: "", username: "", department: "", designation: "", password: "", slots: ""
+    name: "", username: "", department: "", designation: "", password: "", slots: "", email:""
   });
 
   const handleChange1 = (e) => {
@@ -220,7 +237,7 @@ const SupervisorList = (props) => {
   };
 
   const handleClose = () => {
-    setRegister({ name: "", username: "", department: "", designation: "", password: "", slots: "" })
+    setRegister({ name: "", username: "", department: "", designation: "", password: "", slots: "" , email:""})
   }
 
   const paginate = (array, page_size, page_number) => {
@@ -305,6 +322,10 @@ const SupervisorList = (props) => {
                   <div className="mb-3">
                     <label htmlFor="department" className="form-label">Department</label>
                     <input type="text" className="form-control" id="department" name='department' value={register.department} onChange={handleChange1} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email</label>
+                    <input type="email" className="form-control" id="email" name='email' value={register.email} onChange={handleChange1} />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="department" className="form-label">Designation</label>

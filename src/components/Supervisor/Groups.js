@@ -207,7 +207,7 @@ const Groups = (props) => {
                           <td>{project.meetingDate? project.meetingDate : "---"}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
-                          <td><button onClick={()=>setAddStudent({projectTitle:project.projectTitle})} className="btn btn-sm" style={{background:"maroon", color:"white"}} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
+                          <td><button disabled={project.students.length===2} onClick={()=>setAddStudent({projectTitle:project.projectTitle})} className="btn btn-sm" style={{background:"maroon", color:"white"}} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
                           <td>{(project.vivaDate? (new Date() > project.vivaDate ? "Pending" : "Taken") : "---" ) }</td>
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">

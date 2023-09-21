@@ -452,10 +452,28 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-    console.log('Supervisor is ', supervisor)
 
-    console.log('User is ', user)
-    // Check if project exists
+    // check if supervisor has rejected his request before
+    const rejectedRequests = user.rejectedRequest.filter(request=>{
+     return request.equals(supervisor._id)
+    });
+    console.log('rejected request is ', rejectedRequests)
+    console.log('rejected request is ', rejectedRequests.length)
+    if(rejectedRequests.length>0){
+      return res.status(500).json({success:false, message:"You cannot send request to this supervisor as he rejected your request before."});
+    }
+
+    // Check if the user has already sent a request to this supervisor
+    const requestExists = user.pendingRequests.filter(req => {
+      return req.equals(supervisor._id)   
+    });
+    console.log('requestExists ', requestExists)
+    console.log('requestExists ', requestExists.length)
+
+    if (requestExists.length>0) {
+      return res.status(400).json({ success: false, message: 'Request already sent to this supervisor' });
+    }
+
     const pendingProject = await ProjectRequest.findOne({ projectTitle: projectTitle });
     if (!pendingProject) {
       // Create a new project request and add it to the user's pendingRequests
@@ -464,10 +482,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
         projectTitle, description,
         scope, status: false
       });
-      user.pendingRequests.push({
-        projectId: projectRequest._id,
-        supervisor: supervisor._id
-      });
+      user.pendingRequests.push( supervisor._id );
       user.unseenNotifications.push({ type: "Important", message: `Project request sent to ${supervisor.name}` });
 
       // console.log('project id is ', projectRequest._id, 'type is ', typeof (projectRequest._id))
@@ -484,34 +499,10 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
 
       return res.json({ success: true, message: `Project request sent to ${supervisor.name}` });
 
+    }else{
+      return res.status(500).json({success:false, message:"Request with this project Title Already exist"});
     }
 
-    // Check if the user has already sent a request to this supervisor
-    const requestExists = user.pendingRequests.map(req => {
-      console.log(req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
-      return (req.projectId.equals(pendingProject._id) && req.supervisor.equals(supervisor._id))
-
-    });
-    // console.log('requestExists ', requestExists)
-
-    if (requestExists) {
-      return res.status(400).json({ success: false, message: 'Request already sent to this supervisor' });
-    }
-
-    user.pendingRequests.push({
-      projectId: pendingProject._id,
-      supervisor: supervisor._id
-    })
-    supervisor.projectRequest.push({
-      isAccepted: false,
-      project: pendingProject._id,
-      user: user._id
-    })
-    supervisor.unseenNotifications.push({ type: "Important", message: `A new proposal for ${projectTitle}` });
-
-    await Promise.all([user.save(), supervisor.save(), pendingProject.save()]);
-
-    res.json({ success: true, message: `Project request sent to ${supervisor.name}` });
   } catch (err) {
     console.error('Error sending project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -556,23 +547,32 @@ router.post('/request-to-join/:projectTitle', authenticateUser, async (req, res)
       return res.status(404).json({ success: false, message: 'Project request not found' });
     }
 
-    // Check if the group is already filled
-    if (projectRequest.students.length === 2) {
-      return res.status(400).json({ success: false, message: 'Student The Group is already filled' });
-    }
-    console.log('project request in sending request is ', projectRequest.supervisor)
+    // console.log('project request in sending request is ', projectRequest.supervisor)
     const supervisor = await Supervisor.findById(projectRequest.supervisor);
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
+    
+    // check if supervisor has rejected his request before
+    const rejectedRequests = student.rejectedRequest.filter(request=>{
+      return request.equals(supervisor._id)
+     });
+     if(rejectedRequests.length>0){
+       return res.status(500).json({success:false, message:"You cannot send request to this supervisor as he rejected your request before."});
+     }
+  
+    // Check if the group is already filled
+    if (projectRequest.students.status) {
+      return res.status(400).json({ success: false, message: 'Student The Group is already filled' });
+    }
 
     // Check if a user has already sent a request for this group
-    const hasSentRequest = student.pendingRequests.some((request) =>
-      request.projectId.equals(projectRequest._id) && request.supervisor.equals(supervisor._id)
-    );
+    const hasSentRequest = student.pendingRequests.filter((request) =>{
+      request.equals(supervisor._id)
+    });
 
-    if (hasSentRequest) {
-      return res.status(500).json({ success: false, message: `You've Already sent Request for This Group` });
+    if (hasSentRequest.length>0) {
+      return res.status(500).json({ success: false, message: `You've Already sent Request To this Supervisor` });
     }
 
     const notificationMessage = `${student.name} has requested to join the group: ${projectRequest.projectTitle}`;
@@ -581,10 +581,7 @@ router.post('/request-to-join/:projectTitle', authenticateUser, async (req, res)
       project: projectRequest._id,
       user: student._id
     });
-    student.pendingRequests.push({
-      projectId: projectRequest._id,
-      supervisor: supervisor._id
-    });
+    student.pendingRequests.push( supervisor._id );
     student.unseenNotifications.push({ type: 'Important', message: `You've sent a request to ${supervisor.name} to join group ${projectRequest.projectTitle}` })
     await Promise.all([supervisor.save(), student.save()]);
 
@@ -764,6 +761,9 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    if(user.isMember){
+      return res.status(500).json({ message: `You're Already in a Group` });
+    }
     const { projectId, action } = req.params;
     const request = await ProjectRequest.findById(projectId);
 
@@ -799,6 +799,10 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           user.group = existingGroup._id;
           user.isMember = true;
           user.pendingRequests = [];
+          user.unseenNotifications.push({
+            type:"Important",
+            message : `You're now in Group: ${existingGroup.projects[0].projectTitle}`
+          })
 
           // Notify the supervisor
 
@@ -818,6 +822,8 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           await Promise.all([existingGroup.save(), user.save(), request.save()]);
           console.log('promise returns');
           return res.json({ success: true, message: 'Student added to the existing group' });
+        }else{
+          return res.json({ success:false, message:"Group is Already Filled."});
         }
       }
 

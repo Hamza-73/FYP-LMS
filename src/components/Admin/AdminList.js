@@ -19,10 +19,8 @@ const CommitteeMember = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
   const [register, setRegister] = useState({
-    fname: "", lname: "", username: "", department: "", designation: "", password: "", email: ""
+    fname: "", lname: "", username: "", email:"", password: ""
   });
-
-  const [user, setUser] = useState('');
 
   // Function to open the modal
   const openModal = () => {
@@ -34,26 +32,6 @@ const CommitteeMember = (props) => {
     setShowModal(false);
   };
 
-  const makeAdmin = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/admin/make-admin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username: user })
-      });
-      const json = await response.json();
-      console.log('json in making admin is ', json)
-      if (json.message) {
-        alert(json.message)
-      }
-
-    } catch (error) {
-
-    }
-  }
-
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -63,19 +41,19 @@ const CommitteeMember = (props) => {
       }
 
       // Check if any required field is empty
-      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim() || !register.password.trim() || !register.email) {
+      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.email.trim() || !register.password.trim()) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
 
-      const response = await fetch("http://localhost:5000/committee/register", {
+      const response = await fetch("http://localhost:5000/admin/register", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           fname: register.fname.trim(), lname: register.lname.trim(), username: register.username.trim(),
-          designation: register.designation.trim(), password: register.password, department: register.department.trim()
+          password: register.password, email: register.email.trim()
         })
       });
       const json = await response.json();
@@ -88,13 +66,13 @@ const CommitteeMember = (props) => {
           ...prevData,
           members: [...prevData.members, {
             fname: register.fname, lname: register.lname, username: register.username,
-            designation: register.designation, password: register.password, department: register.department, email: register.email
+            email: register.email, password: register.password
           }]
         }));
 
         // Clear the register form fields
         setRegister({
-          fname: "", lname: "", username: "", department: "", designation: "", password: "", email: ""
+          fname: "", lname: "", username: "", email: "", password: ""
         });
         closeModal();
       }
@@ -116,13 +94,13 @@ const CommitteeMember = (props) => {
       }
 
       // Check if any required field is empty
-      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim() || !register.email) {
+      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.email.trim() ) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
 
       const id = selectedStudent._id;
-      const response = await fetch(`http://localhost:5000/committee/edit/${id}`,
+      const response = await fetch(`http://localhost:5000/admin/edit/${id}`,
         {
           method: "PUT",
           headers: {
@@ -130,7 +108,7 @@ const CommitteeMember = (props) => {
           },
           body: JSON.stringify({
             fname: register.fname, lname: register.lname, username: register.username,
-            designation: register.designation, department: register.department, email: register.email
+            email: register.email
           })
         }
       );
@@ -146,7 +124,7 @@ const CommitteeMember = (props) => {
         console.log('updated student is ', updatedStudent)
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
-          fname: '', lname: '', username: '', department: '', designation: '', password: '', email: ""
+          fname: '', lname: '', username: '', email: '', password: ''
         });
         closeModal();
         NotificationManager.success('Edited Successfully');
@@ -164,8 +142,7 @@ const CommitteeMember = (props) => {
     setSelectedStudent(student);
     setEditMode(true);
     setRegister({
-      fname: student.fname, lname: student.lname, username: student.username, department: student.department,
-      designation: student.designation, slots: student.slots, email: student.email
+      fname: student.fname, lname: student.lname, username: student.username, email: student.email,
     });
   };
 
@@ -177,7 +154,7 @@ const CommitteeMember = (props) => {
     if (confirmed) {
       try {
         console.log('id is ', id)
-        const response = await axios.delete(`http://localhost:5000/committee/delete/${id}`,
+        const response = await axios.delete(`http://localhost:5000/admin/delete/${id}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -202,7 +179,7 @@ const CommitteeMember = (props) => {
   // Function to get members
   const getMembers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/committee/get-members", {
+      const response = await axios.get("http://localhost:5000/admin/get-members", {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -211,7 +188,7 @@ const CommitteeMember = (props) => {
       console.log('students are ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
-      alert(`Some error occurred: ${error.message}`, 'danger');
+        
     }
   }
 
@@ -224,7 +201,7 @@ const CommitteeMember = (props) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/${props.detailLink}/detail`, {
+      const response = await fetch(`http://localhost:5000/admin/detail`, {
         method: 'GET',
         headers: {
           'Authorization': token
@@ -300,7 +277,7 @@ const CommitteeMember = (props) => {
 
   // Function to reset input fields
   const handleClose = () => {
-    setRegister({ fname: "", lname: "", username: "", department: "", designation: "", password: "", email: "" });
+    setRegister({ fname: "", lname: "", username: "", email: "",  password: "" });
   }
 
   const handleSearch = (event) => {
@@ -315,22 +292,21 @@ const CommitteeMember = (props) => {
   const filteredData = data.members.filter((member) => {
     const searchTerm = searchQuery.trim().toLowerCase(); // Remove leading/trailing spaces and convert to lowercase
     const searchWords = searchTerm.split(' ');
-
+  
     // Check if any word in the search query matches either first name or last name
-    const matchesFirstName = searchWords.some((word) =>
+    const matchesFirstName = member.fname && searchWords.some((word) =>
       member.fname.toLowerCase().includes(word)
     );
-    const matchesLastName = searchWords.some((word) =>
+    const matchesLastName = member.lname && searchWords.some((word) =>
       member.lname.toLowerCase().includes(word)
     );
-
+  
     return (
       matchesFirstName ||
-      matchesLastName ||
-      member.department.toLowerCase().includes(searchTerm) ||
-      member.designation.toLowerCase().includes(searchTerm)
+      matchesLastName
     );
   });
+  
 
   const filteredDataPaginated = paginate(filteredData, recordsPerPage, currentPage);
 
@@ -382,20 +358,8 @@ const CommitteeMember = (props) => {
                     <input type="text" className="form-control" id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="exampleInputusername1" className="form-label">Email</label>
-                    <input type="email" className="form-control" id="email" name='email' value={register.email} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="department" className="form-label"> Department </label>
-                    <input type="text" className="form-control" id="department" name="department" value={register.department} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="designation" className="form-label"> Designation </label>
-                    <select className="form-select" id="designation" name="designation" value={register.designation} onChange={handleChange1}>
-                      <option value="Professor">Professor</option>
-                      <option value="Assistant Professor">Assistant Professor</option>
-                      <option value="Lecturer">Lecturer</option>
-                    </select>
+                    <label htmlFor="email" className="form-label"> Email </label>
+                    <input type="email" className="form-control" id="email" name="email" value={register.email} onChange={handleChange1} />
                   </div>
                   {!editMode ? <div className="mb-3">
                     <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
@@ -408,7 +372,7 @@ const CommitteeMember = (props) => {
                       <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>Save Changes</button>
                     ) : (
                       <button type="submit" className="btn btn-success" disabled={!(register.fname) || !(register.lname)
-                        || !(register.username) || !(register.department)}>
+                        || !(register.username) || !(register.email)}>
                         Register
                       </button>
                     )}
@@ -422,7 +386,7 @@ const CommitteeMember = (props) => {
 
       {loading ? (<Loading />) : (<>
         <div className='container' style={{ width: "90%" }}>
-          <h3 className='text-center'>Committee Members</h3>
+          <h3 className='text-center'>Admins</h3>
           <div className="mb-3">
             <label htmlFor="recordsPerPage" className="form-label">Records per page:</label>
             <select id="recordsPerPage" className="form-select" value={recordsPerPage} onChange={(e) => {
@@ -452,14 +416,11 @@ const CommitteeMember = (props) => {
               <thead>
                 <tr>
                   <th scope="col">Name</th>
-                  <th scope="col">Department</th>
-                  <th scope="col">Designation</th>
+                  <th scope="col">Username</th>
+                  <th scope="col">Email</th>
                   <th scope="col">Edit</th>
                   {(!showSidebar && !userData.member.isAdmin) && (
-                    <>
-                      <th scope="col">Remove</th>
-                      <th scope="col">Make Admin</th>
-                    </>
+                    <th scope="col">Remove</th>
                   )}
                 </tr>
               </thead>
@@ -467,22 +428,12 @@ const CommitteeMember = (props) => {
                 {filteredDataPaginated.map((val, key) => (
                   <tr key={key}>
                     <td>{val.fname + ' ' + val.lname}</td>
-                    <td>{val.department}</td>
-                    <td>{val.designation}</td>
+                    <td>{val.username}</td>
+                    <td>{val.email}</td>
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
                       <i className="fa-solid fa-pen-to-square"></i>
                     </td>
-                    {(!showSidebar && !userData.member.isAdmin) &&
-                      <>
-                        <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
-                        <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                          disabled={val.isAdmin}
-                          onClick={() => {
-                            setUser(val.username);
-                            makeAdmin()
-                          }}
-                        >Make Admin</button></td>
-                      </>}
+                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>}
                   </tr>
                 ))}
               </tbody>

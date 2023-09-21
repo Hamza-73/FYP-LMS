@@ -7,6 +7,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import CommitteeMember from './Committee/CommitteeMember'
 import StudentList from './Committee/StudentList'
 import SupervisorList from './Committee/SupervisorList'
+import AdminList from './Admin/AdminList'
 
 const AdminMain = () => {
     const location = useLocation()
@@ -21,8 +22,9 @@ const AdminMain = () => {
       <>
         <div>
           {!showSidebar && (
-            <SideBar title1='Dashboard' link1='dashboard' title2='Committee Members'
-             link2='members' user='adminMain' detailLink = 'admin' title3='Students' link3='student'
+            <SideBar title1='Dashboard' link1='dashboard' title2='Admins'  link2='admins'
+             title5='Committee Members'
+             link5='members' user='adminMain' detailLink = 'admin' title3='Students' link3='student'
              hide='d-none' title4='Supervisor List' link4='supervisor'
             />
           )}
@@ -36,6 +38,7 @@ const AdminMain = () => {
           <Route path='/members' element={<CommitteeMember  detailLink='admin'/>} />
           <Route path='/student' element={<StudentList  detailLink='admin'/>} />
           <Route path='/supervisor' element={<SupervisorList  detailLink='admin'/>} />
+          <Route path='/admins' element={<AdminList  detailLink='admin'/>} />
         </Routes>
       </>
     </div>

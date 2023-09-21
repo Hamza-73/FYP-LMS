@@ -16,14 +16,14 @@ const SharedRules = require('../../models/SharedRules')
 
 // Registration route
 router.post('/register', [
-  body('fname', 'First name should be at least 4 characters').exists(),
+  body('fname', 'First name should be at least 3 characters').exists(),
   body('lname', 'Last name should not be blank').exists(),
   body('username', 'Enter a valid username').isLength({ min: 4 }),
   body('department', 'Department should only contain alphabetic characters').isAlpha(),
   body('designation', 'Designation cannot be left blank').exists(),
   body('password', 'Password must be at least 4 characters').isLength({ min: 4 }),
 ], async (req, res) => {
-  const { fname, lname, username, department, designation, password } = req.body;
+  const { fname, lname, username, department, designation, password , email } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -40,7 +40,7 @@ router.post('/register', [
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
       // Create a new user if the username is unique
-      const newUser = new Committee({ fname, lname, username, department, designation, password: secPass });
+      const newUser = new Committee({ fname, lname, username, department, designation, password: secPass , email });
       await newUser.save();
       const data = {
         user: {

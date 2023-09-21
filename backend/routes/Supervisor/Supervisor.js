@@ -47,7 +47,7 @@ router.post('/create', [
   body('designation', 'Designation is required').exists(),
   body('password', 'Password is required').exists(),
 ], async (req, res) => {
-  const { name, designation, username, password, slots, department } = req.body;
+  const { name, designation, username, password, slots, department, email } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -60,12 +60,13 @@ router.post('/create', [
     } else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
-      const supervisor = new Supervisor({ name, designation, username, password: secPass, slots, department });
+      const supervisor = new Supervisor({ name, designation, username, password: secPass, slots, department, email });
       await supervisor.save();
-      res.json({ success: true, supervisor });
+      return res.json({ success: true, supervisor });
     }
 
   } catch (err) {
+    console.error('error in creating ', err)
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -109,7 +110,7 @@ router.delete('/delete/:id', async (req, res) => {
 
     const supervisor = await Supervisor.findById(id);
     if (supervisor.groups.length > 0) {
-      return res.status(500).json({ success: true, message: `First Allocate groups under ${supervisor.name} to someone else.` });
+      return res.status(500).json({ success: false, message: `First Allocate groups under ${supervisor.name} to someone else.` });
     }
     const deletedMember = await Supervisor.findByIdAndDelete(id);
 
@@ -165,13 +166,16 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-    // console.log('supervisor is 1 ', supervisor);
-    // console.log('Project of sup ius ', supervisor.projectRequest)
-
-    const projectRequest = supervisor.projectRequest.find(request => request._id.equals(requestId));
-    if (!projectRequest) {
+   
+    const projectRequest = supervisor.projectRequest.filter(request => request._id.equals(requestId));
+    console.log('projectRequest is ', projectRequest)
+    console.log('projectRequest is ', projectRequest.length)
+    
+    if (projectRequest.length <= 0) {
       return res.status(404).json({ success: false, message: 'Project request not found' });
     }
+
+    const check = await ProjectRequest.findById(projectRequest[0].project);
 
     if (action === 'reject') {
       console.log('Reject code starts');
@@ -181,20 +185,32 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       await supervisor.save();
 
       // Remove the project request from student's pendingRequests array
-      const student = await User.findById(projectRequest.user);
+      const student = await User.findById(projectRequest[0].user);
       if (student) {
-        const updatedPendingRequests = student.pendingRequests.filter(request => !request._id.equals(requestId));
+        console.log('student is ', student);
+        const updatedPendingRequests = student.pendingRequests.filter(request => !request.equals(supervisor._id));
         student.pendingRequests = updatedPendingRequests;
+
+        student.rejectedRequest.push(supervisor._id);
 
         student.unseenNotifications.push({
           type: "Important",
-          message: `${supervisor.name} rejected your request.`
+          message: `${supervisor.name} rejected your request, You cannot send request to this supervisor Anymore.`
         });
+        
+          console.log('check is ', check);
+          // Optionally, you can perform additional actions after the delete if needed.
+          if(check){
+            if(!check.supervisor){
+              let newCheck = await ProjectRequest.findByIdAndDelete(check._id);
+              console.log('deleting');
+          }
+        
         await student.save();
       }
 
       // This line sends a response to the client.
-      res.json({ success: true, message: 'Project request rejected successfully' });
+      return res.json({ success: true, message: 'Project request rejected successfully' });
     }
 
 
@@ -210,16 +226,16 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
     // console.log('ProjectRequest is 1 ', projectRequest);
 
-    const user = await User.findById(projectRequest.user)
+    const user = await User.findById(projectRequest[0].user);
+    if (user.isMember) {
+      return res.status(404).json({ success: false, message: 'Student is already in a group' })
+    }
 
     if (action === 'accept') {
       console.log('accept code starts');
-      if (user.isMember) {
-        return res.status(404).json({ success: false, message: 'Student is already in a group' })
-      }
 
       // GetProjectDetail for Project Id
-      const projectDetail = await ProjectRequest.findById(projectRequest.project);
+      const projectDetail = await ProjectRequest.findById(projectRequest[0].project);
 
       // Check if user is already in the group
       if (projectDetail.status) {
@@ -245,25 +261,30 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       console.log('rewuqest exisists or not', group);
       if (group) {
         group.projects.map(async project => {
-          project.students.push({
-            name: user.name, rollNo: user.rollNo, userId: user._id
-          });
-          user.group = group._id;
-          user.pendingRequests = [];
-          user.isMember = true;
-          const filteredRequest = supervisor.projectRequest.filter((request) => {
-            return !request.project.equals(projectDetail._id);
-          });
+          if (project.students.length < 2) {
+            project.students.push({
+              name: user.name, rollNo: user.rollNo, userId: user._id
+            });
+            user.group = group._id;
+            user.pendingRequests = [];
+            user.isMember = true;
+            const filteredRequest = supervisor.projectRequest.filter((request) => {
+              return !request.project.equals(projectDetail._id);
+            });
 
-          supervisor.projectRequest = filteredRequest;
-          projectDetail.students.push(user._id);
-          projectDetail.status = true;
-          user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
-          supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+            supervisor.projectRequest = filteredRequest;
+            projectDetail.students.push(user._id);
+            projectDetail.status = true;
+            user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+            supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+            await Promise.all([group.save(), user.save(), supervisor.save(), projectDetail.save()]);
+            return res.json({ success: true, message: "Accept requested and Student Added to Group" });
+          } else {
+            return res.status(500).json({ success: false, message: "The Group Is Already Filled" })
+          }
 
         });
-        await Promise.all([group.save(), user.save(), supervisor.save(), projectDetail.save()]);
-        return res.json({ success: true, message: "Accept requested and Student Added to Group" });
+
       }
 
       if (!group) {
@@ -305,9 +326,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       // remove request from supervisor projectrequests
       const filteredRequest = supervisor.projectRequest.filter((request) => {
-        // console.log('project is ', request.project);
-        // console.log('detail filter', projectDetail._id)
-        // console.log('tr/false', request.project.equals(projectDetail._id))
         return !request.project.equals(projectDetail._id);
       });
 
@@ -397,9 +415,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       }
       // remove request from supervisor projectrequests
       const filteredRequest = supervisor.projectRequest.filter((request) => {
-        // console.log('project is ', request.project);
-        // console.log('detail filter', projectDetail._id)
-        // console.log('tr/false', request.project.equals(projectDetail._id))
         return !request.project.equals(projectDetail._id);
       });
 
@@ -419,7 +434,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
       res.json({ success: true, message: 'Project request improved and accepted and user added to group' });
 
-    }
+    }}
   } catch (err) {
     console.error('Error accepting project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -447,7 +462,7 @@ router.post('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, 
     }
     console.log('project is', projectRequest)
     if (projectRequest.status) {
-      return res.status(500).json({ success: false, message: 'Gotp is already filled' });
+      return res.status(500).json({ success: false, message: 'Group is already filled' });
     }
 
     // Check if the student is already in a group
