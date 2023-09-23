@@ -234,102 +234,30 @@ router.post('/register', [
   }
 });
 
-router.post("/forgot-passwords", async (req, res) => {
-  console.log('forgot starts')
-  const { email } = req.body;
+// Password reset route
+router.post('/reset-password', async (req, res) => {
+  const { username, newPassword } = req.body;
+
   try {
-    const oldUser = await User.findOne({ email });
-    if (!oldUser) {
-      return res.json({ status: "User Not Exists!!" });
+    // Find the user by username
+    const user = await User.findOne({ rollNo : username });
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-    console.log('user found');
-    console.log('1');
-    console.log('secret is is ', JWT_KEY + oldUser.password);
-    console.log('12');
-    const secret = JWT_KEY + oldUser.password;
-    console.log('secret is ', secret);
-    const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret);
-    console.log('token generated');
-    const link = `http://localhost:5000/reset-password/${oldUser._id}/${token}`;
-    console.log('link is ', link);
-    var transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "khurramkhan8819@gmail.com",
-        pass: "hamzakhan0073@mir0073",
-      },
-    });
 
-    var mailOptions = {
-      from: "youremail@gmail.com",
-      to: "azharhassankhan1975@gmail.com",
-      subject: "Password Reset",
-      text: link,
-    };
-
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.log("Email error:", error);
-        return res.status(500).json({ status: "Email could not be sent." });
-      } else {
-        console.log("Email sent: " + info.response);
-        return res.status(200).json({ status: "Email sent successfully." });
-      }
-    });
-    console.log(link);
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({ status: "An error occurred." });
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(newPassword, salt);
+    user.password = secPass;
+    await user.save();
+    res.status(200).json({ success: true, message: 'Password reset successful' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
 
-router.get("/reset-password/:id/:token", async (req, res) => {
-  const { id, token } = req.params;
-  console.log(req.params);
-  const oldUser = await User.findOne({ _id: id });
-  if (!oldUser) {
-    return res.json({ status: "User Not Exists!!" });
-  }
-  const secret = JWT_SECRET + oldUser.password;
-  try {
-    const verify = jwt.verify(token, secret);
-    res.render("index", { email: verify.email, status: "Not Verified" });
-  } catch (error) {
-    console.log(error);
-    res.send("Not Verified");
-  }
-});
-
-router.post("/reset-password/:id/:token", async (req, res) => {
-  const { id, token } = req.params;
-  const { password } = req.body;
-
-  const oldUser = await User.findOne({ _id: id });
-  if (!oldUser) {
-    return res.json({ status: "User Not Exists!!" });
-  }
-  const secret = JWT_SECRET + oldUser.password;
-  try {
-    const verify = jwt.verify(token, secret);
-    const encryptedPassword = await bcrypt.hash(password, 10);
-    await User.updateOne(
-      {
-        _id: id,
-      },
-      {
-        $set: {
-          password: encryptedPassword,
-        },
-      }
-    );
-
-    res.render("index", { email: verify.email, status: "verified" });
-  } catch (error) {
-    console.log(error);
-    res.json({ status: "Something Went Wrong" });
-  }
-});
 
 //delete Student
 router.delete('/delete/:id', async (req, res) => {
@@ -982,6 +910,34 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/request-meeting', authenticateUser, async (req,res)=>{
+  try {
+    const student = await User.findById(req.user.id);
+    if(!student){
+      return res.status(404).json({ success: false, message: 'Student Not found' });
+    }
+    const group = await Group.findById(student.group);
+    if(!group){
+      return res.status(404).json({ success: false, message: 'Group Not found' });
+    }
+    const supervisor = await Supervisor.findById(group.supervisorId);
+    if(!supervisor){
+      return res.status(404).json({ success: false, message: 'Supervisor Not found' });
+    }
+    const project = group.projects[0].projectTitle;
+    supervisor.unseenNotifications.push({
+      type : "Important",
+      message:`${student.name} has requested a meeting with you for group ${project}`,
+    });
+    await supervisor.save();
+    return res.json({success:true, message:"Request sent to supervisor for meeting"});
+
+  } catch (error) {
+    console.error('error sending meeting request', error);
+    return res.json({message:"Internal Server Error"});
   }
 });
 

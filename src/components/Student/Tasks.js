@@ -230,7 +230,7 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   {!group.group.proposal ? (
-                    <div className='boxes'>
+                    <div className='boxes text-center'>
                       <input
                         type="file"
                         onChange={(e) => handleFileChange(e)}
@@ -284,6 +284,10 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   <div className="boxes d-flex justify-content-evenly">
+                    <div>Grading Status</div>
+                    <div>{group.group.marks ? 'Graded' : 'Not Graded'}</div>
+                  </div>
+                  <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>
                     <div>
                       {new Date(group.group.docDate) > new Date()
@@ -292,7 +296,7 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   {!group.group.documentation ? (
-                    <div className='boxes'>
+                    <div className='boxes text-center'>
                       <input
                         type="file"
                         onChange={(e) => handleFileChange(e)}
@@ -353,8 +357,12 @@ const Tasks = (props) => {
                         : '-----'}
                     </div>
                   </div>
+                  <div className="boxes d-flex justify-content-evenly">
+                    <div>Grading Status</div>
+                    <div>{group.group.marks ? 'Graded' : 'Not Graded'}</div>
+                  </div>
                   {!group.group.finalDocument ? (
-                    <div className='boxes'>
+                    <div className='boxes text-center'>
                       <input
                         type="file"
                         onChange={(e) => handleFileChange(e)}

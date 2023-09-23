@@ -114,7 +114,7 @@ const GroupDetail = () => {
   }
 
   const handleClose = () => {
-    setReview({text:"",index:""});
+    setReview({ text: "", index: "" });
     setGroupId('');
   }
 
@@ -193,10 +193,10 @@ const GroupDetail = () => {
                         <div className='item'>
                           <a target='_blank' href={doc.docLink}>View Uploaded Doc</a>
                           <button className="btn btn-sm btn-danger" data-bs-toggle="modal"
-                            data-bs-target="#exampleModal" 
-                            onClick={()=>{
+                            data-bs-target="#exampleModal"
+                            onClick={() => {
                               setGroupId(currentGroup._id);
-                              setReview({index:docKey});
+                              setReview({ index: docKey });
                             }}>Reviews</button>
                         </div>
                       </div>

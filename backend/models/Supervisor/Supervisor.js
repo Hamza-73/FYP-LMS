@@ -25,7 +25,8 @@ const supervisorSchema = new Schema({
     time: { type: String }
   }],
 
-  meeting: [{ type: Schema.Types.ObjectId, ref: 'Meeting' }]
+  meeting: [{ type: Schema.Types.ObjectId, ref: 'Meeting' }],
+  isLogin : {type : Boolean, default:true},
 });
 
 module.exports = mongoose.model('Supervisor', supervisorSchema);

@@ -32,11 +32,3 @@
     justify-content: space-between;
     border-radius: 20px;
 }
-.review-box a{
-    position: relative;
-    top: 30px;
-}
-.upload-btn{
-    position: relative;
-    left: 78%;
-}

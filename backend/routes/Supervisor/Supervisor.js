@@ -97,7 +97,6 @@ router.post('/reset-password', async (req, res) => {
 });
 
 
-
 //delete supervisor
 router.delete('/delete/:id', async (req, res) => {
   try {

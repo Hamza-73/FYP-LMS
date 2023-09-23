@@ -100,11 +100,17 @@ const MyGroup = (props) => {
         NotificationManager.success('File Uploaded successfully');
         // Update the state with the uploaded file URL
         if (type === 'documentation') {
-          setGroupDetails(prevGroup => ({
+          setGroupDetails((prevGroup) => ({
             ...prevGroup,
             group: {
               ...prevGroup.group,
-              documentation: json.url, // Assuming the URL is returned in the response
+              docs: [
+                ...(prevGroup.group.docs || []), // Add the existing documents
+                {
+                  docLink: json.url, // Document URL
+                  review: '', // Empty review
+                },
+              ],
             },
           }));
         } else if (type === 'final') {
@@ -124,6 +130,51 @@ const MyGroup = (props) => {
     }
   };
 
+  const requestMeeting = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/student/request-meeting`,{
+        method:"POST",
+        headers:{
+          "Authorization" : localStorage.getItem('token')
+        }
+      });
+      const json = await response.json();
+      console.log('json in requesting meeting is ', json);
+      alert(json.message);
+    } catch (error) {
+      console.log('error in requesting meeting', error);      
+    }
+  }
+
+  const meetingStyle = `
+  .meeting-box {
+    background-color: #ffffff;
+    border: 1px solid #d1d1d1;
+    border-radius: 6px;
+    width: 200px; height: 100px;
+    padding: 16px; margin: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .meeting-row {
+    text-align: center;
+    display: flex; flex-wrap: wrap;
+    justify-content: center;
+  }
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .meeting-box a {
+    text-decoration: none; color: #007bff;
+  }
+`;
+
+  const [review, setReview] = useState('');
 
   return (
     <div>
@@ -149,6 +200,28 @@ const MyGroup = (props) => {
           </div>
         </div>
       </div>
+
+      <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Review</h1>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              <>
+                <form>
+                  <textarea className='form-control' value={review ? review : "No Reviews Yet"} />
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close" onClick={() => setReview('')}> Close</button>
+                  </div>
+                </form>
+              </>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
@@ -171,27 +244,37 @@ const MyGroup = (props) => {
             </div>
 
             <div className="last">
-              {
-                group.group.docs.map((grp, grpKey) => {
-                  return (
-                    <>
-                      <div className="review-box">
-                        <div>
-                          <h6>Review</h6>
-                          <div class="form-floating">
-                            <textarea class="form-control" cols="50" placeholder="" id="floatingTextarea" value={grp.review? grp.review: "No Reviews Yet"}></textarea>
-                          </div>
-                        </div>
-                        <div>
-                          {grp.docLink ? <a target='_blank' href={grp.docLink } style={{ textDecoration: "none" }}>View Uploaded Doc</a> : "Upload Documentation To See"}
+              <div className="meeting-row">
+                {group.group &&
+                  group.group.docs &&
+                  group.group.docs.length > 0 &&
+                  group.group.docs.map((grp, grpKey) => {
+                    return (
+                      <div className="meeting-box" key={grpKey + 1}>
+                        <style>{meetingStyle}</style>
+                        <div className="item">
+                          <a target="_blank" href={grp.docLink}>
+                            View Uploaded Doc
+                          </a>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal1"
+                            onClick={() => {
+                              setReview(grp.review)
+                            }}
+                          >
+                            Reviews
+                          </button>
                         </div>
                       </div>
-                    </>
-                  )
-                })
-              }
+                    );
+                  })}
+              </div>
             </div>
-            <div className="upload-btn">
+
+            <div className="d-flex justify-content-between">
+              <button className="btn btn-danger" onClick={requestMeeting}>Request Meeting</button>
               <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" disabled={group.group.finalSubmission && group.group.documentation}>Upload Document</button>
             </div>
           </> : <h1 className='text-center my-4'>You're currently not enrolled in any Group.</h1>

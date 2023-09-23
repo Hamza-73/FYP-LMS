@@ -10,6 +10,7 @@ const committeeSchema = new Schema({
   designation: { type: String, required: true },
   password: { type: String, required: true, minlength: 4 },
   isAdmin: { type: Boolean, default: false },
+  isLogin : {type : Boolean, default:true},
 });
 
 module.exports = mongoose.model('Committee', committeeSchema);
