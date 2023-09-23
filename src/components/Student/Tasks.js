@@ -11,19 +11,11 @@ const Tasks = (props) => {
   const [group, setGroupDetails] = useState({
     success: false,
     group: {
-      myDetail: [{ name: '', rollNo: '', myId: '' }],
-      groupId: '',
-      supervisor: '',
-      supervisorId: '',
-      projectTitle: '',
-      projectId: '',
-      groupMember: [{ userId: '', name: '', rollNo: '', _id: '' }],
-      proposal: false,
-      documentation: false,
-      docDate: '----',
-      propDate: '',
-      viva: '',
-      finalDate: '',
+      myDetail: [{ name: '', rollNo: '', myId: '' }], groupId: '',
+      supervisor: '', supervisorId: '', projectTitle: '',
+      projectId: '', groupMember: [{ userId: '', name: '', rollNo: '', _id: '' }],
+      proposal: false, documentation: false, docDate: '----', propDate: '',
+      viva: '', finalDate: '',
     },
   });
   const [loading, setLoading] = useState(false);
@@ -82,11 +74,11 @@ const Tasks = (props) => {
         });
         console.log('after fetch');
         const json = await response.json();
+        console.log('group detail is ', json);
         if (!json.success) {
           console.log('group response is ', response);
           console.log('json in not success is ', json.message);
         } else {
-          console.log('json in success is ', json.message);
           setGroupDetails(json);
         }
       } catch (error) {
@@ -212,7 +204,7 @@ const Tasks = (props) => {
                   <h1>Task Submission</h1>
                   <h4>Instructions:</h4>
                   <h6>Project Proposal</h6>
-                  <h6>Submit PDF Only, max size should be 3MB</h6>
+                  <h6>{group.group.instructions}</h6>
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Submission Status</div>
                     <div>{group.group.proposal ? 'Submitted' : 'Pending'}</div>
@@ -238,7 +230,7 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   {!group.group.proposal ? (
-                    <>
+                    <div className='boxes'>
                       <input
                         type="file"
                         onChange={(e) => handleFileChange(e)}
@@ -255,7 +247,7 @@ const Tasks = (props) => {
                       >
                         Add Proposal
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <div className="boxes text-center">
                       <a
@@ -276,7 +268,7 @@ const Tasks = (props) => {
                   <h1>Task Submission</h1>
                   <h4>Instructions:</h4>
                   <h6>Document Submission</h6>
-                  <h6>Submit PDF Only, max size should be 3MB</h6>
+                  <h6>{group.group.instructions}</h6>
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Submission Status</div>
                     <div>
@@ -300,7 +292,7 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   {!group.group.documentation ? (
-                    <>
+                    <div className='boxes'>
                       <input
                         type="file"
                         onChange={(e) => handleFileChange(e)}
@@ -317,8 +309,18 @@ const Tasks = (props) => {
                       >
                         Add Document
                       </button>
-                    </>
-                  ) : null}
+                    </div>
+                  ) : (
+                    <div className="boxes text-center">
+                      <a
+                        style={{ textDecoration: 'none', color: 'white' }}
+                        href={group.group.documentation}
+                        target="_blank"
+                      >
+                        View Uploaded Document
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -352,7 +354,7 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   {!group.group.finalDocument ? (
-                    <>
+                    <div className='boxes'>
                       <input
                         type="file"
                         onChange={(e) => handleFileChange(e)}
@@ -369,8 +371,18 @@ const Tasks = (props) => {
                       >
                         Add Final Document
                       </button>
-                    </>
-                  ) : null}
+                    </div>
+                  ) : (
+                    <div className="boxes text-center">
+                      <a
+                        style={{ textDecoration: 'none', color: 'white' }}
+                        href={group.group.proposal}
+                        target="_blank"
+                      >
+                        View Uploaded Final Doc
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -166,11 +166,11 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-   
+
     const projectRequest = supervisor.projectRequest.filter(request => request._id.equals(requestId));
     console.log('projectRequest is ', projectRequest)
     console.log('projectRequest is ', projectRequest.length)
-    
+
     if (projectRequest.length <= 0) {
       return res.status(404).json({ success: false, message: 'Project request not found' });
     }
@@ -197,244 +197,245 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
           type: "Important",
           message: `${supervisor.name} rejected your request, You cannot send request to this supervisor Anymore.`
         });
-        
-          console.log('check is ', check);
-          // Optionally, you can perform additional actions after the delete if needed.
-          if(check){
-            if(!check.supervisor){
-              let newCheck = await ProjectRequest.findByIdAndDelete(check._id);
-              console.log('deleting');
+
+        console.log('check is ', check);
+        // Optionally, you can perform additional actions after the delete if needed.
+        if (check) {
+          if (!check.supervisor) {
+            let newCheck = await ProjectRequest.findByIdAndDelete(check._id);
+            console.log('deleting');
           }
-        
-        await student.save();
-      }
 
-      // This line sends a response to the client.
-      return res.json({ success: true, message: 'Project request rejected successfully' });
-    }
-
-
-    // Check if a supervisor has slot or no
-    if (supervisor.slots <= 0) {
-      return res.status(400).json({ success: false, message: `You're slots are full` });
-    }
-
-    if (projectRequest.supervisor) {
-      const sup = await Supervisor.findById(projectRequest.supervisor);
-      return res.status(404).json({ success: false, message: `Project is already supervised by ${sup.name}` });
-    }
-
-    // console.log('ProjectRequest is 1 ', projectRequest);
-
-    const user = await User.findById(projectRequest[0].user);
-    if (user.isMember) {
-      return res.status(404).json({ success: false, message: 'Student is already in a group' })
-    }
-
-    if (action === 'accept') {
-      console.log('accept code starts');
-
-      // GetProjectDetail for Project Id
-      const projectDetail = await ProjectRequest.findById(projectRequest[0].project);
-
-      // Check if user is already in the group
-      if (projectDetail.status) {
-        return res.status(400).json({ success: false, message: `The students for this Project are already full` });
-      }
-
-
-      const findFirstExistingGroup = async (groupIds) => {
-        for (const groupId of groupIds) {
-          const group = await Group.findOne({
-            'projects.projectTitle': projectRequest.projectTitle
-          }).populate('supervisor projects.students');
-          if (group) {
-            return group; // Return the first existing group
-          }
+          await student.save();
         }
-        return false; // No existing group found
-      };
 
-      // Usage:
-      const supervisorGroups = supervisor.groups; // Assuming supervisor.groups is an array of group IDs
-      let group = await findFirstExistingGroup(supervisorGroups);
-      console.log('rewuqest exisists or not', group);
-      if (group) {
-        group.projects.map(async project => {
-          if (project.students.length < 2) {
-            project.students.push({
-              name: user.name, rollNo: user.rollNo, userId: user._id
-            });
-            user.group = group._id;
-            user.pendingRequests = [];
-            user.isMember = true;
-            const filteredRequest = supervisor.projectRequest.filter((request) => {
-              return !request.project.equals(projectDetail._id);
-            });
-
-            supervisor.projectRequest = filteredRequest;
-            projectDetail.students.push(user._id);
-            projectDetail.status = true;
-            user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
-            supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
-            await Promise.all([group.save(), user.save(), supervisor.save(), projectDetail.save()]);
-            return res.json({ success: true, message: "Accept requested and Student Added to Group" });
-          } else {
-            return res.status(500).json({ success: false, message: "The Group Is Already Filled" })
-          }
-
-        });
-
+        // This line sends a response to the client.
+        return res.json({ success: true, message: 'Project request rejected successfully' });
       }
 
-      if (!group) {
-        // Create the group document and obtain its ObjectId
-        const newGroup = new Group({ supervisor: supervisor.name, supervisorId: supervisor._id, projects: [], students: [] });
-        await newGroup.save();
-        group = newGroup._id; // Store the ObjectId of the new group
-        supervisor.groups.push(group);
+
+      // Check if a supervisor has slot or no
+      if (supervisor.slots <= 0) {
+        return res.status(400).json({ success: false, message: `You're slots are full` });
       }
 
-      // Find or create the relevant project in the group
-      const groupDoc = await Group.findById(group); // Fetch the group document
-      // console.log('Project', groupDoc.projects);
-      let project = groupDoc.projects.find(proj => proj.projectTitle === projectRequest.projectTitle);
-      if (!project) {
-        project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
-        groupDoc.projects.push(project);
+      if (projectRequest.supervisor) {
+        const sup = await Supervisor.findById(projectRequest.supervisor);
+        return res.status(404).json({ success: false, message: `Project is already supervised by ${sup.name}` });
       }
 
-      // Add the user to the project's students array
-      groupDoc.projects.map((group) => {
-        if (group.projectTitle === projectDetail.projectTitle) {
-          group.students.push({
-            name: user.name, rollNo: user.rollNo, userId: user._id
-          })
-          // console.log('After push')
-        }
-      });
+      // console.log('ProjectRequest is 1 ', projectRequest);
 
-      // Decrease supervisor group by one
-      supervisor.slots = supervisor.slots - 1;
-      projectDetail.students.push(user._id);
-      projectDetail.supervisor = (supervisor._id);
-      projectDetail.isAccepted = true;
-
-      if (projectDetail.students.length === 2) {
-        projectDetail.status = true;
-      }
-
-      // remove request from supervisor projectrequests
-      const filteredRequest = supervisor.projectRequest.filter((request) => {
-        return !request.project.equals(projectDetail._id);
-      });
-
-      supervisor.projectRequest = filteredRequest;
-
-      // Make user pending request zero and give him a notification
-      user.pendingRequests = [];
-      user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
-      supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
-
-
-      // console.log('Student is ', user)
-      // Add group id to user
-      user.group = groupDoc._id;
-      user.isMember = true;
-      // Save changes to supervisor and group
-      await Promise.all([supervisor.save(), groupDoc.save(), user.save(), projectDetail.save()]);
-
-      return res.json({ success: true, message: 'Project request accepted and user added to group' });
-
-    }
-
-    else if (action === 'improve') {
-      const { projectTitle, description, scope } = req.body;
-      console.log('improve starts')
-
+      const user = await User.findById(projectRequest[0].user);
       if (user.isMember) {
         return res.status(404).json({ success: false, message: 'Student is already in a group' })
       }
 
+      if (action === 'accept') {
+        console.log('accept code starts');
 
-      // GetProjectDetail for Project Id
-      const projectDetail = await ProjectRequest.findById(projectRequest.project);
-      // console.log("ProjectDetail is ", projectDetail);
+        // GetProjectDetail for Project Id
+        const projectDetail = await ProjectRequest.findById(projectRequest[0].project);
 
-      // Check if user is already in the group
-      if (projectDetail.status) {
-        return res.status(400).json({ success: false, message: `The students for this Project are already full` });
-      }
-
-      // Update the project details for the project request
-      projectDetail.projectTitle = projectTitle;
-      projectDetail.description = description;
-      projectDetail.scope = scope;
-
-      await projectDetail.save();
-
-      // Find or create the relevant group
-      let group = supervisor.groups.find(group => group.supervisor === supervisor.name);
-      if (!group) {
-        // Create the group document and obtain its ObjectId
-        const newGroup = new Group({ supervisor: supervisor.name, supervisorId: supervisor._id, projects: [], students: [] });
-        await newGroup.save();
-        group = newGroup._id; // Store the ObjectId of the new group
-        supervisor.groups.push(group);
-      }
-
-
-      // Find or create the relevant project in the group
-      const groupDoc = await Group.findById(group); // Fetch the group document
-      // console.log('Project', groupDoc.projects);
-      let project = groupDoc.projects.find(proj => proj.projectTitle === projectRequest.projectTitle);
-      if (!project) {
-        project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
-        groupDoc.projects.push(project);
-      }
-
-      // Add the user to the project's students array
-      groupDoc.projects.map((group) => {
-        if (group.projectTitle === projectDetail.projectTitle) {
-          group.students.push({
-            name: user.name,
-            rollNo: user.rollNo,
-            userId: user._id
-          })
-          // console.log('After push')
+        // Check if user is already in the group
+        if (projectDetail.status) {
+          return res.status(400).json({ success: false, message: `The students for this Project are already full` });
         }
-      });
-      // Decrease supervisor group by one
-      supervisor.slots = supervisor.slots - 1;
-      projectDetail.supervisor = supervisor._id;
-      projectDetail.students.push(user._id)
 
 
-      if (projectDetail.students.length === 2) {
-        projectDetail.status = true;
+        const findFirstExistingGroup = async (groupIds) => {
+          for (const groupId of groupIds) {
+            const group = await Group.findOne({
+              'projects.projectTitle': projectRequest.projectTitle
+            }).populate('supervisor projects.students');
+            if (group) {
+              return group; // Return the first existing group
+            }
+          }
+          return false; // No existing group found
+        };
+
+        // Usage:
+        const supervisorGroups = supervisor.groups; // Assuming supervisor.groups is an array of group IDs
+        let group = await findFirstExistingGroup(supervisorGroups);
+        console.log('rewuqest exisists or not', group);
+        if (group) {
+          group.projects.map(async project => {
+            if (project.students.length < 2) {
+              project.students.push({
+                name: user.name, rollNo: user.rollNo, userId: user._id
+              });
+              user.group = group._id;
+              user.pendingRequests = [];
+              user.isMember = true;
+              const filteredRequest = supervisor.projectRequest.filter((request) => {
+                return !request.project.equals(projectDetail._id);
+              });
+
+              supervisor.projectRequest = filteredRequest;
+              projectDetail.students.push(user._id);
+              projectDetail.status = true;
+              user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+              supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+              await Promise.all([group.save(), user.save(), supervisor.save(), projectDetail.save()]);
+              return res.json({ success: true, message: "Accept requested and Student Added to Group" });
+            } else {
+              return res.status(500).json({ success: false, message: "The Group Is Already Filled" })
+            }
+
+          });
+
+        }
+
+        if (!group) {
+          // Create the group document and obtain its ObjectId
+          const newGroup = new Group({ supervisor: supervisor.name, supervisorId: supervisor._id, projects: [], students: [] });
+          await newGroup.save();
+          group = newGroup._id; // Store the ObjectId of the new group
+          supervisor.groups.push(group);
+        }
+
+        // Find or create the relevant project in the group
+        const groupDoc = await Group.findById(group); // Fetch the group document
+        // console.log('Project', groupDoc.projects);
+        let project = groupDoc.projects.find(proj => proj.projectTitle === projectRequest.projectTitle);
+        if (!project) {
+          project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
+          groupDoc.projects.push(project);
+        }
+
+        // Add the user to the project's students array
+        groupDoc.projects.map((group) => {
+          if (group.projectTitle === projectDetail.projectTitle) {
+            group.students.push({
+              name: user.name, rollNo: user.rollNo, userId: user._id
+            })
+            // console.log('After push')
+          }
+        });
+
+        // Decrease supervisor group by one
+        supervisor.slots = supervisor.slots - 1;
+        projectDetail.students.push(user._id);
+        projectDetail.supervisor = (supervisor._id);
+        projectDetail.isAccepted = true;
+
+        if (projectDetail.students.length === 2) {
+          projectDetail.status = true;
+        }
+
+        // remove request from supervisor projectrequests
+        const filteredRequest = supervisor.projectRequest.filter((request) => {
+          return !request.project.equals(projectDetail._id);
+        });
+
+        supervisor.projectRequest = filteredRequest;
+
+        // Make user pending request zero and give him a notification
+        user.pendingRequests = [];
+        user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+        supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+
+
+        // console.log('Student is ', user)
+        // Add group id to user
+        user.group = groupDoc._id;
+        user.isMember = true;
+        // Save changes to supervisor and group
+        await Promise.all([supervisor.save(), groupDoc.save(), user.save(), projectDetail.save()]);
+
+        return res.json({ success: true, message: 'Project request accepted and user added to group' });
+
       }
-      // remove request from supervisor projectrequests
-      const filteredRequest = supervisor.projectRequest.filter((request) => {
-        return !request.project.equals(projectDetail._id);
-      });
 
-      supervisor.projectRequest = filteredRequest;
+      else if (action === 'improve') {
+        const { projectTitle, description, scope } = req.body;
+        console.log('improve starts')
 
-      // Make user pending request zero and give him a notification
-      user.pendingRequests = [];
-      user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
-      supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+        if (user.isMember) {
+          return res.status(404).json({ success: false, message: 'Student is already in a group' })
+        }
 
-      // console.log('Student is ', user)
-      // Add group id to user
-      user.group = groupDoc._id;
-      user.isMember = true;
-      // Save changes to supervisor and group
-      await Promise.all([supervisor.save(), groupDoc.save(), user.save(), projectDetail.save()]);
 
-      res.json({ success: true, message: 'Project request improved and accepted and user added to group' });
+        // GetProjectDetail for Project Id
+        const projectDetail = await ProjectRequest.findById(projectRequest.project);
+        // console.log("ProjectDetail is ", projectDetail);
 
-    }}
+        // Check if user is already in the group
+        if (projectDetail.status) {
+          return res.status(400).json({ success: false, message: `The students for this Project are already full` });
+        }
+
+        // Update the project details for the project request
+        projectDetail.projectTitle = projectTitle;
+        projectDetail.description = description;
+        projectDetail.scope = scope;
+
+        await projectDetail.save();
+
+        // Find or create the relevant group
+        let group = supervisor.groups.find(group => group.supervisor === supervisor.name);
+        if (!group) {
+          // Create the group document and obtain its ObjectId
+          const newGroup = new Group({ supervisor: supervisor.name, supervisorId: supervisor._id, projects: [], students: [] });
+          await newGroup.save();
+          group = newGroup._id; // Store the ObjectId of the new group
+          supervisor.groups.push(group);
+        }
+
+
+        // Find or create the relevant project in the group
+        const groupDoc = await Group.findById(group); // Fetch the group document
+        // console.log('Project', groupDoc.projects);
+        let project = groupDoc.projects.find(proj => proj.projectTitle === projectRequest.projectTitle);
+        if (!project) {
+          project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
+          groupDoc.projects.push(project);
+        }
+
+        // Add the user to the project's students array
+        groupDoc.projects.map((group) => {
+          if (group.projectTitle === projectDetail.projectTitle) {
+            group.students.push({
+              name: user.name,
+              rollNo: user.rollNo,
+              userId: user._id
+            })
+            // console.log('After push')
+          }
+        });
+        // Decrease supervisor group by one
+        supervisor.slots = supervisor.slots - 1;
+        projectDetail.supervisor = supervisor._id;
+        projectDetail.students.push(user._id)
+
+
+        if (projectDetail.students.length === 2) {
+          projectDetail.status = true;
+        }
+        // remove request from supervisor projectrequests
+        const filteredRequest = supervisor.projectRequest.filter((request) => {
+          return !request.project.equals(projectDetail._id);
+        });
+
+        supervisor.projectRequest = filteredRequest;
+
+        // Make user pending request zero and give him a notification
+        user.pendingRequests = [];
+        user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted you're proposal for ${projectDetail.projectTitle}` })
+        supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${projectDetail.projectTitle} you have now slots left : ${supervisor.slots}` })
+
+        // console.log('Student is ', user)
+        // Add group id to user
+        user.group = groupDoc._id;
+        user.isMember = true;
+        // Save changes to supervisor and group
+        await Promise.all([supervisor.save(), groupDoc.save(), user.save(), projectDetail.save()]);
+
+        res.json({ success: true, message: 'Project request improved and accepted and user added to group' });
+
+      }
+    }
   } catch (err) {
     console.error('Error accepting project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -867,6 +868,34 @@ router.post('/mark-notification-seen/:notificationIndex', authenticateUser, asyn
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/reviews/:groupId/:index', authenticateUser, async (req, res) => {
+  try {
+    const { groupId, index } = req.params;
+    const { review } = req.body;
+    const supervisor = await Supervisor.findById(req.user.id);
+    if (!supervisor) {
+      return res.status(404).json({ message: 'Supervisor not found' });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    if(!group.docs[index]){
+      return res.json({message:"invalid index"})
+    }
+    group.docs[index].review = review;
+    await group.save();
+
+    return res.json({ success: true, message: `Reviews Given Sucessfully` });
+
+  } catch (error) {
+    console.error('error in giving reviw', error);
+    return res.json({ message: "Internal Server Error" });
   }
 });
 

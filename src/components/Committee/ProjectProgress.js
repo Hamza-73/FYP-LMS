@@ -9,7 +9,7 @@ import Loading from '../Loading';
 const ProjectProgress = (props) => {
   const [group, setGroup] = useState({ groups: [] });
   const [selectedGroupId, setSelectedGroupId] = useState('');
-  const [deadline, setdeadline] = useState({ dueDate: '', type: '' });
+  const [deadline, setdeadline] = useState({ dueDate: '', type: '', instructions: '' });
 
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +44,7 @@ const ProjectProgress = (props) => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ dueDate: deadline.date, type: deadline.type })
+        body: JSON.stringify({ dueDate: deadline.date, type: deadline.type, instructions: deadline.instructions })
       });
       const json = await response.json();
       if (json)
@@ -95,8 +95,12 @@ const ProjectProgress = (props) => {
                       <label htmlFor="remrks" className="form-label">date</label>
                       <input type='date' className="form-control" id="date" name='date' value={deadline.date} onChange={handleChange} />
                     </div>
+                    <div className="mb-3">
+                      <label htmlFor="remrks" className="form-label">Instructions</label>
+                      <textarea type='text' className="form-control" id="instructions" name='instructions' value={deadline.instructions} onChange={handleChange} />
+                    </div>
                     <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={(e) => { setdeadline({ type: "", dueDate: "" }); setSelectedGroupId('') }}>Close</button>
+                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={(e) => { setdeadline({ type: "", dueDate: "", instructions: "" }); setSelectedGroupId('') }}>Close</button>
                       <button type="submit" className="btn btn-success" disabled={!deadline.type || !deadline.date}> Add deadline </button>
                     </div>
                   </form>

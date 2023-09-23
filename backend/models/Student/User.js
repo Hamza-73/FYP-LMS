@@ -43,10 +43,6 @@ const userSchema = new Schema({
   },
   meetingDate: { type: Date },
   requests: { type: Array, default: [] },
-  docs: [{
-    docLink: { type: String },
-    review: { type: String }
-  }],
   rejectedRequest: [{ type: Schema.Types.ObjectId, ref: 'Supervisor' }]
 });
 

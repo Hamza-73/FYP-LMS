@@ -78,14 +78,12 @@ const MyGroup = (props) => {
         console.log('No file selected.');
         return;
       }
-      console.log('type is ', type)
       const formData = new FormData();
-      formData.append('type', type); // Add the 'type' field to the FormData object
-      formData.append(type, file); // Make sure to match the field name with your backend route
+      formData.append('doc', file); // Make sure to match the field name with your backend route
 
       console.log('form data is ', formData);
 
-      const response = await fetch('http://localhost:5000/student/upload', {
+      const response = await fetch('http://localhost:5000/student/doc', {
         method: 'POST',
         headers: {
           Authorization: localStorage.getItem('token'),
@@ -138,26 +136,7 @@ const MyGroup = (props) => {
             </div>
             <div className="modal-body">
               <>
-                <form onSubmit={(e) => upload(e, type)}>
-                  <div className="mb-3">
-                    <label htmlFor="documentType" className="form-label">Type of Document</label>
-                    <select
-                      className="form-control"
-                      id="documentType"
-                      name="documentType"
-                      value={type}
-                      onChange={(e) => {
-                        console.log('Selected type:', e.target.value);
-                        setType(e.target.value);
-                      }}
-                    >
-                      <option value="">Select Type</option>
-                      <option value="documentation">Documentation</option>
-                      <option value="final">Final Submission</option>
-                    </select>
-
-                  </div>
-
+                <form onSubmit={upload}>
                   <input type="file" onChange={(e) => { handleFileChange(e) }} />
                   <div className="modal-footer">
                     <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>
@@ -192,27 +171,25 @@ const MyGroup = (props) => {
             </div>
 
             <div className="last">
-              <div className="review-box">
-                <div>
-                  <h6>Review</h6>
-                  <div class="form-floating">
-                    <textarea class="form-control" cols="50" placeholder="" id="floatingTextarea"></textarea>
-                  </div>
-                </div>
-                <div>
-                  {group.group.documentation ? <a target='_blank' href={group.group.documentation} style={{ textDecoration: "none" }}>View Uploaded Documentation</a> : "Upload Documentation To See"}
-                </div>
-              </div><div className="review-box">
-                <div>
-                  <h6>Review</h6>
-                  <div class="form-floating">
-                    <textarea class="form-control" cols="50" placeholder="" id="floatingTextarea"></textarea>
-                  </div>
-                </div>
-                <div>
-                  {group.group.finalSubmission ? <a target='_blank' href={group.group.finalSubmission} style={{ textDecoration: "none" }}>View Uploaded Final Submission</a> : "Upload Final Submission To See"}
-                </div>
-              </div>
+              {
+                group.group.docs.map((grp, grpKey) => {
+                  return (
+                    <>
+                      <div className="review-box">
+                        <div>
+                          <h6>Review</h6>
+                          <div class="form-floating">
+                            <textarea class="form-control" cols="50" placeholder="" id="floatingTextarea" value={grp.review? grp.review: "No Reviews Yet"}></textarea>
+                          </div>
+                        </div>
+                        <div>
+                          {grp.docLink ? <a target='_blank' href={grp.docLink } style={{ textDecoration: "none" }}>View Uploaded Doc</a> : "Upload Documentation To See"}
+                        </div>
+                      </div>
+                    </>
+                  )
+                })
+              }
             </div>
             <div className="upload-btn">
               <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" disabled={group.group.finalSubmission && group.group.documentation}>Upload Document</button>

@@ -379,7 +379,7 @@ router.get('/progress', async (req, res) => {
 // Add due date
 router.post('/dueDate', async (req, res) => {
   try {
-    const { type, dueDate } = req.body;
+    const { type, dueDate, instructions } = req.body;
     const currentDate = new Date();
     // Validate if the due date is not behind the current date
     if (new Date(dueDate) < currentDate) {
@@ -392,19 +392,19 @@ router.post('/dueDate', async (req, res) => {
       return res.status(404).json({ message: "Groups Not Found" });
     }
 
-    if( (type==='documentation' || type==='final') && !groups.propDate ){
+    if( (type==='documentation' || type==='final') && !groups[0].propDate ){
       return res.status(500).json({ success:false, message: "Due Date For Propsal Has Not been announced Yet."});
     }
 
-    else if((type==='documentation' || type==='final') && groups.propDate> currentDate  ){
+    else if((type==='documentation' || type==='final') && groups[0].propDate> currentDate  ){
       return res.status(500).json({ success:false, message: "Due Date For Propsal is not ended yet."});
     }
     
-    else if( type==='final' && !groups.docDate){
+    else if( type==='final' && !groups[0].docDate){
       return res.status(500).json({ success:false, message: "Due Date For Documentation Has Not been announced Yet."});
     }
 
-    else if ( (type==='final') && groups.docDate> currentDate  ){
+    else if ( (type==='final') && groups[0].docDate> currentDate  ){
       return res.status(500).json({ success:false, message: "Due Date For Documentation is not ended yet."});
     }
 
@@ -432,6 +432,7 @@ router.post('/dueDate', async (req, res) => {
             stu.finalDate = dueDate;
             console.log('final');
           }
+          group.instructions = instructions ;
           stu.unseenNotifications.push({
             type: "Important",
             message: `Deadline for ${type[0].toUpperCase() + type.slice(1, type.length)} has been added ${dueDate}`

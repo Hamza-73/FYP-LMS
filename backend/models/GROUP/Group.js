@@ -37,7 +37,8 @@ const groupSchema = new Schema({
   docs: [{
     docLink: { type: String },
     review: { type: String }
-  }]
+  }],
+  instructions : {type: String}
 });
 
 module.exports = mongoose.model('Group', groupSchema);
