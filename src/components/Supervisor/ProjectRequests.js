@@ -45,9 +45,12 @@ const ProjectRequests = (props) => {
   const handleRequests = async (e) => {
     try {
       if(choice.action==='improve'){
+        console.log('improve starts');
         e.preventDefault();
       }
       console.log('request is started');
+      console.log('choice is ', choice);
+      console.log('improve', improve)
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/supervisor/accept-project-request/${choice.id}/${choice.action}`, {
         method: 'PUT',
@@ -59,6 +62,7 @@ const ProjectRequests = (props) => {
           projectTitle: improve.projectTitle, scope: improve.scope, description: improve.description 
         })
       });
+      console.log('after fetch')
 
       console.log('Response status:', response.status);
       const json = await response.json();
@@ -89,7 +93,7 @@ const ProjectRequests = (props) => {
                 <h5 className="modal-title">Register</h5>
               </div>
               <div className="modal-body">
-                <form onSubmit={(e) => { handleRequests(e); }}>
+                <form onSubmit={handleRequests}>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Project Title</label>
                     <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
@@ -105,7 +109,7 @@ const ProjectRequests = (props) => {
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }} disabled={!improve.projectTitle || !improve.scope || !improve.description}>
-                      Add Idea
+                      Improve Request
                     </button>
                   </div>
                 </form>

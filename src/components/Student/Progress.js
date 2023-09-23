@@ -46,6 +46,7 @@ const Progress = (props) => {
             });
             const json = await response.json();
             if (json.success && json.message) {
+                handleClose();
                 NotificationManager.success(json.message);
             } else {
                 NotificationManager.error(json.message);
@@ -121,6 +122,13 @@ const Progress = (props) => {
         }
     }, [groupDetails]);
 
+    const handleClose = () => {
+        setRequest({
+            username: '', projectTitle: '',
+            description: '', scope: '', status: false,
+        });
+    }
+
 
     return (
         <>
@@ -133,7 +141,7 @@ const Progress = (props) => {
                                     <h1 className="modal-title fs-5" id="exampleModalLabel">
                                         Your Request
                                     </h1>
-                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={handleClose}></button>
                                 </div>
                                 <div className="modal-body">
                                     <>
@@ -169,7 +177,9 @@ const Progress = (props) => {
                                                 </div>
                                             </div>
                                             <div className="modal-footer">
-                                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"
+                                            onClick={handleClose}
+                                            > Close</button>
                                                 <button type="submit"
                                                     className="btn"
                                                     style={{ background: 'maroon', color: 'white' }}

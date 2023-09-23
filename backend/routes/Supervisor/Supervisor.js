@@ -156,10 +156,11 @@ router.put('/edit/:id', async (req, res) => {
 
 // Supervisor accepts a user's project request and adds user to the relevant group
 router.put('/accept-project-request/:requestId/:action', authenticateUser, async (req, res) => {
-  const { requestId, action } = req.params;
-
+  
   try {
+    const { requestId, action } = req.params;
     const supervisorId = req.user.id;
+    console.log('action is ', action)
     const supervisor = await Supervisor.findById(supervisorId).populate('projectRequest');
 
     if (!supervisor) {
@@ -169,13 +170,12 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
     const projectRequest = supervisor.projectRequest.filter(request => request._id.equals(requestId));
     console.log('projectRequest is ', projectRequest)
     console.log('projectRequest is ', projectRequest.length)
-
+    console.log('request id is ', requestId)
     if (projectRequest.length <= 0) {
       return res.status(404).json({ success: false, message: 'Project request not found' });
     }
 
     const check = await ProjectRequest.findById(projectRequest[0].project);
-
     if (action === 'reject') {
       console.log('Reject code starts');
 
@@ -211,6 +211,8 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         // This line sends a response to the client.
         return res.json({ success: true, message: 'Project request rejected successfully' });
       }
+      
+    }
 
 
       // Check if a supervisor has slot or no
@@ -229,6 +231,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
       if (user.isMember) {
         return res.status(404).json({ success: false, message: 'Student is already in a group' })
       }
+      
 
       if (action === 'accept') {
         console.log('accept code starts');
@@ -346,19 +349,17 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         return res.json({ success: true, message: 'Project request accepted and user added to group' });
 
       }
-
       else if (action === 'improve') {
         const { projectTitle, description, scope } = req.body;
-        console.log('improve starts')
+        console.log('improve starts');
 
         if (user.isMember) {
           return res.status(404).json({ success: false, message: 'Student is already in a group' })
         }
 
-
         // GetProjectDetail for Project Id
-        const projectDetail = await ProjectRequest.findById(projectRequest.project);
-        // console.log("ProjectDetail is ", projectDetail);
+        const projectDetail = await ProjectRequest.findById(projectRequest[0].project);
+        console.log("ProjectDetail is ", projectDetail);
 
         // Check if user is already in the group
         if (projectDetail.status) {
@@ -385,7 +386,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
 
         // Find or create the relevant project in the group
         const groupDoc = await Group.findById(group); // Fetch the group document
-        // console.log('Project', groupDoc.projects);
+        console.log('Project', groupDoc.projects);
         let project = groupDoc.projects.find(proj => proj.projectTitle === projectRequest.projectTitle);
         if (!project) {
           project = { projectTitle: projectDetail.projectTitle, projectId: requestId, students: [] };
@@ -400,7 +401,7 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
               rollNo: user.rollNo,
               userId: user._id
             })
-            // console.log('After push')
+            console.log('After push')
           }
         });
         // Decrease supervisor group by one
@@ -434,7 +435,6 @@ router.put('/accept-project-request/:requestId/:action', authenticateUser, async
         res.json({ success: true, message: 'Project request improved and accepted and user added to group' });
 
       }
-    }
   } catch (err) {
     console.error('Error accepting project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -551,11 +551,11 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
       date: new Date()
     });
     await supervisor.save();
-    res.json({ success: true, message: 'Project idea sent and users notified' });
+    return res.json({ success: true, message: 'Project idea sent and users notified' });
 
   } catch (err) {
     console.error('Error sending project idea:', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
@@ -577,7 +577,7 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
         if (userObj) {
           const projectObj = await ProjectRequest.findById(request.project);
           if (projectObj) {
-            console.log('project obj is ', projectObj);
+            // console.log('project obj is ', projectObj);
             requests.push({
               requestId: request._id, projectId: projectObj._id, projectTitle: projectObj.projectTitle,
               scope: projectObj.scope, description: projectObj.description, studentName: userObj.name,
@@ -607,7 +607,7 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
         });
       }
     });
-    console.log('Group requests is ', groupedRequests)
+    // console.log('Group requests is ', groupedRequests)
     // Filter out requests where projectRequest.students is empty or undefined
     const filteredRequests = groupedRequests.filter(group => group.studentDetails.length > 0);
 

@@ -37,6 +37,7 @@ const Groups = (props) => {
       else {
         NotificationManager.error(json.message);
       }
+      handleClose();
     } catch (error) {
       console.log('error in adding student', error);
       NotificationManager.error('Some Error ocurred Try/Again');
@@ -61,6 +62,7 @@ const Groups = (props) => {
 
       if(json.success){
         NotificationManager.success(json.message);
+        handleClose();
       }
       else{
         NotificationManager.error(json.message);
@@ -103,8 +105,11 @@ const Groups = (props) => {
     setAddStudent({ ...addStudent, [e.target.name]: e.target.value });
   };
 
-
-
+  const handleClose = () => {
+    setAddStudent({ rollNo: '', projectTitle: '', });
+    setGrades({external:0, marks:0});
+  }
+  
   return (
     <div>
       <div className="fypIdea">
@@ -125,7 +130,7 @@ const Groups = (props) => {
                     <input type="text" className="form-control" id="external" name="external" value={grades.external} onChange={handleChange1} />
                   </div>
                   <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={handleClose}>Close</button>
                     <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external}>
                       Give Grades
                     </button>
@@ -155,11 +160,7 @@ const Groups = (props) => {
                     <input type="text" className="form-control" id="rollNo" name="rollNo" value={addStudent.rollNo} onChange={handleChange} />
                   </div>
                   <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
-                      setAddStudent({
-                        projectTitle: "", rollNo: ""
-                      })
-                    }}>Close</button>
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={handleClose}>Close</button>
                     <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} >
                       Add Student
                     </button>

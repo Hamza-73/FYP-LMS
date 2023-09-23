@@ -412,6 +412,9 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
+    if(supervisor.slots<=0){
+      return res.status(500).json({ success: false, message: 'Supervisor Slots Are full' });
+    }
 
     // check if supervisor has rejected his request before
     const rejectedRequests = user.rejectedRequest.filter(request => {
