@@ -127,11 +127,12 @@ const FypIdeas = () => {
     }, []);
 
 
-    const sendRequest = async () => {
+    const sendRequest = async (title) => {
         try {
-            console.log('project is ', projectTitle)
+            console.log('project is ', title)
+            const encodedTitle = encodeURIComponent(title)
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/student/request-to-join/${projectTitle}`, {
+            const response = await fetch(`http://localhost:5000/student/request-to-join/${encodedTitle}`, {
                 method: "POST",
                 headers: {
                     "Authorization": token
@@ -248,7 +249,7 @@ const FypIdeas = () => {
                                                         <td>{group.projectDetails.scope}</td>
                                                         <td>{group.projectDetails.description}</td>
                                                         <td><button type='button' className='btn btn-sm' disabled={groupDetails.group.groupId || group.supervisor === null} style={{ background: "maroon", color: "white" }} onClick={() => {
-                                                            setProject(group.projectDetails.projectTitle); sendRequest();
+                                                            setProject(group.projectDetails.projectTitle); sendRequest(group.projectDetails.projectTitle);
                                                         }}>request to join</button></td>
                                                     </tr>
                                                 ))}

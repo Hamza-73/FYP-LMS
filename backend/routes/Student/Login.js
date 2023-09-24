@@ -507,13 +507,13 @@ router.post('/request-to-join/:projectTitle', authenticateUser, async (req, res)
 
     const projectRequest = await ProjectRequest.findOne({ projectTitle: projectTitle });
     if (!projectRequest) {
-      return res.status(404).json({ success: false, message: 'Project request not found' });
+      return res.status(404).json({ success: false, message: 'Project Request not found' });
     }
 
     // console.log('project request in sending request is ', projectRequest.supervisor)
     const supervisor = await Supervisor.findById(projectRequest.supervisor);
     if (!supervisor) {
-      return res.status(404).json({ success: false, message: 'Supervisor not found' });
+      return res.status(404).json({ success: false, message: 'Supervisors not found' });
     }
 
     // check if supervisor has rejected his request before
