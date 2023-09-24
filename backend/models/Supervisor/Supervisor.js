@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const supervisorSchema = new Schema({
   name: { type: String, required: true },
   username: { type: String, required: true, unique: true },
-  email : {type : String, unique: true},
+  email: { type: String, unique: true },
   designation: { type: String, required: true },
   department: { type: String, required: true },
   slots: { type: Number, required: true },
@@ -26,7 +26,7 @@ const supervisorSchema = new Schema({
   }],
 
   meeting: [{ type: Schema.Types.ObjectId, ref: 'Meeting' }],
-  isLogin : {type : Boolean, default:true},
+  isLogin: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Supervisor', supervisorSchema);

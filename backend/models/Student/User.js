@@ -36,6 +36,7 @@ const userSchema = new Schema({
     match: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, // Validate as HH:mm format
   },
   isLogin : {type : Boolean, default:true},
+  login: {type : Number , default : 0},
   meetingId: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
   meetingTime: {

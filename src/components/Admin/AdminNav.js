@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import image1 from '../images/logo.png'
+import image1 from '../../images/logo.png'
 import axios from 'axios'
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 
-const SideBar = (props) => {
+const AdminNav = (props) => {
     let history = useNavigate()
     const handleLogout = () => {
         localStorage.removeItem('token')
@@ -86,38 +86,15 @@ const SideBar = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link5}`}>{props.title5}</Link>
                             </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link6}`}>{props.title6}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link7}`}>{props.title7}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link00}`}>{props.title00}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link01}`}>{props.title01}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link02}`}>{props.title02}</Link>
-                            </li>
-                            {/* <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link8}`}>{props.title8}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link9}`}>{props.title9}</Link>
-                            </li> */}
                             <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     {props.title0}
                                 </Link>
-                                <div className={props.hide}>
                                 <ul className={`dropdown-menu`}>
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link8}`}>{props.title8}</Link></li>
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link9}`}>{props.title9}</Link></li>
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link10}`}>{props.title10}</Link></li>
                                 </ul>
-                                </div>
                             </li>
                         </ul>
                         <form className={`d-flex ${!localStorage.getItem('token') ? 'd-none' : ''} `} role="search">
@@ -144,10 +121,10 @@ const SideBar = (props) => {
         </>
     )
 }
-SideBar.defaultProps = {
+AdminNav.defaultProps = {
     title5: "" , title6: "" , title7: "" , title8: "",
     title00: "", title01: "", title02: "", link5: "/",
     link6: "/", link7: "/", link8: "/", link00: "/", link01: "/",
     link01: "/",
 }
-export default SideBar
+export default AdminNav

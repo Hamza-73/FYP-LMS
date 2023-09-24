@@ -11,6 +11,7 @@ var jwt = require("jsonwebtoken");
 const Group = require('../../models/GROUP/Group')
 const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 const Meeting = require('../../models/Meeting');
+const Admin = require('../../models/Admin');
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -84,14 +85,28 @@ router.post('/reset-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+    if(user.isLogin){
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(newPassword, salt);
+      user.password = secPass;
+      user.isLogin = false ;
+      await user.save();
+      return res.status(200).json({ success: true, message: 'Password reset successful' });
+    }
+    const admins = await Admin.find();
+    Array.from(admins).forEach(async element => {
+      element.supRequests.push({
+        userId : user._id,
+        name : user.name,
+        designation: user.designation
+      });
+      await element.save();
+    });
+    return res.json({ success:true, message:"Request to Recover has been sent to Admin."})
 
-
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(newPassword, salt);
-    user.password = secPass;
-    await user.save();
-    res.status(200).json({ success: true, message: 'Password reset successful' });
+    
   } catch (err) {
+    console.error('error reseting password', err)
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });

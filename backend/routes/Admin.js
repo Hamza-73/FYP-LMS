@@ -4,10 +4,11 @@ const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 JWT_KEY = 'hamzakhan1'
 const jwt = require('jsonwebtoken');
-
 const Admin = require('../models/Admin'); // Import the Admin model
 const Committee = require('../models/Committee'); // Import the Admin model
-const authenticateUser = require('../middleware/auth')
+const authenticateUser = require('../middleware/auth');
+const User = require('../models/Student/User');
+const Supervisor = require('../models/Supervisor/Supervisor');
 
 // Registration route for admins
 router.post('/register', [
@@ -17,7 +18,7 @@ router.post('/register', [
     body('email', 'Enter a valid email address').isEmail(),
     body('password', 'Password must be at least 4 characters').isLength({ min: 4 }),
 ], async (req, res) => {
-    const { fname, lname ,username, email, password } = req.body;
+    const { fname, lname, username, email, password } = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -109,8 +110,8 @@ router.post('/make-admin', async (req, res) => {
         if (!committeeMember) {
             return res.status(404).json({ success: false, message: "Committee member not found" });
         }
-        if(committeeMember.isAdmin){
-            return res.status(201).json({success:true , message:"Committee Member is Already Admin"});
+        if (committeeMember.isAdmin) {
+            return res.status(201).json({ success: true, message: "Committee Member is Already Admin" });
         }
 
         // Update the committee member's role to "admin"
@@ -162,14 +163,14 @@ router.delete('/delete/:id', async (req, res) => {
 
     try {
         const admin = await Admin.findByIdAndDelete(id);
-        if(!admin){
+        if (!admin) {
             const committee = await Committee.findById(id);
-            if(committee){
-                committee.isAdmin = false ;
+            if (committee) {
+                committee.isAdmin = false;
                 await committee.save();
-                return res.json({success:true, message:"Admin Deleted Successfully"});
-            }else{
-                return res.json({ success:false, message:"Admin Not Found"})
+                return res.json({ success: true, message: "Admin Deleted Successfully" });
+            } else {
+                return res.json({ success: false, message: "Admin Not Found" })
             }
         }
         res.json({ message: 'Admin deleted' });
@@ -188,20 +189,20 @@ router.put('/edit/:id', async (req, res) => {
         const updatedAdmin = await Admin.findByIdAndUpdate(
             id, updatedDetail, { new: true }
         );
-        if(!updatedAdmin){
+        if (!updatedAdmin) {
             const committeeMember = await Committee.findByIdAndUpdate(
-                 id , updatedDetail , { new : true }
+                id, updatedDetail, { new: true }
             );
-            if(committeeMember){
+            if (committeeMember) {
                 await committeeMember.save();
                 console.log('comiitte edited')
-                return res.json({ success: true, message : "Edited Sucessfully"});
-            }else{
+                return res.json({ success: true, message: "Edited Sucessfully" });
+            } else {
                 return res.status(404).json({ message: 'Admin Not Found' });
             }
         }
         await updatedAdmin.save();
-        return res.json({ success: true, message : "Edited Sucessfully"});
+        return res.json({ success: true, message: "Edited Sucessfully" });
     } catch (error) {
         console.error('error is ', error)
         res.status(500).json({ message: 'Internal Server Error' });
@@ -212,7 +213,7 @@ router.put('/edit/:id', async (req, res) => {
 router.get('/get-members', async (req, res) => {
     try {
         const allAdmins = await Admin.find();
-        const committeeMembers = await Committee.find({ isAdmin: true  });
+        const committeeMembers = await Committee.find({ isAdmin: true });
 
         // Merge admin and committee members into the members array
         const members = [...allAdmins, ...committeeMembers];
@@ -231,5 +232,113 @@ router.get('/get-members', async (req, res) => {
     }
 });
 
+router.put('/give-permission/:userId', authenticateUser, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const admin = Admin.findById(req.user.id);
+        if (!admin) {
+            res.status(404).json({ message: 'Admin Not Found' });
+        }
+        const user = await User.findById(userId);
+        if (user) {
+            console.log('user');
+            user.isLogin = true;
+            user.unseenNotifications.push({
+                type: "Important",
+                message: "You have been given permission",
+            })
+            await user.save();
+            const allAdmins = await Admin.find();
+            Array.from(allAdmins).forEach(async admin => {
+                const filterRequests = admin.requests.filter(req => {
+                    return !req.userId.equals(user._id);
+                });
+                admin.requests = filterRequests;
+                await admin.save();
+            });
+            return res.json({ success: true, message: `Permission for password reset has been given to ${user.name}` });
+        }
+        const supervisor = await Supervisor.findById(userId);
+        if (supervisor) {
+            console.log('supervisor');
+            supervisor.isLogin = true;
+            supervisor.unseenNotifications.push({
+                type: "Important",
+                message: "You have been given permission",
+            })
+            await supervisor.save();
+            const allAdmins = await Admin.find();
+            Array.from(allAdmins).forEach(async admin => {
+                const filterRequests = admin.supRequests.filter(req => {
+                    return !req.userId.equals(supervisor._id);
+                });
+                admin.supRequests = filterRequests;
+                await admin.save();
+            });
+            return res.json({ success: true, message: `Permission for password reset has been given to ${supervisor.name}` });
+        }
+        const committee = await Committee.findById(userId);
+        if (committee) {
+            console.log('committe')
+            committee.isLogin = true;
+            await committee.save();
+            const allAdmins = await Admin.find();
+            Array.from(allAdmins).forEach(async admin => {
+                const filterRequests = admin.CumRequests.filter(req => {
+                    return !req.userId.equals(committee._id);
+                });
+                admin.CumRequests = filterRequests;
+                await admin.save();
+            });
+            return res.json({ success: true, message: `Permission for password reset has been given to ${committee.fname + ' ' + committee.lname}` });
+        }
+        return res.json({message:"User Not Found"});
+
+    } catch (error) {
+        console.error('error giving permission', error);
+        res.json({ message: "Internal Server Error" });
+    }
+});
+
+router.get('/get-student-requests', authenticateUser, async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id);
+        if (!admin) {
+            res.status(404).json({ message: "Admin Not Found" });
+        }
+        const requests = admin.requests;
+        return res.json({ success: true, requests });
+    } catch (error) {
+        console.error('error getting requests', error);
+        res.json({ message: "Internal Server Error" });
+    }
+});
+router.get('/get-committee-requests', authenticateUser, async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id);
+        if (!admin) {
+            res.status(404).json({ message: "Admin Not Found" });
+        }
+        const requests = admin.CumRequests;
+        return res.json({ success: true, requests });
+    } catch (error) {
+        console.error('error getting requests', error);
+        res.json({ message: "Internal Server Error" });
+    }
+});
+
+router.get('/get-sup-requests', authenticateUser, async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id);
+        if (!admin) {
+            res.status(404).json({ message: "Admin Not Found" });
+        }
+        const requests = admin.supRequests;
+        return res.json({ success: true, requests });
+    } catch (error) {
+        console.error('error getting requests', error);
+        res.json({ message: "Internal Server Error" });
+    }
+});
 
 module.exports = router;  

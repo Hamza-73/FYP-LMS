@@ -11,7 +11,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authenticateUser = require('../../middleware/auth')
 const JWT_KEY = 'hamzakhan1'
-const SharedRules = require('../../models/SharedRules')
+const SharedRules = require('../../models/SharedRules');
+const Admin = require('../../models/Admin');
 
 
 // Registration route
@@ -23,7 +24,7 @@ router.post('/register', [
   body('designation', 'Designation cannot be left blank').exists(),
   body('password', 'Password must be at least 4 characters').isLength({ min: 4 }),
 ], async (req, res) => {
-  const { fname, lname, username, department, designation, password , email } = req.body;
+  const { fname, lname, username, department, designation, password, email } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -40,7 +41,7 @@ router.post('/register', [
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
       // Create a new user if the username is unique
-      const newUser = new Committee({ fname, lname, username, department, designation, password: secPass , email });
+      const newUser = new Committee({ fname, lname, username, department, designation, password: secPass, email });
       await newUser.save();
       const data = {
         user: {
@@ -102,11 +103,26 @@ router.post('/reset-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(newPassword, salt);
-    user.password = secPass;
-    await user.save();
-    res.status(200).json({ success: true, message: 'Password reset successful' });
+    if (user.isLogin) {
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(newPassword, salt);
+      user.password = secPass;
+      user.isLogin = false;
+      await user.save();
+      res.status(200).json({ success: true, message: 'Password reset successful' });
+    }
+
+    const admins = await Admin.find();
+    Array.from(admins).forEach(async element => {
+      console.log('element', element);
+      element.CumRequests.push({
+        userId: user._id,
+        name: user.fname + ' ' + user.lname,
+        designation: user.designation
+      });
+      await element.save();
+    });
+    return res.json({ success: true, message: "Request to Recover has been sent to Admin." })
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
@@ -392,20 +408,20 @@ router.post('/dueDate', async (req, res) => {
       return res.status(404).json({ message: "Groups Not Found" });
     }
 
-    if( (type==='documentation' || type==='final') && !groups[0].propDate ){
-      return res.status(500).json({ success:false, message: "Due Date For Propsal Has Not been announced Yet."});
+    if ((type === 'documentation' || type === 'final') && !groups[0].propDate) {
+      return res.status(500).json({ success: false, message: "Due Date For Propsal Has Not been announced Yet." });
     }
 
-    else if((type==='documentation' || type==='final') && groups[0].propDate> currentDate  ){
-      return res.status(500).json({ success:false, message: "Due Date For Propsal is not ended yet."});
-    }
-    
-    else if( type==='final' && !groups[0].docDate){
-      return res.status(500).json({ success:false, message: "Due Date For Documentation Has Not been announced Yet."});
+    else if ((type === 'documentation' || type === 'final') && groups[0].propDate > currentDate) {
+      return res.status(500).json({ success: false, message: "Due Date For Propsal is not ended yet." });
     }
 
-    else if ( (type==='final') && groups[0].docDate> currentDate  ){
-      return res.status(500).json({ success:false, message: "Due Date For Documentation is not ended yet."});
+    else if (type === 'final' && !groups[0].docDate) {
+      return res.status(500).json({ success: false, message: "Due Date For Documentation Has Not been announced Yet." });
+    }
+
+    else if ((type === 'final') && groups[0].docDate > currentDate) {
+      return res.status(500).json({ success: false, message: "Due Date For Documentation is not ended yet." });
     }
 
 
@@ -432,7 +448,7 @@ router.post('/dueDate', async (req, res) => {
             stu.finalDate = dueDate;
             console.log('final');
           }
-          group.instructions = instructions ;
+          group.instructions = instructions;
           stu.unseenNotifications.push({
             type: "Important",
             message: `Deadline for ${type[0].toUpperCase() + type.slice(1, type.length)} has been added ${dueDate}`
@@ -454,7 +470,7 @@ router.post('/dueDate', async (req, res) => {
   }
 });
 
-router.put('/allocate-group',  async (req, res) => {
+router.put('/allocate-group', async (req, res) => {
   try {
     const { projectTitle, newSupervisor } = req.body;
 
@@ -468,12 +484,12 @@ router.put('/allocate-group',  async (req, res) => {
     const previousSupervisor = await Supervisor.findById(group.supervisorId);
     if (previousSupervisor) {
       previousSupervisor.groups = previousSupervisor.groups.filter(groupId => !groupId.equals(group._id));
-      previousSupervisor.slots +=1;
+      previousSupervisor.slots += 1;
       await previousSupervisor.save();
     }
 
     // Check if the new supervisor has slots left
-    const supervisor = await Supervisor.findOne({username : newSupervisor});
+    const supervisor = await Supervisor.findOne({ username: newSupervisor });
 
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'New supervisor not found' });
@@ -489,7 +505,7 @@ router.put('/allocate-group',  async (req, res) => {
 
     // Add the group ID to the new supervisor's groups
     supervisor.groups.push(group._id);
-    supervisor.slots -=1;
+    supervisor.slots -= 1;
 
     await Promise.all([group.save(), supervisor.save()]);
 

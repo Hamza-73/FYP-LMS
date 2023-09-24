@@ -1,5 +1,4 @@
 import React from 'react'
-import SideBar from './SideBar'
 import Login from './Login'
 import ForgotPassword from './ForgotPassword'
 import Dashboard from './Dashboard'
@@ -8,6 +7,10 @@ import CommitteeMember from './Committee/CommitteeMember'
 import StudentList from './Committee/StudentList'
 import SupervisorList from './Committee/SupervisorList'
 import AdminList from './Admin/AdminList'
+import Permission from './Admin/Permission'
+import SupPermission from './Admin/SupPermission'
+import ComPermission from './Admin/ComPermission'
+import AdminNav from './Admin/AdminNav'
 
 const AdminMain = () => {
     const location = useLocation()
@@ -22,10 +25,12 @@ const AdminMain = () => {
       <>
         <div>
           {!showSidebar && (
-            <SideBar title1='Dashboard' link1='dashboard' title2='Admins'  link2='admins'
-             title5='Committee Members'
-             link5='members' user='adminMain' detailLink = 'admin' title3='Students' link3='student'
-             hide='d-none' title4='Supervisor List' link4='supervisor'
+            <AdminNav title1='Dashboard' link1='dashboard' title2='Admins'  link2='admins'
+             title5='Committee Members' link5='members' user='adminMain' detailLink = 'admin'
+             title3='Students' link3='student'
+             hide='d-none' title4='Supervisor List' link4='supervisor' title0='Requests'
+             title8='Student' link8='student-requests' title9='Supervisor' link9='sup-requests'
+             title10='Committee' link10='committee-requests'
             />
           )}
         </div>
@@ -39,6 +44,9 @@ const AdminMain = () => {
           <Route path='/student' element={<StudentList  detailLink='admin'/>} />
           <Route path='/supervisor' element={<SupervisorList  detailLink='admin'/>} />
           <Route path='/admins' element={<AdminList  detailLink='admin'/>} />
+          <Route path='/student-requests' element={<Permission  detailLink='admin'/>} />
+          <Route path='/sup-requests' element={<SupPermission  detailLink='admin'/>} />
+          <Route path='/committee-requests' element={<ComPermission  detailLink='admin'/>} />
         </Routes>
       </>
     </div>

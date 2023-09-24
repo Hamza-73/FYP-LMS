@@ -25,9 +25,10 @@ const SupervisorMain = (props) => {
     <div>
       <div>
         {!showSidebar && (
-          <SideBar detailLink='supervisor' title1='Dashboard' link1='dashboard' title2='Groups Under Me' user='supervisorMain'
+          <SideBar detailLink='supervisor' title1='Dashboard' link1='dashboard'
+            title2='Groups Under Me' user='supervisorMain'
             link2='group' title3='Groups' link3='groupDetail' title4='Meeting' link4='meeting'
-            title5='FYP Ideas' link5='ideas' title6='FYP Requests' link6='requests' title00='Sceduled Meeting' link00='see-meeting' hide='d-none'
+            title5='FYP Ideas' link5='ideas' title6='FYP Requests' link6='requests' hide='d-none'
             title7='Notifications' link7='notification' />
         )}
       </div>
@@ -42,7 +43,6 @@ const SupervisorMain = (props) => {
         <Route path='/meeting' element={<Meeting  />} />
         <Route path='/ideas' element={<ProjectIdeas  />} />
         <Route path='/requests' element={<ProjectRequest  />} />
-        <Route path='/see-meeting' element={<StuDash user='supervisor' />} />
         <Route path='/notification' element={<Notification user='supervisor' />} />
       </Routes>
     </div>

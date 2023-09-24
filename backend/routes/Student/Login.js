@@ -14,7 +14,6 @@ const moment = require('moment');
 
 const multer = require('multer');
 const Viva = require('../../models/Viva/Viva');
-const uuid = require('uuid');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/')
@@ -25,7 +24,6 @@ const storage = multer.diskStorage({
   }
 })
 
-const upload = multer({ storage });
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -34,7 +32,7 @@ cloudinary.config({
   api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8'
 });
 
-var nodemailer = require('nodemailer');
+const Admin = require('../../models/Admin')
 
 router.post('/upload', authenticateUser, async (req, res) => {
   try {
@@ -163,6 +161,12 @@ router.post('/login', async (req, res) => {
 
       // Save the token to the user's token field in the database
       user.token = token;
+      user.login = user.login + 1;
+      if(user.login===1){
+        user.unseenNotifications.push({
+          type : "Important", message : "You can reset password now after 1st reset you'll need to ask for Admin permission."
+        })
+      }
       await user.save();
 
       // Send the token in the response
@@ -171,6 +175,7 @@ router.post('/login', async (req, res) => {
       res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
   } catch (err) {
+    console.error('error in logging', err)
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -246,12 +251,28 @@ router.post('/reset-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(newPassword, salt);
-    user.password = secPass;
-    await user.save();
-    res.status(200).json({ success: true, message: 'Password reset successful' });
+    
+    if(user.isLogin){
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(newPassword, salt);
+      user.password = secPass;
+      user.isLogin = false;
+      await user.save();
+      return res.status(200).json({ success: true, message: 'Password reset successful' });
+    }
+    console.log('its working');
+    const admins = await Admin.find();
+    Array.from(admins).forEach(async element => {
+      console.log('element', element);
+      element.requests.push({
+        userId : user._id,
+        name : user.name,
+        rollNo : user.rollNo
+      });
+      await element.save();
+    });
+    return res.json({ success:true, message:"Request to Recover has been sent to Admin."})
+    
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
