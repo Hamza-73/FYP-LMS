@@ -531,8 +531,10 @@ router.post('/request-to-join/:projectTitle', authenticateUser, async (req, res)
 
     // Check if a user has already sent a request for this group
     const hasSentRequest = student.pendingRequests.filter((request) => {
-      request.equals(supervisor._id)
+      return request.equals(supervisor._id)
     });
+    console.log('request is ', hasSentRequest)
+    console.log('request is ', hasSentRequest.length)
 
     if (hasSentRequest.length > 0) {
       return res.status(500).json({ success: false, message: `You've Already sent Request To this Supervisor` });
