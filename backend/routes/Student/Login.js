@@ -128,7 +128,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
       console.log('result is ', result);
 
       groupUpdate.docs.push({
-        docLink : result.url, review : ""
+        docLink: result.url, review: ""
       });
       await groupUpdate.save();
     });
@@ -162,9 +162,9 @@ router.post('/login', async (req, res) => {
       // Save the token to the user's token field in the database
       user.token = token;
       user.login = user.login + 1;
-      if(user.login===1){
+      if (user.login === 1) {
         user.unseenNotifications.push({
-          type : "Important", message : "You can reset password now after 1st reset you'll need to ask for Admin permission."
+          type: "Important", message: "You can reset password now after 1st reset you'll need to ask for Admin permission."
         })
       }
       await user.save();
@@ -245,14 +245,14 @@ router.post('/reset-password', async (req, res) => {
 
   try {
     // Find the user by username
-    const user = await User.findOne({ rollNo : username });
+    const user = await User.findOne({ rollNo: username });
 
     // Check if user exists
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    
-    if(user.isLogin){
+
+    if (user.isLogin) {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(newPassword, salt);
       user.password = secPass;
@@ -265,14 +265,14 @@ router.post('/reset-password', async (req, res) => {
     Array.from(admins).forEach(async element => {
       console.log('element', element);
       element.requests.push({
-        userId : user._id,
-        name : user.name,
-        rollNo : user.rollNo
+        userId: user._id,
+        name: user.name,
+        rollNo: user.rollNo
       });
       await element.save();
     });
-    return res.json({ success:true, message:"Request to Recover has been sent to Admin."})
-    
+    return res.json({ success: true, message: "Request to Recover has been sent to Admin." })
+
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
@@ -433,7 +433,7 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-    if(supervisor.slots<=0){
+    if (supervisor.slots <= 0) {
       return res.status(500).json({ success: false, message: 'Supervisor Slots Are full' });
     }
 
@@ -618,7 +618,6 @@ router.put('/edit/:id', async (req, res) => {
 router.get('/my-group', authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log('userId', userId)
     const student = await User.findById(userId);
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student Not Found' });
@@ -750,6 +749,7 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
     }
     const { projectId, action } = req.params;
     const request = await ProjectRequest.findById(projectId);
+    console.log('request is ', request);
 
     if (!request) {
       return res.status(404).json({ message: 'Project Request not found' });
@@ -764,6 +764,7 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
     await user.save()
 
     if (action === 'accept') {
+      console.log('accape code starts');
       // Check if a group with the same title exists
       const existingGroup = await Group.findOne({ 'projects.projectTitle': request.projectTitle });
 
@@ -780,9 +781,8 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           });
 
           // Update user properties
-          user.group = existingGroup._id;
-          user.isMember = true;
-          user.pendingRequests = [];
+          user.group = existingGroup._id; user.isMember = true;
+          user.pendingRequests = []; user.requests = [];
           user.unseenNotifications.push({
             type: "Important",
             message: `You're now in Group: ${existingGroup.projects[0].projectTitle}`
@@ -796,15 +796,23 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
               type: 'Important',
               message: `${user.name} accepted your request to join ${request.projectTitle}'s group`
             });
+            const filteredIdea = supervisor.myIdeas.filter(idea => {
+              return !idea.projectId.equals(request._id);
+            })
+            supervisor.myIdeas = filteredIdea;
             await supervisor.save();
           }
           request.students.push(user._id)
           if (request.students.length === 2) {
             request.status = true;
           }
+          request.markModified('students');
+          await request.save();
+          // console.log('request is ', request)
+          // console.log('request student ', request.students);
+          // console.log('request student length ', request.students.length);
 
           await Promise.all([existingGroup.save(), user.save(), request.save()]);
-          console.log('promise returns');
           return res.json({ success: true, message: 'Student added to the existing group' });
         } else {
           return res.json({ success: false, message: "Group is Already Filled." });
@@ -827,6 +835,8 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
 
       // Update user properties
       user.group = newGroup._id;
+      user.requests = [];
+      user.pendingRequests = [];
       user.isMember = true;
 
       // Notify the supervisor
@@ -836,13 +846,20 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           message: `${user.name} accepted your request to join ${request.projectTitle}'s group`
         });
         const filteredIdea = supervisor.myIdeas.filter(idea => {
-          return !idea.projectId.equals(request);
+          return !idea.projectId.equals(request._id);
         })
         supervisor.myIdeas = filteredIdea;
+        supervisor.groups.push(newGroup._id);
+        supervisor.slots = supervisor.slots - 1;
         await supervisor.save();
       }
+      request.students.push(user._id)
+      if (request.students.length === 2) {
+        request.status = true;
+      }
+      request.markModified('students');
 
-      await Promise.all([newGroup.save(), user.save()]);
+      await Promise.all([newGroup.save(), user.save(), await request.save()]);
       return res.json({ success: true, message: 'Student added to a new group' });
     } else if (action === 'reject') {
       console.log('reject statement starts')
@@ -859,10 +876,7 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
       return res.json({ success: true, message: 'Request rejected successfully' });
     } else if (action === 'improve') {
       // Update project request details
-      if (projectTitle) request.projectTitle = projectTitle;
-      if (scope) request.scope = scope;
-      if (description) request.description = description;
-      await request.save();
+      const { projectTitle, scope, description } = req.body;
 
       // Check if a group with the same title exists
       const existingGroup = await Group.findOne({ 'projects.projectTitle': request.projectTitle });
@@ -876,9 +890,11 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
             rollNo: user.rollNo,
             userId: user._id
           });
-
+          existingGroup.projects[0].projectTitle = projectTitle;
           // Update user properties
           user.group = existingGroup._id;
+          user.requests = [];
+          user.pendingRequests = [];
           user.isMember = true;
 
           // Notify the supervisor
@@ -888,9 +904,23 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
               type: 'Important',
               message: `${user.name} improved and accepted your request to join ${request.projectTitle}'s group`
             });
+            const filteredIdea = supervisor.myIdeas.filter(idea => {
+              return !idea.projectId.equals(request._id);
+            })
+            supervisor.myIdeas = filteredIdea;
             await supervisor.save();
           }
-          request.status = true;
+          request.students.push(user._id);
+          if (request.students.length === 2) {
+            request.status = true;
+          }
+
+          if (projectTitle) request.projectTitle = projectTitle;
+          if (scope) request.scope = scope;
+          if (description) request.description = description;
+          console.log('request is ', request)
+          console.log('request is ', request.students);
+          console.log('request is ', request.students.length);
 
           await Promise.all([existingGroup.save(), user.save(), request.save()]);
           return res.json({ success: true, message: 'Student added to the existing group after improving the request' });
@@ -900,7 +930,7 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
       // If no existing group or group is full, create a new group
       const newGroup = new Group({
         projects: [{
-          projectTitle: request.projectTitle,
+          projectTitle: projectTitle,
           students: [{
             name: user.name,
             rollNo: user.rollNo,
@@ -913,6 +943,8 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
 
       // Update user properties
       user.group = newGroup._id;
+      user.requests = [];
+      user.pendingRequests = [];
       user.isMember = true;
 
       // Notify the supervisor
@@ -921,7 +953,8 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
         supervisor.unseenNotifications.push({
           type: 'Important',
           message: `${user.name} improved and accepted your request to join ${request.projectTitle}'s group`
-        }); const filteredIdea = supervisor.myIdeas.filter(idea => {
+        });
+        const filteredIdea = supervisor.myIdeas.filter(idea => {
           return !idea.projectId.equals(request);
         })
         supervisor.myIdeas = filteredIdea;
@@ -939,31 +972,31 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
   }
 });
 
-router.post('/request-meeting', authenticateUser, async (req,res)=>{
+router.post('/request-meeting', authenticateUser, async (req, res) => {
   try {
     const student = await User.findById(req.user.id);
-    if(!student){
+    if (!student) {
       return res.status(404).json({ success: false, message: 'Student Not found' });
     }
     const group = await Group.findById(student.group);
-    if(!group){
+    if (!group) {
       return res.status(404).json({ success: false, message: 'Group Not found' });
     }
     const supervisor = await Supervisor.findById(group.supervisorId);
-    if(!supervisor){
+    if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor Not found' });
     }
     const project = group.projects[0].projectTitle;
     supervisor.unseenNotifications.push({
-      type : "Important",
-      message:`${student.name} has requested a meeting with you for group ${project}`,
+      type: "Important",
+      message: `${student.name} has requested a meeting with you for group ${project}`,
     });
     await supervisor.save();
-    return res.json({success:true, message:"Request sent to supervisor for meeting"});
+    return res.json({ success: true, message: "Request sent to supervisor for meeting" });
 
   } catch (error) {
     console.error('error sending meeting request', error);
-    return res.json({message:"Internal Server Error"});
+    return res.json({ message: "Internal Server Error" });
   }
 });
 

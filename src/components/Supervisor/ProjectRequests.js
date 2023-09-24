@@ -75,7 +75,6 @@ const ProjectRequests = (props) => {
       }
     } catch (error) {
       console.log('error dealing with requests', error);
-      NotificationManager.error(`Some error occured try to reload the page/ try again`, '', 1000);
     }
   };
 
