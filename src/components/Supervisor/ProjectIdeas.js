@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import axios from 'axios';
-
+import $ from 'jquery'; // Import jQuery
 const ProjectIdeas = () => {
 
   const [fypIdea, setFypIdea] = useState({
@@ -50,6 +50,7 @@ const ProjectIdeas = () => {
   const [editMode, setEditMode] = useState(false);
   const [projectId, setProjectId] = useState('');
 
+  const addIdeaModalRef = useRef(null);
 
   const handleIdea = async () => {
     try {
@@ -83,7 +84,10 @@ const ProjectIdeas = () => {
           ...prevState,
           ideas: [...prevState.ideas, newIdea], // Add the new idea object to the existing list
         }));
+        setFypIdea({projectTitle:"",scope:"",description:""});
       }
+      // Close the modal
+      $(addIdeaModalRef.current).modal('hide');
       console.log('json in addig idea is ', json)
     } catch (error) {
       console.log('error adding project request', error);
@@ -170,10 +174,10 @@ const ProjectIdeas = () => {
         headers: {
           Authorization: token,
         },
-        // body: JSON.stringify({
-        //   projectTitle: fypIdea.projectTitle, description: fypIdea.description,
-        //   scope: fypIdea.scope
-        // })
+        body: JSON.stringify({
+          projectTitle: fypIdea.projectTitle, description: fypIdea.description,
+          scope: fypIdea.scope
+        })
       });
 
       const json = await response.data;
@@ -237,7 +241,7 @@ const ProjectIdeas = () => {
   return (
     <div>
       <div className="fypIdea"  >
-        <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal fade" id="exampleModal" tabIndex="-1" ref={addIdeaModalRef} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">

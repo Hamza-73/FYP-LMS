@@ -70,6 +70,10 @@ const StuRequest = (props) => {
 
             if (json.message && json.success) {
                 NotificationManager.success(json.message, '', 1000);
+                 // Remove the request that was acted upon from the state
+                 setRequests(prevRequests => ({
+                    requests: prevRequests.requests.filter(request => request.projectId !== choice.id)
+                }));
             } else {
                 NotificationManager.error(json.message, '', 1000);;
             }
