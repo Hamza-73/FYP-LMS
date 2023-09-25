@@ -656,8 +656,6 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
 
-    // console.log('supervisor is ', supervisor);
-
     const requests = [];
 
     await Promise.all(
@@ -666,11 +664,15 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
         if (userObj) {
           const projectObj = await ProjectRequest.findById(request.project);
           if (projectObj) {
-            // console.log('project obj is ', projectObj);
             requests.push({
-              requestId: request._id, projectId: projectObj._id, projectTitle: projectObj.projectTitle,
-              scope: projectObj.scope, description: projectObj.description, studentName: userObj.name,
-              rollNo: userObj.rollNo, studentId: userObj._id
+              requestId: request._id,
+              projectId: projectObj._id,
+              projectTitle: projectObj.projectTitle,
+              scope: projectObj.scope,
+              description: projectObj.description,
+              studentName: userObj.name,
+              rollNo: userObj.rollNo,
+              studentId: userObj._id
             });
           }
         }
@@ -678,25 +680,33 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
     );
 
     const groupedRequests = [];
-    const groupedRequestMap = {};
 
     requests.forEach((request) => {
-      if (!groupedRequestMap[request.projectId] && request.studentId) {
-        groupedRequestMap[request.projectId] = true;
-        groupedRequests.push({
-          requestId: request.requestId, projectId: request.projectId, projectTitle: request.projectTitle,
-          scope: request.scope, description: request.description, studentDetails: []
-        });
-      }
-
       const existingGroup = groupedRequests.find((group) => group.projectId === request.projectId);
-      if (existingGroup && request.studentId) {
+      if (existingGroup) {
         existingGroup.studentDetails.push({
-          studentName: request.studentName, rollNo: request.rollNo, studentId: request.studentId
+          studentName: request.studentName,
+          rollNo: request.rollNo,
+          studentId: request.studentId
+        });
+      } else {
+        groupedRequests.push({
+          requestId: request.requestId,
+          projectId: request.projectId,
+          projectTitle: request.projectTitle,
+          scope: request.scope,
+          description: request.description,
+          studentDetails: [
+            {
+              studentName: request.studentName,
+              rollNo: request.rollNo,
+              studentId: request.studentId
+            }
+          ]
         });
       }
     });
-    // console.log('Group requests is ', groupedRequests)
+
     // Filter out requests where projectRequest.students is empty or undefined
     const filteredRequests = groupedRequests.filter(group => group.studentDetails.length > 0);
 
@@ -707,6 +717,7 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 // Give marks
 router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
