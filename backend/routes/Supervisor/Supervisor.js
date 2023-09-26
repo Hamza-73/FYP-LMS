@@ -172,7 +172,7 @@ router.put('/edit/:id', async (req, res) => {
 // Supervisor accepts a user's project request and adds user to the relevant group
 router.post('/improve-request/:requestId', authenticateUser, async (req, res) => {
   try {
-    const { projectTitle , scope , description } = req.body ;
+    const { projectTitle, scope, description } = req.body;
     const { requestId } = req.params;
     const supervisorId = req.user.id;
     const supervisor = await Supervisor.findById(supervisorId).populate('projectRequest');
@@ -197,10 +197,10 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
     console.log('ProjectRequest is 1 ', projectRequest);
 
     const user = await User.findById(projectRequest[0].user);
-    
+
     // Remove the request
     const filteredRequest = supervisor.projectRequest.filter((request) => {
-      return !request.project.equals(check._id);
+      return !request.user.equals(user._id);
     });
 
     supervisor.projectRequest = filteredRequest;
@@ -247,19 +247,13 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       user.pendingRequests = [];
       user.isMember = true;
 
-      // Remove the request
-      const filteredRequest = supervisor.projectRequest.filter((request) => {
-        return !request.project.equals(check._id);
-      });
-
-      supervisor.projectRequest = filteredRequest;
       check.students.push(user._id);
-      if(check.students.length===2){
-        check.status = true ;
+      if (check.students.length === 2) {
+        check.status = true;
       }
       check.projectTitle = projectTitle;
-      check.scope = scope ;
-      check.description = description ;
+      check.scope = scope;
+      check.description = description;
       user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted your proposal for ${check.projectTitle}` });
       supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${check.projectTitle} you have now slots left : ${supervisor.slots}` });
 
@@ -275,7 +269,7 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       }
 
       // Create a new group
-      const newGroup = new Group({ 
+      const newGroup = new Group({
         supervisor: supervisor.name, supervisorId: supervisor._id,
         projects: []
       });
@@ -283,27 +277,22 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       supervisor.groups.push(newGroup._id);
 
       // Create a new project within the group
-      const project = { projectTitle: check.projectTitle, projectId: requestId, students: [{
-        userId : user._id ,
-        name   : user.name ,
-        rollNo : user.rollNo
-      }] };
+      const project = {
+        projectTitle: check.projectTitle, projectId: requestId, students: [{
+          userId: user._id,
+          name: user.name,
+          rollNo: user.rollNo
+        }]
+      };
       newGroup.projects.push(project);
 
       // Update user and projectRequest
       user.group = newGroup._id;
       user.isMember = true;
-      check.students.push(user._id);   
-      if(check.students.length===2){
-        check.status = true ;
+      check.students.push(user._id);
+      if (check.students.length === 2) {
+        check.status = true;
       }
-
-      // Remove the request
-      const filteredRequest = supervisor.projectRequest.filter((request) => {
-        return !request.project.equals(check._id);
-      });
-
-      supervisor.projectRequest = filteredRequest;
 
       // Decrease supervisor slots
       supervisor.slots--;
@@ -311,8 +300,8 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       // Notify the user and supervisor
       user.pendingRequests = [];
       check.projectTitle = projectTitle;
-      check.scope = scope ;
-      check.description = description ;
+      check.scope = scope;
+      check.description = description;
       user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted your proposal for ${check.projectTitle}` });
       supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${check.projectTitle} you have now slots left : ${supervisor.slots}` });
 
@@ -320,7 +309,7 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       await Promise.all([newGroup.save(), user.save(), supervisor.save(), check.save()]);
       return res.json({ success: true, message: 'Project request accepted and user added to group' });
     }
-  }  catch (err) {
+  } catch (err) {
     console.error('Error accepting project request:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
@@ -344,11 +333,13 @@ router.post('/reject-request/:requestId', authenticateUser, async (req, res) => 
     }
 
     const check = await ProjectRequest.findById(projectRequest[0].project);
- 
+
+    const user = await User.findById(projectRequest[0].user);
     // Remove the request
     const filteredRequest = supervisor.projectRequest.filter((request) => {
-      return !request.project.equals(check._id);
+      return !request.user.equals(user._id);
     });
+
     supervisor.projectRequest = filteredRequest;
     await supervisor.save();
 
@@ -369,8 +360,8 @@ router.post('/reject-request/:requestId', authenticateUser, async (req, res) => 
       console.log('check is ', check);
       // Optionally, you can perform additional actions after the delete if needed.
       if (check && !check.supervisor) {
-          await ProjectRequest.findByIdAndDelete(check._id);
-          console.log('deleting');
+        await ProjectRequest.findByIdAndDelete(check._id);
+        console.log('deleting');
       }
       await student.save();
       // This line sends a response to the client.
@@ -385,6 +376,7 @@ router.post('/reject-request/:requestId', authenticateUser, async (req, res) => 
 // accept student request
 router.post('/accept-request/:requestId', authenticateUser, async (req, res) => {
   try {
+    console.log('accept code starts');
     const { requestId } = req.params;
     const supervisorId = req.user.id;
     const supervisor = await Supervisor.findById(supervisorId).populate('projectRequest');
@@ -394,7 +386,7 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
     }
 
     const projectRequest = supervisor.projectRequest.filter(request => request._id.equals(requestId));
-
+    console.log('project request is ', projectRequest)
     if (projectRequest.length <= 0) {
       return res.status(404).json({ success: false, message: 'Project request not found' });
     }
@@ -409,12 +401,11 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
     console.log('ProjectRequest is 1 ', projectRequest);
 
     const user = await User.findById(projectRequest[0].user);
-    
+
     // Remove the request
     const filteredRequest = supervisor.projectRequest.filter((request) => {
-      return !request.project.equals(check._id);
+      return !request.user.equals(user._id);
     });
-
     supervisor.projectRequest = filteredRequest;
     await supervisor.save();
 
@@ -438,9 +429,9 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       }
       return null; // No existing group found
     };
-
     const supervisorGroups = supervisor.groups; // Assuming supervisor.groups is an array of group IDs
     let group = await findFirstExistingGroup(supervisorGroups);
+    console.log('request exist or not', group)
 
     if (group) {
       // Handle the case when the group already exists
@@ -459,15 +450,9 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       user.pendingRequests = [];
       user.isMember = true;
 
-      // Remove the request
-      const filteredRequest = supervisor.projectRequest.filter((request) => {
-        return !request.project.equals(check._id);
-      });
-
-      supervisor.projectRequest = filteredRequest;
       check.students.push(user._id);
-      if(check.students.length===2){
-        check.status = true ;
+      if (check.students.length === 2) {
+        check.status = true;
       }
       user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted your proposal for ${check.projectTitle}` });
       supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${check.projectTitle} you have now slots left : ${supervisor.slots}` });
@@ -484,7 +469,7 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       }
 
       // Create a new group
-      const newGroup = new Group({ 
+      const newGroup = new Group({
         supervisor: supervisor.name, supervisorId: supervisor._id,
         projects: []
       });
@@ -492,26 +477,22 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       supervisor.groups.push(newGroup._id);
 
       // Create a new project within the group
-      const project = { projectTitle: check.projectTitle, projectId: requestId, students: [{
-        userId : user._id ,
-        name   : user.name ,
-        rollNo : user.rollNo
-      }] };
+      const project = {
+        projectTitle: check.projectTitle, projectId: requestId, students: [{
+          userId: user._id,
+          name: user.name,
+          rollNo: user.rollNo
+        }]
+      };
       newGroup.projects.push(project);
 
       // Update user and projectRequest
       user.group = newGroup._id;
       user.isMember = true;
       check.students.push(user._id);
-      if(check.students.length===2){
-        check.status = true ;
+      if (check.students.length === 2) {
+        check.status = true;
       }
-      // Remove the request
-      const filteredRequest = supervisor.projectRequest.filter((request) => {
-        return !request.project.equals(check._id);
-      });
-
-      supervisor.projectRequest = filteredRequest;
 
       // Decrease supervisor slots
       supervisor.slots--;

@@ -279,47 +279,39 @@ router.post('/reset-password', async (req, res) => {
 });
 
 
-
 //delete Student
 router.delete('/delete/:id', async (req, res) => {
   try {
     const { id } = req.params;
-
 
     const student = await User.findById(id);
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
     console.log('student is ', student.name);
+
     // It will delete student data from all the groups and projectRequests 
     const group = await Group.findById(student.group);
     if (group) {
-      group.projects.map(async project => {
-        const filteredGroup = project.students.filter(stu => {
-          return !stu.userId.equals(student._id)
-        });
-        project.students = filteredGroup;
+      for (const project of group.projects) {
+        project.students = project.students.filter(stu => !stu.userId.equals(student._id));
+        await project.save();
+        
         const projectRequest = await ProjectRequest.findOne({ projectTitle: project.projectTitle });
-        if (!projectRequest) {
-          return;
+        if (projectRequest) {
+          projectRequest.students = projectRequest.students.filter(stu => !stu.equals(student._id));
+          projectRequest.status = false;
+          await projectRequest.save();
         }
-        const FilteredRequest = projectRequest.students.filter(stu => {
-          return !stu.equals(student._id);
-        })
-        projectRequest.students = FilteredRequest;
-        projectRequest.status = false;
-        await Promise.all([group.save(), projectRequest.save()])
-
-      });
-      // Notify supervisor that his studet is deleted
-      const supervisor = await Supervisor.findById(group.supervisorId);
-      if (!supervisor) {
-        return;
       }
-      supervisor.unseenNotifications.push({ type: "Important", message: `Committee deleted your group student ${student.name}` });
-      await supervisor.save();
-    }
 
+      // Notify supervisor that their student is deleted
+      const supervisor = await Supervisor.findById(group.supervisorId);
+      if (supervisor) {
+        supervisor.unseenNotifications.push({ type: "Important", message: `Committee deleted your group student ${student.name}` });
+        await supervisor.save();
+      }
+    }
 
     const deletedMember = await User.findByIdAndDelete(id);
 
@@ -333,6 +325,7 @@ router.delete('/delete/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting Student', error });
   }
 });
+
 
 //get all Supervisor
 router.get('/get-students', async (req, res) => {
