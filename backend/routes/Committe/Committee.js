@@ -349,28 +349,40 @@ router.get('/groups', async (req, res) => {
       return res.status(404).json({ message: 'Groups not found' });
     }
 
-    const transformedGroups = [];
+    // Create an object to hold the grouped data
+    const groupedData = {};
 
     groups.forEach((group) => {
       const supervisorName = group.supervisor;
+      const supervisorId = group.supervisorId;
       const remarks = group.remarks;
       const id = group._id;
-      const projects = group.projects.map((project) => {
-        const projectTitle = project.projectTitle;
-        const students = project.students.map((student) => ({
-          name: student.name,
-          rollNo: student.rollNo,
-        }));
-        return { projectTitle, students };
-      });
+      const projectTitle = group.projects[0].projectTitle;
+      const students = group.projects[0].students.map((student) => ({
+        name: student.name,
+        rollNo: student.rollNo,
+      }));
 
-      transformedGroups.push({
-        supervisor: supervisorName,
-        remarks: remarks,
-        id: id,
-        projects: projects,
+      // If the supervisorName is not in groupedData, create an entry for it
+      if (!groupedData[supervisorName]) {
+        groupedData[supervisorName] = {
+          supervisorName: supervisorName,
+          supervisorId: supervisorId,
+          groups: [],
+        };
+      }
+
+      // Add the group to the supervisor's groups
+      groupedData[supervisorName].groups.push({
+        groupId: id,
+        projectTitle: projectTitle,
+        students: students,
+        remarks : remarks 
       });
     });
+
+    // Convert the groupedData object to an array
+    const transformedGroups = Object.values(groupedData);
 
     res.json(transformedGroups);
   } catch (error) {
@@ -378,6 +390,8 @@ router.get('/groups', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
 
 router.get('/progress', async (req, res) => {
   try {

@@ -13,6 +13,7 @@ import ForgotPassword from './ForgotPassword'
 import Dashboard from './Dashboard'
 import EligibleGroup from './Committee/EligibleGroup'
 import Allocate from './Committee/Allocate'
+import ComNav from './Committee/ComNav'
 
 const CommitteeMain = (props) => {
 
@@ -27,7 +28,7 @@ const CommitteeMain = (props) => {
         <div>
             <div>
                 {!showSidebar && (
-                    <SideBar
+                    <ComNav
                         title1='Home' link1='home'
                         title2='FYP Guidelines' link2='commdashboard' user='committeeMain'
                         title3='Committee Members' link3='members'

@@ -8,7 +8,7 @@ const ProjectList = (props) => {
 
   const history = useNavigate();
 
-  const [data, setData] = useState({ supervior: '', groups: [] });
+  const [data, setData] = useState({ supervisorName: '', supervisorId: '', groups: [] });
   const [searchQuery, setSearchQuery] = useState('');
   const [remarks, setRemarks] = useState();
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -35,14 +35,13 @@ const ProjectList = (props) => {
 
   const giveRemarks = async (id) => {
     try {
-      const response = await axios.put(`http://localhost:5000/committee/remarks/${id}`,
+      const response = await fetch(`http://localhost:5000/committee/remarks/${id}`,
         {
-          remarks: remarks
-        },
-        {
+          method : "PUT",
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          body : JSON.stringify({ remarks: remarks })
         });
       const json = await response.data;
       console.log('json is', json)
@@ -80,23 +79,7 @@ const ProjectList = (props) => {
     setSearchQuery(event.target.value);
   };
 
-  const filteredData = Array.from(data).map((group) => {
-    const filteredProjects = group.projects.filter((project) =>
-      project.projectTitle.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
-      project.students.some((student) =>
-        student.rollNo.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
-        student.name.toLowerCase().trim().includes(searchQuery.toLowerCase())
-      )
-    );
-    if (
-      group.supervisor.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
-      filteredProjects.length > 0
-    ) {
-      return { ...group, projects: filteredProjects };
-    }
 
-    return null;
-  }).filter(Boolean);
 
   // console.log('Filtered data is ', filteredData)
 
@@ -118,7 +101,7 @@ const ProjectList = (props) => {
                       <textarea className="form-control" id="remarks" name='remarks' value={remarks} onChange={(e) => setRemarks(e.target.value)} />
                     </div>
                     <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={()=>setRemarks('')}>Close</button>
+                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setRemarks('')}>Close</button>
                       <button type="submit" className="btn btn-success" disabled={!remarks}> Give Remarks </button>
                     </div>
                   </form>
@@ -142,11 +125,11 @@ const ProjectList = (props) => {
           />
         </div>
 
-        {filteredData.length > 0 ? (
+        {data.length > 0 ? (
           <div>
-            {filteredData.map((group, groupIndex) => (
+            {data.map((datas, groupIndex) => (
               <div key={groupIndex}>
-                <h5 className='text-center' style={{ "borderBottom": "1px solid black" }}>{group.supervisor}</h5>
+                <h5 className='text-center' style={{ "borderBottom": "1px solid black" }}>{datas.supervisorName}</h5>
                 <table className='table table-hover'>
                   <thead style={{ textAlign: "center" }}>
                     <tr>
@@ -157,33 +140,34 @@ const ProjectList = (props) => {
                     </tr>
                   </thead>
                   <tbody style={{ textAlign: "center" }}>
-                    {group.projects.map((project, projectKey) => (
-                      <tr key={projectKey}>
-                        <td>
-                          <div>
-                            {project.students.map((student, studentKey) => (
-                              <React.Fragment key={studentKey}>
-                                {student.name}<br />
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            {project.students.map((student, studentKey) => (
-                              <React.Fragment key={studentKey}>
-                                {student.rollNo}<br />
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </td>
-                        <td>{project.projectTitle}</td>
-                        <td>{group.remarks}<div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
-                          <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.id)}></i>
-                        </div>
-                        </td>
-                      </tr>
-                    ))}
+                  {datas.groups.map((group, groupKey) => (
+  <tr key={groupKey}>
+    <td>
+      <div>
+        {group.students.map((student, studentKey) => (
+          <React.Fragment key={studentKey}>
+            {student.name}<br />
+          </React.Fragment>
+        ))}
+      </div>
+    </td>
+    <td>
+      <div>
+        {group.students.map((student, studentKey) => (
+          <React.Fragment key={studentKey}>
+            {student.rollNo}<br />
+          </React.Fragment>
+        ))}
+      </div>
+    </td>
+    <td>{group.projectTitle}</td>
+    <td>{group.remarks}<div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
+      <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.groupId)}></i>
+    </div>
+    </td>
+  </tr>
+))}
+
                   </tbody>
                 </table>
               </div>
