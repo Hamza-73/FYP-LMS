@@ -239,6 +239,7 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       }
 
       console.log('project student ', project.students);
+      group.projects[0].projectTitle = projectTitle ;
       // Update the group, user, and supervisor
       project.students.push({
         name: user.name, rollNo: user.rollNo, userId: user._id
