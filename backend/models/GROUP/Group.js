@@ -30,6 +30,7 @@ const groupSchema = new Schema({
   meetingid: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
   meetingDate: { type: Date },
+  meetingTime : {type : String},
   isFinal: { type: Boolean, default: false },
   finalDate: { type: Date },
   finalSub: { type: Date },

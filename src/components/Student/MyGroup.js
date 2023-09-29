@@ -9,7 +9,6 @@ const MyGroup = (props) => {
     success: false,
     group: {
       myDetail: [{ name: "", rollNo: "", myId: "" }],
-
       groupId: "", supervisor: "", supervisorId: "",
       projectTitle: "", projectId: "",
       groupMember: [{ userId: "", name: "", rollNo: "", _id: "" }],
@@ -132,17 +131,17 @@ const MyGroup = (props) => {
 
   const requestMeeting = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/student/request-meeting`,{
-        method:"POST",
-        headers:{
-          "Authorization" : localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/student/request-meeting`, {
+        method: "POST",
+        headers: {
+          "Authorization": localStorage.getItem('token')
         }
       });
       const json = await response.json();
       console.log('json in requesting meeting is ', json);
       alert(json.message);
     } catch (error) {
-      console.log('error in requesting meeting', error);      
+      console.log('error in requesting meeting', error);
     }
   }
 
@@ -151,7 +150,7 @@ const MyGroup = (props) => {
     background-color: #ffffff;
     border: 1px solid #d1d1d1;
     border-radius: 6px;
-    width: 200px; height: 100px;
+    width: 100px; height: 100px;
     padding: 16px; margin: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -173,6 +172,7 @@ const MyGroup = (props) => {
     text-decoration: none; color: #007bff;
   }
 `;
+
 
   const [review, setReview] = useState('');
 
@@ -225,6 +225,49 @@ const MyGroup = (props) => {
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
+            <div>
+              <div className="notify" style={{position:"absolute", right:"40px"}}>
+              <div className="meeting-schedule">
+              <div>
+                <div className="meeting-row">
+                      <div className="meeting-box" style={{width:"200px"}}>
+                        <div className="contaner">
+                          <div className="item d-flex justify-between">
+                            <h5>Time</h5>
+                            <h6>{group.group.meetingTime}</h6>
+                          </div>
+                          <div className="item d-flex justify-between">
+                            <h5>Date</h5>
+                            <h6>
+                              {group.group.meetingDate
+                                ? new Date(group.group.meetingDate).toLocaleDateString(
+                                  'en-US'
+                                )
+                                : '----'}
+                            </h6>
+                          </div>
+                          {group.group.meetingLink && (
+                            <div className="item d-flex meeting-link">
+                              <h5>Link</h5>
+                              <a
+                                href={
+                                  group.group.meetingLink.startsWith('http')
+                                    ? group.group.meetingLink
+                                    : `http://${group.group.meetingLink}`
+                                }
+                                target="_blank"
+                              >
+                                Link
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                </div>
+              </div>
+            </div>
+              </div>
+            </div>
             <div className="upperpart">
               <div className="proj-detail d-flex justify-content-between">
                 <h4>Project Title</h4>
@@ -256,16 +299,6 @@ const MyGroup = (props) => {
                           <a target="_blank" href={grp.docLink}>
                             View Uploaded Doc
                           </a>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal1"
-                            onClick={() => {
-                              setReview(grp.review)
-                            }}
-                          >
-                            Reviews
-                          </button>
                         </div>
                       </div>
                     );
@@ -281,6 +314,7 @@ const MyGroup = (props) => {
         }
       </div> : <Loading />
       }
+
       <NotificationContainer />
     </div>
   )

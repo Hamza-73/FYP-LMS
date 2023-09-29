@@ -300,6 +300,7 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
 
       // Notify the user and supervisor
       user.pendingRequests = [];
+      check.supervisor = supervisor._id;
       check.projectTitle = projectTitle;
       check.scope = scope;
       check.description = description;
@@ -491,6 +492,7 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       user.group = newGroup._id;
       user.isMember = true;
       check.students.push(user._id);
+      check.supervisor = supervisor._id;
       if (check.students.length === 2) {
         check.status = true;
       }

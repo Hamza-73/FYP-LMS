@@ -636,7 +636,11 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       propSub: group.propSub, finalSub: group.finalSub,
       viva: viva, meetingReport: group.meetingReport,
       instructions: group.instructions,
-      docs: group.docs
+      docs: group.docs,
+      meetingDate : group.meetingDate,
+      meetingLink : group.meetingLink,
+      meetingTime : group.meetingTime,
+      meetingId : group.meetingid
     }
     return res.json({ success: true, group: groupDetail })
   } catch (error) {

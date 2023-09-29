@@ -1,20 +1,18 @@
 import { current } from '@reduxjs/toolkit';
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 
 const Groups = (props) => {
   const [group, setGroup] = useState({ groups: [] });
-  const [grades, setGrades] = useState({ marks : 0 , external : 0});
+  const [grades, setGrades] = useState({ marks: 0, external: 0 });
   const [groupId, setGrouppId] = useState('');
-  
+
   const [addStudent, setAddStudent] = useState({
-    rollNo: '',
-    projectTitle: '',
+    rollNo: '', projectTitle: '',
   });
 
-  
+
   const handleAddStudent = async (e) => {
     try {
       e.preventDefault();
@@ -54,17 +52,17 @@ const Groups = (props) => {
           'Content-Type': 'application/json',
           Authorization: token,
         },
-        body : JSON.stringify({ marks : grades.marks , external : grades.external })
+        body: JSON.stringify({ marks: grades.marks, external: grades.external })
       });
 
       const json = await response.json();
       console.log('response is ', json);
 
-      if(json.success){
+      if (json.success) {
         NotificationManager.success(json.message);
         handleClose();
       }
-      else{
+      else {
         NotificationManager.error(json.message);
       }
     } catch (error) {
@@ -72,8 +70,6 @@ const Groups = (props) => {
       NotificationManager.error('Some error occured Try Again');
     }
   };
-
- 
 
   const getGroup = async () => {
     try {
@@ -107,9 +103,9 @@ const Groups = (props) => {
 
   const handleClose = () => {
     setAddStudent({ rollNo: '', projectTitle: '', });
-    setGrades({external:0, marks:0});
+    setGrades({ external: 0, marks: 0 });
   }
-  
+
   return (
     <div>
       <div className="fypIdea">
@@ -120,7 +116,7 @@ const Groups = (props) => {
                 <h5 className="modal-title">Assign Grades</h5>
               </div>
               <div className="modal-body">
-                <form onSubmit={(e)=>{handleMarks(e)}}>
+                <form onSubmit={(e) => { handleMarks(e) }}>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Marks</label>
                     <input type="text" className="form-control" id="marks" name="marks" value={grades.marks} onChange={handleChange1} />
@@ -172,7 +168,7 @@ const Groups = (props) => {
         </div>
       </div>
 
-      { current.length > 0 ? (
+      {current.length > 0 ? (
         <>
           <h3 className='text-center my-4'>Students Under Me</h3>
           <div className='container' style={{ width: "100%" }}>
@@ -205,14 +201,14 @@ const Groups = (props) => {
                             </div>
                           </td>
                           <td>{project.projectTitle}</td>
-                          <td>{group.meetingDate ? new Date(group.meetingDate).toLocaleDateString('en-US') : '---'}</td>
+                          <td>{group.meetingReport.length}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
-                          <td><button disabled={project.students.length===2} onClick={()=>setAddStudent({projectTitle:project.projectTitle})} className="btn btn-sm" style={{background:"maroon", color:"white"}} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
-                          <td>{(group.vivaDate? (new Date() > group.vivaDate ? new Date(group.vivaDate).toLocaleDateString('en-US') : "Taken") : "---" ) }</td>
+                          <td><button disabled={project.students.length === 2} onClick={() => setAddStudent({ projectTitle: project.projectTitle })} className="btn btn-sm" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
+                          <td>{(group.vivaDate ? (new Date() > group.vivaDate ? new Date(group.vivaDate).toLocaleDateString('en-US') : "Taken") : "---")}</td>
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                              {(group.marks && group.external)? (group.marks + group.external) : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={()=>setGrouppId(group._id)}></i>
+                              {(group.marks && group.external) ? (group.marks + group.external) : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={() => setGrouppId(group._id)}></i>
                             </div>
                           </td>
                         </tr>
@@ -227,7 +223,7 @@ const Groups = (props) => {
       ) : (
         <h2 className='text-center'>You currently have no group in supervision.</h2>
       )}
-        <NotificationContainer />
+      <NotificationContainer />
     </div>
   );
 };

@@ -84,6 +84,7 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     supervisor.meeting.push(meeting._id);
     group.meetingid = meeting._id;
     group.meetingDate = parsedDate;
+    group.meetingTime = time ;
     group.meetingReport.push({
       id: meeting._id, date: parsedDate, review: 0
     });

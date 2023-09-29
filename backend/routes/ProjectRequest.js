@@ -16,9 +16,11 @@ router.get('/projects', async (req, res) => {
         const availableProjects = projects.filter(project => {
             return !project.status;
         });
-
+        const filter = availableProjects.filter( project => {
+            return project.supervisor;
+        })
         // Create an array to store project details with supervisor and students
-        const projectDetails = await Promise.all(availableProjects.map(async project => {
+        const projectDetails = await Promise.all(filter.map(async project => {
             const supervisor = project.supervisor ? await Supervisor.findById(project.supervisor) : null;
             const studentsDetail = await Promise.all(project.students.map(async stuId => {
                 const student = await User.findById(stuId);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 
@@ -79,10 +79,9 @@ const ProjectList = (props) => {
     setSearchQuery(event.target.value);
   };
 
-
-
-  // console.log('Filtered data is ', filteredData)
-
+  const location = useLocation();
+  const path = [ '/studentMain/project', '/studentMain' ];
+  const showSidebar = path.includes(location.pathname);
   return (
     <>
       <div>
@@ -136,7 +135,7 @@ const ProjectList = (props) => {
                       <th scope="col">Name</th>
                       <th scope="col">Roll No</th>
                       <th scope="col">Project Title</th>
-                      <th scope="col">Remarks</th>
+                      {!showSidebar && <th scope="col">Remarks</th>}
                     </tr>
                   </thead>
                   <tbody style={{ textAlign: "center" }}>
@@ -161,10 +160,10 @@ const ProjectList = (props) => {
       </div>
     </td>
     <td>{group.projectTitle}</td>
-    <td>{group.remarks}<div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
+    {!showSidebar && <td>{group.remarks}<div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
       <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.groupId)}></i>
     </div>
-    </td>
+    </td>}
   </tr>
 ))}
 
