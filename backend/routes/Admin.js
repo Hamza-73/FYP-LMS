@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
                     res.status(401).json({ success: false, message: 'Invalid username or password' });
                 }
             } else {
-                res.status(404).json({ success: false, message: "Admin or committee member not found" });
+                res.status(404).json({ success: false, message: "Admin  not found" });
             }
         }
     } catch (err) {
@@ -121,6 +121,32 @@ router.post('/make-admin', async (req, res) => {
         res.json({ message: 'Committee member is now an admin', success: true });
     } catch (err) {
         console.error('Error making committee member an admin', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+// Route to make a committee member an admin
+router.post('/make-committee', async (req, res) => {
+    const { username } = req.body;
+
+    try {
+        // Find the committee member by username
+        const committeeMember = await Supervisor.findOne({ username });
+
+        if (!committeeMember) {
+            return res.status(404).json({ success: false, message: "Supervisor not found" });
+        }
+        if (committeeMember.isAdmin) {
+            return res.status(201).json({ success: true, message: "Supervisor is Already Admin" });
+        }
+
+        // Update the committee member's role to "admin"
+        committeeMember.isAdmin = true;
+        await committeeMember.save();
+
+        res.json({ message: 'Supervisor is now a Committee Member', success: true });
+    } catch (err) {
+        console.error('Error making supervisor a committee member', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });

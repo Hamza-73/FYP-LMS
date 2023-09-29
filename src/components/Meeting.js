@@ -10,13 +10,15 @@ const Meeting = (props) => {
   };
 
   const [meeting, setMeeting] = useState({
-    projectTitle: "", meetingLink: "", purpose: "",
-    time: "", date: "", type: ""
+    meetingGroup: "", meetingLink: "",
+    purpose: "", meetingTime: "",
+    meetingDate: "", meetingType: ""
   });
 
   const [edit, setEdit] = useState({
-    projectTitle: "", meetingLink: "", purpose: "",
-    time: "", date: "", type: ""
+    meetingGroup: "", meetingLink: "",
+    purpose: "", meetingTime: "",
+    meetingDate: "", meetingType: ""
   });
   const [isLinkValid, setIsLinkValid] = useState(true);
   const [meetingId, setMeetingId] = useState('');
@@ -39,8 +41,10 @@ const Meeting = (props) => {
 
     }
   }
+
   const scheduleMeeting = async () => {
     try {
+      console.log('meeting is scheduling');
       const response = await fetch(`http://localhost:5000/meeting/meeting`, {
         method: "POST",
         headers: {
@@ -48,25 +52,54 @@ const Meeting = (props) => {
           "Authorization": localStorage.getItem('token')
         },
         body: JSON.stringify({
-          projectTitle: meeting.projectTitle, meetingLink: meeting.meetingLink, purpose: meeting.purpose,
-          time: meeting.time, date: meeting.date, type: meeting.date
+          projectTitle: meeting.meetingGroup,
+          meetingLink: meeting.meetingLink,
+          purpose: meeting.purpose,
+          time: meeting.meetingTime,
+          date: meeting.meetingDate,
+          type: meeting.meetingType
         })
       });
+
       console.log('Response status:', response.status);
       const json = await response.json();
       console.log('json meeting is ', json);
 
-      if (json.message && json.success) {
-        alert(`${json.message}`, 'success');
+      if (json) {
+        // Clear the form fields
+        setMeeting({
+          meetingGroup: "",
+          meetingLink: "",
+          purpose: "",
+          meetingTime: "",
+          meetingDate: "",
+          meetingType: ""
+        });
+
+        // Map properties from API response to the expected state structure
+        const mappedMeeting = {
+          meetingGroup: json.meeting.projectTitle,
+          meetingLink: json.meeting.meetingLink,
+          purpose: json.meeting.purpose,
+          meetingTime: json.meeting.time,
+          meetingDate: json.meeting.date,
+          meetingType: json.meeting.type
+        };
+
+        // Update the state with the newly scheduled meeting
+        setData((prevData) => ({
+          ...prevData,
+          meeting: [...prevData.meeting, mappedMeeting]
+        }));
+        alert("Success: " + json.message);
       } else {
-        alert(`${json.message}`, 'danger');
+        alert("Error: " + json.message, 'danger');
       }
     } catch (error) {
       console.log('error dealing with requests', error);
-      alert(`Some error occured try to reload the page/ try again`, 'danger');
+      alert(`Some error occurred, try to reload the page or try again`, 'danger');
     }
-  }
-
+  };
 
   const editMeeting = async (e) => {
     try {
@@ -79,8 +112,8 @@ const Meeting = (props) => {
           "Authorization": localStorage.getItem('token')
         },
         body: JSON.stringify({
-          projectTitle: edit.projectTitle, meetingLink: edit.meetingLink, 
-          time: edit.time, date: edit.date, type: edit.date
+          projectTitle: edit.meetingGroup, meetingLink: edit.meetingLink,
+          time: edit.meetingTime, date: edit.meetingDate, type: edit.meetingType
         })
       });
       console.log('fetch ends');
@@ -89,20 +122,29 @@ const Meeting = (props) => {
       console.log('json meeting is ', json);
 
       if (json.success) {
-        alert(`Meeting Edied Successfully`);
-        data.meeting.map((item) => {
+        alert(`Meeting Edited Successfully`);
+        // Update the state with the edited meeting
+        setData((prevData) => ({
+          ...prevData,
+          meeting: prevData.meeting.map((item) => {
             if (item.meetingId === meetingId) {
               return {
                 ...item,
-                meetingGroup: edit.projectTitle,
+                meetingGroup: edit.meetingGroup,
                 meetingLink: edit.meetingLink,
-                time: edit.time,
-                date: edit.date,
-                type: edit.type
+                meetingTime: edit.meetingTime,
+                meetingDate: edit.meetingDate,
+                meetingType: edit.meetingType
               };
             }
             return item;
-          });
+          })
+        }));
+        setEdit({
+          meetingGroup: "", meetingLink: "",
+          purpose: "", meetingTime: "",
+          meetingDate: "", meetingType: ""
+        })
       }
     } catch (error) {
       console.log('error dealing with requests', error);
@@ -124,45 +166,78 @@ const Meeting = (props) => {
     setMeeting({ ...meeting, [name]: value });
   };
 
-  const deleteMeeting = async ()=>{
+  const deleteMeeting = async (id) => {
     try {
-      console.log('meeting id is ', meetingId)
+      console.log('meeting id is ', id);
       const confirmed = window.confirm('Are You Sure You Want To Cancel');
-      if(!confirmed){
+      if (!confirmed) {
         return;
-      }
-      else{
-        const response = await fetch(`http://localhost:5000/meeting/delete-meeting/${meetingId}`,{
-          method:"DELETE",
-          headers:{
-            "Authorization" : localStorage.getItem('token')
-          }});
-          const json = await response.json();
-          if(json.success){
-            alert(json.message)
+      } else {
+        const response = await fetch(`http://localhost:5000/meeting/delete-meeting/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": localStorage.getItem('token')
           }
+        });
+        const json = await response.json();
+        if (json.success) {
+          // Remove the canceled meeting from the state
+          setData((prevData) => ({
+            ...prevData,
+            meeting: prevData.meeting.filter((meeting) => meeting.meetingId !== id)
+          }));
+          alert(json.message);
+        }
       }
     } catch (error) {
-      console.log('error in deleting meetin', error)
+      console.log('error in deleting meeting', error);
     }
-  }
+  };
+
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-  
+
     if (name === 'meetingLink') {
       // Use a regular expression to check if the input value is a valid link
       const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
       const isValid = linkRegex.test(value);
       setIsLinkValid(isValid);
     }
-  
+
     setEdit({ ...edit, [name]: value }); // Update the 'edit' state here
   };
-  
+
 
   const [userData, setUserData] = useState({ member: [] });
   const [loading, setLoading] = useState(false);
+  const [review, setReview] = useState(0);
+
+  const giveReview = async (e) => {
+    try {
+      e.preventDefault();
+      console.log('review is ', review);
+      const response = await fetch(`http://localhost:5000/meeting/meeting-review/${meetingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem('token')
+        },
+        body: JSON.stringify({ review: review })
+      });
+      const json = await response.json();
+      console.log('json is in giving meeting', json);
+      if (json) {
+        alert(json.message)
+        handleStarClick(0);
+        document.querySelectorAll('input[name="rate"]').forEach((input) => {
+          input.checked = false;
+        });
+      }
+    } catch (error) {
+
+    }
+  }
 
   useEffect(() => {
     const getDetail = async () => {
@@ -227,6 +302,50 @@ const Meeting = (props) => {
     justify-content: space-between;
   }
   `;
+
+  const reviewStyle = `*{
+    margin: 0;
+    padding: 0;
+}
+.rate {
+    float: left;
+    height: 46px;
+    padding: 0 10px;
+}
+.rate:not(:checked) > input {
+    position:absolute;
+    top:-9999px;
+}
+.rate:not(:checked) > label {
+    float:right;
+    width:1em;
+    overflow:hidden;
+    white-space:nowrap;
+    cursor:pointer;
+    font-size:30px;
+    color:#ccc;
+}
+.rate:not(:checked) > label:before {
+    content: '★ ';
+}
+.rate > input:checked ~ label {
+    color: #ffc700;    
+}
+.rate:not(:checked) > label:hover,
+.rate:not(:checked) > label:hover ~ label {
+    color: #deb217;  
+}
+.rate > input:checked + label:hover,
+.rate > input:checked + label:hover ~ label,
+.rate > input:checked ~ label:hover,
+.rate > input:checked ~ label:hover ~ label,
+.rate > label:hover ~ input:checked ~ label {
+    color: #c59b08;
+}`;
+
+  const handleStarClick = (rating) => {
+    setReview(rating);
+  };
   return (
     <>
       <div className="meeting"  >
@@ -241,24 +360,24 @@ const Meeting = (props) => {
 
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Project Title</label>
-                    <input type="text" className="form-control" id="name" name='projectTitle' value={edit.projectTitle} onChange={handleEditChange} />
+                    <input type="text" className="form-control" id="name" name='meetingGroup' value={edit.meetingGroup} onChange={handleEditChange} />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="time" className="form-label">Time</label>
-                    <input type="time" className="form-control" id="time" name='time' value={edit.time} onChange={handleEditChange} />
+                    <input type="time" className="form-control" id="time" name='meetingTime' value={edit.meetingTime} onChange={handleEditChange} />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="date" className="form-label">Date</label>
-                    <input type="date" className="form-control" id="date" name='date' value={edit.date} onChange={handleEditChange} />
+                    <input type="date" className="form-control" id="meetingDate" name='meetingDate' value={edit.meetingDate} onChange={handleEditChange} />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="type" className="form-label">Type</label>
                     <div className="select">
                       <input
                         type="radio"
-                        name="type"
+                        name="meetingType"
                         value="In Person"
-                        checked={edit.type === 'In Person'}
+                        checked={edit.meetingType === 'In Person'}
                         onChange={handleEditChange}
                       />
                       <label htmlFor="inperson" className="mx-2">
@@ -268,9 +387,9 @@ const Meeting = (props) => {
                     <div className="select">
                       <input
                         type="radio"
-                        name="type"
+                        name="meetingType"
                         value="Online"
-                        checked={edit.type === 'Online'}
+                        checked={edit.meetingType === 'Online'}
                         onChange={handleEditChange}
                       />
                       <label htmlFor="online" className="mx-2">
@@ -280,17 +399,68 @@ const Meeting = (props) => {
                   </div>
                   <div className="mb-3">
                     <label htmlFor="meetingLink" className="form-label">Link</label>
-                    <input type="text" className="form-control" name='meetingLink' value={edit.meetingLink} disabled={edit.type==='In Person'} onChange={handleEditChange} />
+                    <input type="text" className="form-control" name='meetingLink' value={edit.meetingLink} disabled={edit.meetingType === 'In Person'} onChange={handleEditChange} />
                     {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
                   </div>
 
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
 
-                    <button type="submit" className="btn btn-success" disabled={!(edit.projectTitle)
-                      || !(edit.time) 
+                    <button type="submit" className="btn btn-success" disabled={!(edit.meetingGroup)
+                      || !(edit.meetingTime)
                     }>
-                      Register
+                      Edit
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="review"  >
+        <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel1" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" >Give Review</h5>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={giveReview}>
+                  <style>{reviewStyle}</style>
+                  <div className="mb-3">
+                    <div className="rate">
+                      {[...Array(5)].map((_, index) => {
+                        const rating = index + 1;
+                        return (
+                          <React.Fragment key={rating}>
+                            <input
+                              type="radio"
+                              id={`star${rating}`}
+                              name="rate"
+                              value={rating}
+                              onClick={() => {
+                                handleStarClick(rating)
+                              }} // pass the rating value
+                            />
+                            <label htmlFor={`star${rating}`} title={`${rating} stars`}></label>
+                          </React.Fragment>
+                        );
+                      })}
+
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal"
+                      onClick={() => {
+                        handleStarClick(0);
+                        document.querySelectorAll('input[name="rate"]').forEach((input) => {
+                          input.checked = false;
+                        });
+                      }}
+                    >Close</button>
+                    <button type="submit" className="btn btn-success">
+                      Edit
                     </button>
                   </div>
                 </form>
@@ -307,7 +477,7 @@ const Meeting = (props) => {
               <h1>Link Information</h1>
               <div>
                 <textarea name="purpose" value={meeting.purpose} id="" placeholder='Purpose of Meeting' cols="30" rows="2" onChange={handleInputChange} style={myStyle}></textarea> <br />
-                <input type='text' name="projectTitle" value={meeting.projectTitle} id="" placeholder='Project title' onChange={handleInputChange} className='my-3' style={myStyle}></input>
+                <input type='text' name="meetingGroup" value={meeting.meetingGroup} id="" placeholder='Project title' onChange={handleInputChange} className='my-3' style={myStyle}></input>
               </div>
 
               <h6>Select a meeting type</h6>
@@ -316,9 +486,9 @@ const Meeting = (props) => {
                 <div className="select">
                   <input
                     type="radio"
-                    name="type"
+                    name="meetingType"
                     value="In Person"
-                    checked={meeting.type === 'In Person'}
+                    checked={meeting.meetingType === 'In Person'}
                     onChange={handleInputChange}
                   />
                   <label htmlFor="inperson" className="mx-2">
@@ -328,9 +498,9 @@ const Meeting = (props) => {
                 <div className="select mx-4">
                   <input
                     type="radio"
-                    name="type"
+                    name="meetingType"
                     value="Online"
-                    checked={meeting.type === 'Online'}
+                    checked={meeting.meetingType === 'Online'}
                     onChange={handleInputChange}
                   />
                   <label htmlFor="online" className="mx-2">
@@ -341,13 +511,13 @@ const Meeting = (props) => {
 
               <div className="source d-flex" style={{ marginTop: "20px" }}>
 
-                <input type="time" placeholder='Meeting Time' onChange={handleInputChange} name='time' value={meeting.time} />
-                <input type="date" placeholder='Meeting Date' onChange={handleInputChange} name='date' value={meeting.date} />
+                <input type="time" placeholder='Meeting Time' onChange={handleInputChange} name='meetingTime' value={meeting.meetingTime} />
+                <input type="date" placeholder='Meeting Date' onChange={handleInputChange} name='meetingDate' value={meeting.meetingDate} />
               </div>
 
               <div className="link">
                 <h1>Link</h1>
-                <textarea name="meetingLink" id="" disabled={meeting.type === 'In Person'} cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
+                <textarea name="meetingLink" id="" disabled={meeting.meetingType === 'In Person'} cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
               </div>
               {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
 
@@ -367,7 +537,7 @@ const Meeting = (props) => {
                           {/* Meeting details */}
                           <div className="item">
                             <h5>Group</h5>
-                            <h6>{meeting.meetingGroup ? meeting.meetingGroup : '=='}</h6>
+                            <h6>{meeting.meetingGroup}</h6>
                           </div>
                           <div className="item">
                             <h5>Time</h5>
@@ -376,18 +546,22 @@ const Meeting = (props) => {
                           <div className="item">
                             <h5>Date</h5>
                             <h6>
-                              {meeting.meetingDate
+                              {meeting && meeting.meetingDate
                                 ? new Date(meeting.meetingDate).toLocaleDateString(
                                   'en-US'
                                 )
-                                : ''}
+                                : '----'}
                             </h6>
                           </div>
-                          {meeting.meetingLink && (
+                          {meeting && meeting.meetingLink && (
                             <div className="item meeting-link">
                               <h5>Link</h5>
                               <a
-                                href={ meeting.meetingLink.startsWith('http') ? meeting.meetingLink : `http://${meeting.meetingLink}`}
+                                href={
+                                  meeting.meetingLink.startsWith('http')
+                                    ? meeting.meetingLink
+                                    : `http://${meeting.meetingLink}`
+                                }
                                 target="_blank"
                               >
                                 {meeting.meetingLink}
@@ -395,15 +569,40 @@ const Meeting = (props) => {
                             </div>
                           )}
                           <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
-                            <buttn className="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal" onClick={() =>{ 
-                              setMeetingId(meeting.meetingId);
-                              setEdit({projectTitle: meeting.meetingGroup, meetingLink: meeting.meetingLink, 
-                                time: meeting.meetingTime, date: meeting.meetingDate,})
-                              }}>Edit</buttn>
-                            <buttn className="btn btn-danger btn-sm" onClick={()=>{
-                              setMeetingId(meeting.meetingId);
-                              deleteMeeting();
-                            }}>Cancel</buttn>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              data-toggle="modal"
+                              data-target="#exampleModal"
+                              onClick={() => {
+                                setMeetingId(meeting.meetingId);
+                                setEdit({
+                                  meetingGroup: meeting.meetingGroup || '', // Ensure it's defined or set to an empty string
+                                  meetingLink: meeting.meetingLink,
+                                  meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
+                                  meetingDate: meeting.meetingDate,
+                                });
+                              }}
+                            >
+                              Edit
+                            </button>
+                            {meeting.meetingDate < new Date() ? <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => {
+                                setMeetingId(meeting.meetingId);
+                                deleteMeeting(meeting.meetingId);
+                              }}
+                            >
+                              Cancel
+                            </button> : <button
+                              className="btn btn-danger btn-sm"
+                              data-toggle="modal"
+                              data-target="#exampleModal1"
+                              onClick={() => {
+                                setMeetingId(meeting.meetingId);
+                              }}
+                            >
+                              Review
+                            </button>}
                           </div>
                         </div>
                       </div>

@@ -205,11 +205,11 @@ const Groups = (props) => {
                             </div>
                           </td>
                           <td>{project.projectTitle}</td>
-                          <td>{project.meetingDate? project.meetingDate : "---"}</td>
+                          <td>{group.meetingDate ? new Date(group.meetingDate).toLocaleDateString('en-US') : '---'}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
                           <td><button disabled={project.students.length===2} onClick={()=>setAddStudent({projectTitle:project.projectTitle})} className="btn btn-sm" style={{background:"maroon", color:"white"}} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
-                          <td>{(project.vivaDate? (new Date() > project.vivaDate ? "Pending" : "Taken") : "---" ) }</td>
+                          <td>{(group.vivaDate? (new Date() > group.vivaDate ? new Date(group.vivaDate).toLocaleDateString('en-US') : "Taken") : "---" ) }</td>
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
                               {(group.marks && group.external)? (group.marks + group.external) : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={()=>setGrouppId(group._id)}></i>

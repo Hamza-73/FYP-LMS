@@ -100,7 +100,7 @@ const StuDash = (props) => {
                 {userData.member.meetingLink ? <div className='item meeting-link'>
                   <h3>Meeting Link</h3>
                   <a href={userData.member.meetingLink} target='_blank' rel='noopener noreferrer'>
-                    {userData.member.meetingLink}
+                    Link
                   </a>
                 </div>:''}
               </div>

@@ -26,7 +26,8 @@ const supervisorSchema = new Schema({
   }],
 
   meeting: [{ type: Schema.Types.ObjectId, ref: 'Meeting' }],
-  isLogin: { type: Boolean, default: false }
+  isLogin: { type: Boolean, default: false },
+  isCommittee: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Supervisor', supervisorSchema);

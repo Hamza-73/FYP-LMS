@@ -58,35 +58,49 @@ router.post('/register', [
 });
 
 
-// Login route
+// Login route for admins
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Find the user by username
-    const user = await Committee.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "Committee Member not found" });
-    }
-    const check = (await bcrypt.compare(password, user.password))
-    // Check if user exists and if the password matches
-    console.log('check is', check)
-    if (check) {
-      // Generate JWT token
-      const token = jwt.sign({ id: user.id }, JWT_KEY);
+      // Find the admin by username
+      const admin = await Committee.findOne({ username });
 
-      // Save the token to the user's token field in the database
-      user.token = token;
-      await user.save();
+      // Check if the user is an admin or a committee member with an "admin" role
+      if (admin) {
+          // If the user is an admin
+          const isPasswordValid = await bcrypt.compare(password, admin.password);
 
-      // Send the token in the response
-      res.json({ message: 'Login successful', success: true, token });
-    } else {
-      res.status(401).json({ success: false, message: 'Invalid username or password' });
-    }
+          if (isPasswordValid) {
+              // Generate JWT token for admin
+              const token = jwt.sign({ id: admin.id }, JWT_KEY);
+
+              res.json({ message: 'Committee login successful', success: true, token });
+          } else {
+              res.status(401).json({ success: false, message: 'Invalid username or password' });
+          }
+      } else {
+          // If the user is not an admin, check if they are a committee member with an "admin" role
+          const supervisor = await Supervisor.findOne({ username, isCommittee: true });
+
+          if (supervisor) {
+              const isPasswordValid = await bcrypt.compare(password, supervisor.password);
+
+              if (isPasswordValid) {
+                  // Generate JWT token for committee member acting as an admin
+                  const token = jwt.sign({ id: supervisor.id}, JWT_KEY);
+
+                  res.json({ message: 'Committee login successful', success: true, token });
+              } else {
+                  res.status(401).json({ success: false, message: 'Invalid username or password' });
+              }
+          } else {
+              res.status(404).json({ success: false, message: "Commiittee Member  not found" });
+          }
+      }
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ success: false, message: 'Internal server error' });
+      console.error('Error in admin login', err);
+      res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
@@ -377,7 +391,7 @@ router.get('/groups', async (req, res) => {
         groupId: id,
         projectTitle: projectTitle,
         students: students,
-        remarks : remarks 
+        remarks: remarks
       });
     });
 
