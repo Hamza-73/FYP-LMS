@@ -124,21 +124,22 @@ router.post('/doc', authenticateUser, async (req, res) => {
     const file = req.files.doc;
     console.log('file is ', file);
 
-    cloudinary.uploader.upload(file.tempFilePath, async (error, result) => {
-      console.log('result is ', result);
-
-      groupUpdate.docs.push({
-        docLink: result.url, review: ""
-      });
-      await groupUpdate.save();
+    const result = await cloudinary.uploader.upload(file.tempFilePath);
+    console.log('result is ', result);
+    groupUpdate.docs.push({
+      docLink: result.url,
+      review: ''
     });
+    await groupUpdate.save();
 
-    res.status(201).json({ success: true, message: 'PDF uploaded successfully' });
+    // Return the Cloudinary URL in the response
+    return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
   } catch (error) {
     console.error('Error uploading PDF:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 
 // Login route

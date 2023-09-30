@@ -98,29 +98,18 @@ const MyGroup = (props) => {
       if (json.success) {
         NotificationManager.success('File Uploaded successfully');
         // Update the state with the uploaded file URL
-        if (type === 'documentation') {
-          setGroupDetails((prevGroup) => ({
-            ...prevGroup,
-            group: {
-              ...prevGroup.group,
-              docs: [
-                ...(prevGroup.group.docs || []), // Add the existing documents
-                {
-                  docLink: json.url, // Document URL
-                  review: '', // Empty review
-                },
-              ],
-            },
-          }));
-        } else if (type === 'final') {
-          setGroupDetails(prevGroup => ({
-            ...prevGroup,
-            group: {
-              ...prevGroup.group,
-              finalSubmission: json.url, // Assuming the URL is returned in the response
-            },
-          }));
-        }
+        const newDocument = {
+          docLink: json.url, // Document URL
+          review: '', // Empty review
+        };
+
+        setGroupDetails((prevGroup) => ({
+          ...prevGroup,
+          group: {
+            ...prevGroup.group,
+            docs: [...(prevGroup.group.docs || []), newDocument],
+          },
+        }));
         setType('');
         setFile();
       }
@@ -150,8 +139,10 @@ const MyGroup = (props) => {
     background-color: #ffffff;
     border: 1px solid #d1d1d1;
     border-radius: 6px;
-    width: 100px; height: 100px;
-    padding: 16px; margin: 10px;
+    width: 200px;
+    height: 100px;
+    padding: 16px;
+    margin: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
@@ -160,7 +151,8 @@ const MyGroup = (props) => {
 
   .meeting-row {
     text-align: center;
-    display: flex; flex-wrap: wrap;
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
   }
   .item {
@@ -169,9 +161,31 @@ const MyGroup = (props) => {
     align-items: center;
   }
   .meeting-box a {
-    text-decoration: none; color: #007bff;
+    text-decoration: none;
+    color: #007bff;
   }
 `;
+
+const myStyle = `
+.meeting-box {
+  background-color: #ffffff;
+  border: 1px solid #d1d1d1;
+  border-radius: 6px;
+  width: 200px;
+  height: 100px;
+  padding: 16px;
+  margin: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.items {
+  display: flex;
+  justify-content: space-between;
+}
+.meeting-box a {
+  text-decoration: none;
+  color: #007bff;
+}
+`
 
 
   const [review, setReview] = useState('');
@@ -225,18 +239,20 @@ const MyGroup = (props) => {
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
-            <div>
-              <div className="notify" style={{position:"absolute", right:"40px"}}>
-              <div className="meeting-schedule">
-              <div>
-                <div className="meeting-row">
-                      <div className="meeting-box" style={{width:"200px"}}>
+            {group.group.meetingDate &&  <div>
+              <div className="notify" style={{ position: "absolute", right: "40px" }}>
+                <style>{myStyle}</style>
+                <div>
+                  <div>
+                    <div>
+                      <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
                         <div className="contaner">
-                          <div className="item d-flex justify-between">
+                          <h4 className='text-center'>Meeting</h4>
+                          <div className="items">
                             <h5>Time</h5>
-                            <h6>{group.group.meetingTime}</h6>
+                            <h6>{group.group.meetingTime ? group.group.meetingTime : "==="}</h6>
                           </div>
-                          <div className="item d-flex justify-between">
+                          <div className="items">
                             <h5>Date</h5>
                             <h6>
                               {group.group.meetingDate
@@ -247,7 +263,7 @@ const MyGroup = (props) => {
                             </h6>
                           </div>
                           {group.group.meetingLink && (
-                            <div className="item d-flex meeting-link">
+                            <div className="items">
                               <h5>Link</h5>
                               <a
                                 href={
@@ -263,11 +279,13 @@ const MyGroup = (props) => {
                           )}
                         </div>
                       </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-              </div>
-            </div>
+            </div>}
+
+
             <div className="upperpart">
               <div className="proj-detail d-flex justify-content-between">
                 <h4>Project Title</h4>
@@ -299,6 +317,7 @@ const MyGroup = (props) => {
                           <a target="_blank" href={grp.docLink}>
                             View Uploaded Doc
                           </a>
+                          <button className="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal1" onClick={() => setReview(grp.review)}>Review</button>
                         </div>
                       </div>
                     );
