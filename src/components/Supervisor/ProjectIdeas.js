@@ -384,7 +384,7 @@ const ProjectIdeas = () => {
                             </div>
                           </td>
                           <td>{group.time}</td>
-                          <td>{group.date.split('T')[0]}</td>
+                          <td>{group.date?group.date.split('T')[0]:""}</td>
                           <td>
                             <button className="btn btn-sm" data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} type="button" onClick={() => {
                               setAddStudent({ projectTitle: group.projectTitle })

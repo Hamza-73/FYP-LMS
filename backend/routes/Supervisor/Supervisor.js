@@ -249,8 +249,31 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       user.isMember = true;
 
       check.students.push(user._id);
+      // If Group is full
       if (check.students.length === 2) {
         check.status = true;
+        supervisor.projectRequest.forEach( async request => {
+          if(request.project.equals(check._id)){
+            const studentObj = await User.findById(request.user);
+            if(!studentObj){
+              return;
+            }else{
+              // filter request from students
+              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.supervisor})
+              studentObj.pendingRequests = studentRequest;
+              studentObj.unseenNotifications.push({
+                type : "Important", message:`The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
+              });
+              await studentObj.save();
+            }
+          }
+        });
+        // filter request from supervisor for same project
+        const supervisorRequest = supervisor.projectRequest.filter( request => {
+          return !request.project.equals(check._id);
+        })
+        supervisor.projectRequest = supervisorRequest;
+        await supervisor.save();
       }
       check.projectTitle = projectTitle;
       check.scope = scope;
@@ -297,7 +320,10 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
 
       // Decrease supervisor slots
       supervisor.slots--;
-
+      const newRequest = supervisor.myIdeas.filter( idea => {
+        return !idea.projectId.equals(check._id)
+      });
+      supervisor.myIdeas = newRequest;
       // Notify the user and supervisor
       user.pendingRequests = [];
       check.supervisor = supervisor._id;
@@ -453,8 +479,31 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       user.isMember = true;
 
       check.students.push(user._id);
+      // If Group is full
       if (check.students.length === 2) {
         check.status = true;
+        supervisor.projectRequest.forEach( async request => {
+          if(request.project.equals(check._id)){
+            const studentObj = await User.findById(request.user);
+            if(!studentObj){
+              return;
+            }else{
+              // filter request from students
+              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.supervisor})
+              studentObj.pendingRequests = studentRequest;
+              studentObj.unseenNotifications.push({
+                type : "Important", message:`The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
+              });
+              await studentObj.save();
+            }
+          }
+        });
+        // filter request from supervisor for same project
+        const supervisorRequest = supervisor.projectRequest.filter( request => {
+          return !request.project.equals(check._id);
+        })
+        supervisor.projectRequest = supervisorRequest;
+        await supervisor.save();
       }
       user.unseenNotifications.push({ type: "Important", message: `${supervisor.name} accepted your proposal for ${check.projectTitle}` });
       supervisor.unseenNotifications.push({ type: "Important", message: `You've added ${user.name} to your group for Project: ${check.projectTitle} you have now slots left : ${supervisor.slots}` });
@@ -495,10 +544,14 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       check.supervisor = supervisor._id;
       if (check.students.length === 2) {
         check.status = true;
-      }
+      }     
 
       // Decrease supervisor slots
       supervisor.slots--;
+      const newRequest = supervisor.myIdeas.filter( idea => {
+        return !idea.projectId.equals(check._id)
+      });
+      supervisor.myIdeas = newRequest;
 
       // Notify the user and supervisor
       user.pendingRequests = [];
