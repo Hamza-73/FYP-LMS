@@ -259,7 +259,7 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
               return;
             }else{
               // filter request from students
-              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.supervisor})
+              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.equals(supervisor._id)})
               studentObj.pendingRequests = studentRequest;
               studentObj.unseenNotifications.push({
                 type : "Important", message:`The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
@@ -489,7 +489,8 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
               return;
             }else{
               // filter request from students
-              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.supervisor})
+              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.equals(supervisor._id)})
+              console.log('pendingRequests now are ',studentRequest )
               studentObj.pendingRequests = studentRequest;
               studentObj.unseenNotifications.push({
                 type : "Important", message:`The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
