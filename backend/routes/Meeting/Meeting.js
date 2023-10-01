@@ -244,6 +244,7 @@ router.put('/meeting-review/:meetingId', authenticateUser, async (req, res) => {
     group.meetingReport[index].review = review;
     await group.save(); // Save the changes
     
+    await Meeting.findByIdAndDelete(meeting._id);
     console.log('After save');
     
     return res.json({ success: true, message: "Reviews Given Successfully" });

@@ -5,6 +5,8 @@ import image1 from '../../images/logo.png'
 import axios from 'axios'
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min';
+
 
 const ComNav = (props) => {
     let history = useNavigate()
@@ -94,7 +96,7 @@ const ComNav = (props) => {
                                 <Link className="nav-link" to={`/${props.user}/${props.link00}`}>{props.title00}</Link>
                             </li>
                             <li className="nav-item dropdown">
-                                <Link
+                                <a
                                     className="nav-link dropdown-toggle"
                                     data-bs-toggle="dropdown"
                                     data-bs-target="#yourDropdownMenuId"
@@ -102,8 +104,7 @@ const ComNav = (props) => {
                                     aria-expanded="false"
                                 >
                                     {props.title0}
-                                </Link>
-
+                                </a>
                                 <ul className="dropdown-menu">
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link8}`}>{props.title8}</Link></li>
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link9}`}>{props.title9}</Link></li>

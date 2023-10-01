@@ -13,6 +13,7 @@ const authenticateUser = require('../../middleware/auth')
 const JWT_KEY = 'hamzakhan1'
 const SharedRules = require('../../models/SharedRules');
 const Admin = require('../../models/Admin');
+const nodemailer = require('nodemailer')
 
 
 // Registration route
@@ -106,41 +107,60 @@ router.post('/login', async (req, res) => {
 
 
 // Password reset route
-router.post('/reset-password', async (req, res) => {
-  const { username, newPassword } = req.body;
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  
+  Committee.findOne({ email: email })
+    .then(user => {
+      if (!user) {
+        return res.send({ success: false, message: "Committee not existed" })
+      }
 
-  try {
-    // Find the user by username
-    const user = await Committee.findOne({ username });
+      const token = jwt.sign({ id: user.id }, JWT_KEY, { expiresIn: '5m' });
 
-    // Check if user exists
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    if (user.isLogin) {
-      const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(newPassword, salt);
-      user.password = secPass;
-      user.isLogin = false;
-      await user.save();
-      res.status(200).json({ success: true, message: 'Password reset successful' });
-    }
-
-    const admins = await Admin.find();
-    Array.from(admins).forEach(async element => {
-      console.log('element', element);
-      element.CumRequests.push({
-        userId: user._id,
-        name: user.fname + ' ' + user.lname,
-        designation: user.designation
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'YOUR_EMAIL_HERE',
+          pass: 'PASSWORD'
+        }
       });
-      await element.save();
-    });
-    return res.json({ success: true, message: "Request to Recover has been sent to Admin." })
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
+      console.log('email is ', email);
+      var mailOptions = {
+        from: 'YOUR_EMAIL',
+        to: email,
+        subject: 'Reset Password Link',
+        text: `http://localhost:3000/committeeMain/reset_password/${user._id}/${token}`,
+      };
+      // console.log('mailoption is')
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          return res.send({ success: true, message: "Check Your Email" })
+        }
+      });
+    })
+})
+
+router.post('/reset-password/:id/:token', (req, res) => {
+  const { id, token } = req.params
+  const { password } = req.body
+
+  jwt.verify(token, JWT_KEY, (err, decoded) => {
+    if (err) {
+      return res.json({ Status: "Error with token" })
+    } else {
+      bcrypt.hash(password, 10)
+        .then(hash => {
+          Committee.findByIdAndUpdate({ _id: id }, { password: hash })
+            .then(u => res.send({ success: true, message: "Password Updated Successfully" }))
+            .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+        })
+        .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+    }
+  })
+})
 
 
 

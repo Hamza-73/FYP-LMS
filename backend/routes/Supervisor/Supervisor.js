@@ -12,6 +12,7 @@ const Group = require('../../models/GROUP/Group')
 const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 const Meeting = require('../../models/Meeting');
 const Admin = require('../../models/Admin');
+const nodemailer = require('nodemailer')
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -74,43 +75,61 @@ router.post('/create', [
 
 
 // Password reset route
-router.post('/reset-password', async (req, res) => {
-  const { username, newPassword } = req.body;
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  // console.log('forgot password starts')
+  Supervisor.findOne({ email: email })
+    .then(user => {
+      if (!user) {
+        return res.send({ success: false, message: "Supervisor doesn't exist" })
+      }
 
-  try {
-    // Find the user by username
-    const user = await Supervisor.findOne({ username });
-
-    // Check if user exists
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    if (user.isLogin) {
-      const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(newPassword, salt);
-      user.password = secPass;
-      user.isLogin = false;
-      await user.save();
-      return res.status(200).json({ success: true, message: 'Password reset successful' });
-    }
-    const admins = await Admin.find();
-    Array.from(admins).forEach(async element => {
-      element.supRequests.push({
-        userId: user._id,
-        name: user.name,
-        designation: user.designation
+      const token = jwt.sign({ id: user.id }, JWT_KEY, { expiresIn: '5m' });
+      // console.log('token is ', token);
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'YOUR_EMAIL',
+          pass: 'YOUR_PASSWORD'
+        }
       });
-      await element.save();
-    });
-    return res.json({ success: true, message: "Request to Recover has been sent to Admin." })
+      // console.log('transporter is')
+      var mailOptions = {
+        from: 'YOUR_EMAIL',
+        to: email,
+        subject: 'Reset Password Link',
+        text: `http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}`,
+      };
+      // console.log('mailoption is')
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+          return res.send({ success: false, message: "Error Please check that your email is valid or not" })
+        } else {
+          return res.send({ success: true, message: "Check Your Email" })
+        }
+      });
+    })
+})
 
+router.post('/reset-password/:id/:token', (req, res) => {
+  const { id, token } = req.params
+  const { password } = req.body
 
-  } catch (err) {
-    console.error('error reseting password', err)
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
+  jwt.verify(token, JWT_KEY, (err, decoded) => {
+    if (err) {
+      return res.json({ success: false, message: "Error with token" })
+    } else {
+      bcrypt.hash(password, 10)
+        .then(hash => {
+          Supervisor.findByIdAndUpdate({ _id: id }, { password: hash })
+            .then(u => res.send({ success: true, message: "Password Updated Successfully" }))
+            .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+        })
+        .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+    }
+  })
+})
 
 //delete supervisor
 router.delete('/delete/:id', async (req, res) => {
@@ -239,7 +258,7 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       }
 
       console.log('project student ', project.students);
-      group.projects[0].projectTitle = projectTitle ;
+      group.projects[0].projectTitle = projectTitle;
       // Update the group, user, and supervisor
       project.students.push({
         name: user.name, rollNo: user.rollNo, userId: user._id
@@ -252,24 +271,24 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
       // If Group is full
       if (check.students.length === 2) {
         check.status = true;
-        supervisor.projectRequest.forEach( async request => {
-          if(request.project.equals(check._id)){
+        supervisor.projectRequest.forEach(async request => {
+          if (request.project.equals(check._id)) {
             const studentObj = await User.findById(request.user);
-            if(!studentObj){
+            if (!studentObj) {
               return;
-            }else{
+            } else {
               // filter request from students
-              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.equals(supervisor._id)})
+              const studentRequest = studentObj.pendingRequests.filter(stu => { return !stu.equals(supervisor._id) })
               studentObj.pendingRequests = studentRequest;
               studentObj.unseenNotifications.push({
-                type : "Important", message:`The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
+                type: "Important", message: `The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
               });
               await studentObj.save();
             }
           }
         });
         // filter request from supervisor for same project
-        const supervisorRequest = supervisor.projectRequest.filter( request => {
+        const supervisorRequest = supervisor.projectRequest.filter(request => {
           return !request.project.equals(check._id);
         })
         supervisor.projectRequest = supervisorRequest;
@@ -320,7 +339,7 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
 
       // Decrease supervisor slots
       supervisor.slots--;
-      const newRequest = supervisor.myIdeas.filter( idea => {
+      const newRequest = supervisor.myIdeas.filter(idea => {
         return !idea.projectId.equals(check._id)
       });
       supervisor.myIdeas = newRequest;
@@ -482,25 +501,25 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       // If Group is full
       if (check.students.length === 2) {
         check.status = true;
-        supervisor.projectRequest.forEach( async request => {
-          if(request.project.equals(check._id)){
+        supervisor.projectRequest.forEach(async request => {
+          if (request.project.equals(check._id)) {
             const studentObj = await User.findById(request.user);
-            if(!studentObj){
+            if (!studentObj) {
               return;
-            }else{
+            } else {
               // filter request from students
-              const studentRequest = studentObj.pendingRequests.filter(stu =>{ return !stu.equals(supervisor._id)})
-              console.log('pendingRequests now are ',studentRequest )
+              const studentRequest = studentObj.pendingRequests.filter(stu => { return !stu.equals(supervisor._id) })
+              console.log('pendingRequests now are ', studentRequest)
               studentObj.pendingRequests = studentRequest;
               studentObj.unseenNotifications.push({
-                type : "Important", message:`The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
+                type: "Important", message: `The Group For ${check.projectTitle} is now full send request to other or ${supervisor.name} for Another Project`
               });
               await studentObj.save();
             }
           }
         });
         // filter request from supervisor for same project
-        const supervisorRequest = supervisor.projectRequest.filter( request => {
+        const supervisorRequest = supervisor.projectRequest.filter(request => {
           return !request.project.equals(check._id);
         })
         supervisor.projectRequest = supervisorRequest;
@@ -545,11 +564,11 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
       check.supervisor = supervisor._id;
       if (check.students.length === 2) {
         check.status = true;
-      }     
+      }
 
       // Decrease supervisor slots
       supervisor.slots--;
-      const newRequest = supervisor.myIdeas.filter( idea => {
+      const newRequest = supervisor.myIdeas.filter(idea => {
         return !idea.projectId.equals(check._id)
       });
       supervisor.myIdeas = newRequest;

@@ -32,7 +32,9 @@ cloudinary.config({
   api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8'
 });
 
-const Admin = require('../../models/Admin')
+const Admin = require('../../models/Admin');
+
+const nodemailer = require('nodemailer')
 
 router.post('/upload', authenticateUser, async (req, res) => {
   try {
@@ -140,8 +142,6 @@ router.post('/doc', authenticateUser, async (req, res) => {
   }
 });
 
-
-
 // Login route
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -241,44 +241,60 @@ router.post('/register', [
 });
 
 // Password reset route
-router.post('/reset-password', async (req, res) => {
-  const { username, newPassword } = req.body;
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
 
-  try {
-    // Find the user by username
-    const user = await User.findOne({ rollNo: username });
+  User.findOne({ email: email })
+    .then(user => {
+      if (!user) {
+        return res.send({ success: false, message: "User doesn't Exist" })
+      }
 
-    // Check if user exists
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
+      const token = jwt.sign({ id: user.id }, JWT_KEY, { expiresIn: '5m' });
 
-    if (user.isLogin) {
-      const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(newPassword, salt);
-      user.password = secPass;
-      user.isLogin = false;
-      await user.save();
-      return res.status(200).json({ success: true, message: 'Password reset successful' });
-    }
-    console.log('its working');
-    const admins = await Admin.find();
-    Array.from(admins).forEach(async element => {
-      console.log('element', element);
-      element.requests.push({
-        userId: user._id,
-        name: user.name,
-        rollNo: user.rollNo
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'YOUR_EMAIL',
+          pass: 'YOUR_PASSWORD'
+        }
       });
-      await element.save();
-    });
-    return res.json({ success: true, message: "Request to Recover has been sent to Admin." })
 
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
+      var mailOptions = {
+        from: 'YOUR_EMAIL',
+        to: email,
+        subject: 'Reset Password Link',
+        text: `http://localhost:3000/studentMain/reset_password/${user._id}/${token}`,
+      };
+      // console.log('mailoption is')
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          return res.send({ success: true, message: "Check Your Email" })
+        }
+      });
+    })
+})
 
+router.post('/reset-password/:id/:token', (req, res) => {
+  const { id, token } = req.params
+  const { password } = req.body
+
+  jwt.verify(token, JWT_KEY, (err, decoded) => {
+    if (err) {
+      return res.json({ Status: "Error with token" })
+    } else {
+      bcrypt.hash(password, 10)
+        .then(hash => {
+          User.findByIdAndUpdate({ _id: id }, { password: hash })
+            .then(u => res.send({ success: true, message: "Password Updated Successfully" }))
+            .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+        })
+        .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+    }
+  })
+})
 
 //delete Student
 router.delete('/delete/:id', async (req, res) => {
@@ -297,7 +313,7 @@ router.delete('/delete/:id', async (req, res) => {
       for (const project of group.projects) {
         project.students = project.students.filter(stu => !stu.userId.equals(student._id));
         await project.save();
-        
+
         const projectRequest = await ProjectRequest.findOne({ projectTitle: project.projectTitle });
         if (projectRequest) {
           projectRequest.students = projectRequest.students.filter(stu => !stu.equals(student._id));
@@ -638,10 +654,10 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       viva: viva, meetingReport: group.meetingReport,
       instructions: group.instructions,
       docs: group.docs,
-      meetingDate : group.meetingDate,
-      meetingLink : group.meetingLink,
-      meetingTime : group.meetingTime,
-      meetingId : group.meetingid
+      meetingDate: group.meetingDate,
+      meetingLink: group.meetingLink,
+      meetingTime: group.meetingTime,
+      meetingId: group.meetingid
     }
     return res.json({ success: true, group: groupDetail })
   } catch (error) {

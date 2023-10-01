@@ -2,7 +2,6 @@ import React from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import Login from './Login'
 import CumDashboard from './Committee/CumDashboard'
-import SideBar from './SideBar'
 import ProjectList from './Committee/ProjectList'
 import StudentList from './Committee/StudentList'
 import Event from './Committee/Event'
@@ -14,6 +13,7 @@ import Dashboard from './Dashboard'
 import EligibleGroup from './Committee/EligibleGroup'
 import Allocate from './Committee/Allocate'
 import ComNav from './Committee/ComNav'
+import ResetPassword from './ResetPassword'
 
 const CommitteeMain = (props) => {
 
@@ -50,13 +50,14 @@ const CommitteeMain = (props) => {
                 <Route path='/commdashboard' element={<CumDashboard />} />
                 <Route path='/home' element={<Dashboard />} />
                 <Route path='/project' element={<ProjectList />} />
-                <Route path='/student' element={<StudentList  detailLink='committee' />} />
+                <Route path='/student' element={<StudentList detailLink='committee' />} />
                 <Route path='/event' element={<Event />} />
-                <Route path='/supervisor' element={<SupervisorList  detailLink='committee' />} />
+                <Route path='/supervisor' element={<SupervisorList detailLink='committee' />} />
                 <Route path='/members' element={<CommitteeMember detailLink='committee' />} />
                 <Route path='/progress' element={<ProjectProgress />} />
                 <Route path='/eligible' element={<EligibleGroup />} />
                 <Route path='/allocate' element={<Allocate />} />
+                <Route path='/reset_password/:id/:token' element={<ResetPassword user='committee' />} />
             </Routes>
         </div>
     )

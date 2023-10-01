@@ -37,11 +37,11 @@ const ProjectList = (props) => {
     try {
       const response = await fetch(`http://localhost:5000/committee/remarks/${id}`,
         {
-          method : "PUT",
+          method: "PUT",
           headers: {
             'Content-Type': 'application/json'
           },
-          body : JSON.stringify({ remarks: remarks })
+          body: JSON.stringify({ remarks: remarks })
         });
       const json = await response.data;
       console.log('json is', json)
@@ -80,7 +80,7 @@ const ProjectList = (props) => {
   };
 
   const location = useLocation();
-  const path = [ '/studentMain/project', '/studentMain' ];
+  const path = ['/studentMain/project', '/studentMain'];
   const showSidebar = path.includes(location.pathname);
   return (
     <>
@@ -139,33 +139,33 @@ const ProjectList = (props) => {
                     </tr>
                   </thead>
                   <tbody style={{ textAlign: "center" }}>
-                  {datas.groups.map((group, groupKey) => (
-  <tr key={groupKey}>
-    <td>
-      <div>
-        {group.students.map((student, studentKey) => (
-          <React.Fragment key={studentKey}>
-            {student.name}<br />
-          </React.Fragment>
-        ))}
-      </div>
-    </td>
-    <td>
-      <div>
-        {group.students.map((student, studentKey) => (
-          <React.Fragment key={studentKey}>
-            {student.rollNo}<br />
-          </React.Fragment>
-        ))}
-      </div>
-    </td>
-    <td>{group.projectTitle}</td>
-    {!showSidebar && <td>{group.remarks}<div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
-      <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.groupId)}></i>
-    </div>
-    </td>}
-  </tr>
-))}
+                    {datas.groups.map((group, groupKey) => (
+                      <tr key={groupKey}>
+                        <td>
+                          <div>
+                            {group.students.map((student, studentKey) => (
+                              <React.Fragment key={studentKey}>
+                                {student.name}<br />
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        </td>
+                        <td>
+                          <div>
+                            {group.students.map((student, studentKey) => (
+                              <React.Fragment key={studentKey}>
+                                {student.rollNo}<br />
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        </td>
+                        <td>{group.projectTitle}</td>
+                        {!showSidebar && <td>{group.remarks}<div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
+                          <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.groupId)}></i>
+                        </div>
+                        </td>}
+                      </tr>
+                    ))}
 
                   </tbody>
                 </table>

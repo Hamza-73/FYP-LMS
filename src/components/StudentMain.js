@@ -12,6 +12,7 @@ import Dashboard from './Dashboard'
 import ProjectList from './Committee/ProjectList'
 import StuRequest from './Student/StuRequest'
 import Supervisors from './Student/Supervisors'
+import ResetPassword from './ResetPassword'
 
 const StudentMain = (props) => {
   const location = useLocation();
@@ -49,6 +50,7 @@ const StudentMain = (props) => {
           <Route path='/requests' element={<StuRequest />} />
           <Route path='/supervisors' element={<Supervisors />} />
           <Route path='/project' element={<ProjectList user='student'/>} />
+          <Route path='/reset_password/:id/:token' element={<ResetPassword user='student'/>} />
         </Routes>
       </>
     </div>

@@ -13,14 +13,14 @@ import 'react-notifications/lib/notifications.css';
 const Event = (props) => {
   const history = useNavigate();
   const [data, setData] = useState({ vivas: [] });
-  
+
   const [viva, setViva] = useState({ projectTitle: '', vivaDate: new Date(), vivaTime: '' });
   const [loading, setLoading] = useState(false);
   const [isFieldsModified, setIsFieldsModified] = useState(false);
 
   const [isInvalidDate, setIsInvalidDate] = useState(false);
 
-  
+
   const editViva = async (e) => {
     try {
       e.preventDefault();
@@ -61,8 +61,6 @@ const Event = (props) => {
       if (json.message && json.success) {
         setData(json);
         NotificationManager.success(json.message);
-      } else {
-        NotificationManager.error(json.message);
       }
       setLoading(false)
     } catch (error) {
@@ -194,8 +192,8 @@ const Event = (props) => {
                         <td> <a target='_blank' href={val.documentation.finalSubmission}>Project</a></td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
-                        <td data-toggle="modal" data-target="#exampleModal1" onClick={()=>{
-                          setViva({projectTitle:val.projectTitle, date:val.vivaDate, time:val.vivaTime})
+                        <td data-toggle="modal" data-target="#exampleModal1" onClick={() => {
+                          setViva({ projectTitle: val.projectTitle, date: val.vivaDate, time: val.vivaTime })
                         }}><i class="fa-solid fa-pen-to-square"></i></td>
                       </tr>
                     ))}

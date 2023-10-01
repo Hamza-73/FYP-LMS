@@ -11,6 +11,7 @@ import ProjectRequest from './Supervisor/ProjectRequests'
 import Notification from './Notification'
 import ForgotPassword from './ForgotPassword'
 import StuDash from './Student/StuDash'
+import ResetPassword from './ResetPassword'
 
 const SupervisorMain = (props) => {
   
@@ -44,6 +45,7 @@ const SupervisorMain = (props) => {
         <Route path='/ideas' element={<ProjectIdeas  />} />
         <Route path='/requests' element={<ProjectRequest  />} />
         <Route path='/notification' element={<Notification user='supervisor' />} />
+          <Route path='/reset_password/:id/:token' element={<ResetPassword user='supervisor'/>} />
       </Routes>
     </div>
   )

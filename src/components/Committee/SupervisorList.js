@@ -7,6 +7,7 @@ import 'react-notifications/lib/notifications.css';
 
 const SupervisorList = (props) => {
   const history = useNavigate();
+  const [user, setUser] = useState('');
 
   const [data, setData] = useState({ members: [] });
   const [loading, setLoading] = useState(true);
@@ -291,6 +292,27 @@ const SupervisorList = (props) => {
     }
   };
   
+
+  const makeCommittee = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/admin/make-committee`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username: user })
+      });
+      const json = await response.json();
+      console.log('json in making admin is ', json)
+      if (json.message) {
+        alert(json.message)
+      }
+
+    } catch (error) {
+
+    }
+  }
+
   const location = useLocation();
   const [userData , setUserData] = useState({member:[]})
   const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members', '/committeeMain/student', '/committeeMain/supervisor'];
@@ -398,7 +420,10 @@ const SupervisorList = (props) => {
                     <th scope="col">Designation</th>
                     <th scope="col">Slots</th>
                     <th scope="col">Edit</th>
-                    { (!showSidebar && !userData.member.isAdmin) && <th scope="col">Remove</th>}
+                    { (!showSidebar && !userData.member.isAdmin) && <>
+                      <th scope="col">Remove</th>
+                      <th scope="col">Make Committee</th>
+                    </>}
                   </tr>
                 </thead>
                 <tbody>
@@ -411,7 +436,17 @@ const SupervisorList = (props) => {
                       <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
                         <i className="fa-solid fa-pen-to-square"></i>
                       </td>
-                      {  (!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>}
+                      {(!showSidebar && !userData.member.isAdmin) &&
+                      <>
+                        <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
+                        <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
+                          disabled={val.isCommittee}
+                          onClick={() => {
+                            setUser(val.username);
+                            makeCommittee()
+                          }}
+                        >Make Committee</button></td>
+                      </>}
                     </tr>
                   ))}
                 </tbody>

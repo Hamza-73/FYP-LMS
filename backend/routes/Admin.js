@@ -9,6 +9,7 @@ const Committee = require('../models/Committee'); // Import the Admin model
 const authenticateUser = require('../middleware/auth');
 const User = require('../models/Student/User');
 const Supervisor = require('../models/Supervisor/Supervisor');
+const nodemailer = require('nodemailer')
 
 // Registration route for admins
 router.post('/register', [
@@ -98,6 +99,63 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+
+// Password reset route
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    Admin.findOne({ email: email })
+        .then(user => {
+            if (!user) {
+                return res.send({ success: false, message: "Supervisor doesn't exist" })
+            }
+
+            const token = jwt.sign({ id: user.id }, JWT_KEY, { expiresIn: '5m' });
+
+            var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'YOUR_EMAIL',
+                    pass: 'YOUR_PASSWORD'
+                }
+            });
+
+            var mailOptions = {
+                from: 'YOUR_EMAIL',
+                to: email,
+                subject: 'Reset Password Link',
+                text: `http://localhost:3000/adminMain/reset_password/${user._id}/${token}`,
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                    return res.send({ success: false, message: "Error Please check that your email is valid or not" })
+                } else {
+                    return res.send({ success: true, message: "Check Your Email" })
+                }
+            });
+        })
+})
+
+router.post('/reset-password/:id/:token', (req, res) => {
+    const { id, token } = req.params
+    const { password } = req.body
+
+    jwt.verify(token, JWT_KEY, (err, decoded) => {
+        if (err) {
+            return res.json({ success: false, message: "Error with token" })
+        } else {
+            bcrypt.hash(password, 10)
+                .then(hash => {
+                    Admin.findByIdAndUpdate({ _id: id }, { password: hash })
+                        .then(u => res.send({ success: true, message: "Password Updated Successfully" }))
+                        .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+                })
+                .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+        }
+    })
+})
 
 // Route to make a committee member an admin
 router.post('/make-admin', async (req, res) => {
@@ -258,113 +316,5 @@ router.get('/get-members', async (req, res) => {
     }
 });
 
-router.put('/give-permission/:userId', authenticateUser, async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const admin = Admin.findById(req.user.id);
-        if (!admin) {
-            res.status(404).json({ message: 'Admin Not Found' });
-        }
-        const user = await User.findById(userId);
-        if (user) {
-            console.log('user');
-            user.isLogin = true;
-            user.unseenNotifications.push({
-                type: "Important",
-                message: "You have been given permission",
-            })
-            await user.save();
-            const allAdmins = await Admin.find();
-            Array.from(allAdmins).forEach(async admin => {
-                const filterRequests = admin.requests.filter(req => {
-                    return !req.userId.equals(user._id);
-                });
-                admin.requests = filterRequests;
-                await admin.save();
-            });
-            return res.json({ success: true, message: `Permission for password reset has been given to ${user.name}` });
-        }
-        const supervisor = await Supervisor.findById(userId);
-        if (supervisor) {
-            console.log('supervisor');
-            supervisor.isLogin = true;
-            supervisor.unseenNotifications.push({
-                type: "Important",
-                message: "You have been given permission",
-            })
-            await supervisor.save();
-            const allAdmins = await Admin.find();
-            Array.from(allAdmins).forEach(async admin => {
-                const filterRequests = admin.supRequests.filter(req => {
-                    return !req.userId.equals(supervisor._id);
-                });
-                admin.supRequests = filterRequests;
-                await admin.save();
-            });
-            return res.json({ success: true, message: `Permission for password reset has been given to ${supervisor.name}` });
-        }
-        const committee = await Committee.findById(userId);
-        if (committee) {
-            console.log('committe')
-            committee.isLogin = true;
-            await committee.save();
-            const allAdmins = await Admin.find();
-            Array.from(allAdmins).forEach(async admin => {
-                const filterRequests = admin.CumRequests.filter(req => {
-                    return !req.userId.equals(committee._id);
-                });
-                admin.CumRequests = filterRequests;
-                await admin.save();
-            });
-            return res.json({ success: true, message: `Permission for password reset has been given to ${committee.fname + ' ' + committee.lname}` });
-        }
-        return res.json({message:"User Not Found"});
-
-    } catch (error) {
-        console.error('error giving permission', error);
-        res.json({ message: "Internal Server Error" });
-    }
-});
-
-router.get('/get-student-requests', authenticateUser, async (req, res) => {
-    try {
-        const admin = await Admin.findById(req.user.id);
-        if (!admin) {
-            res.status(404).json({ message: "Admin Not Found" });
-        }
-        const requests = admin.requests;
-        return res.json({ success: true, requests });
-    } catch (error) {
-        console.error('error getting requests', error);
-        res.json({ message: "Internal Server Error" });
-    }
-});
-router.get('/get-committee-requests', authenticateUser, async (req, res) => {
-    try {
-        const admin = await Admin.findById(req.user.id);
-        if (!admin) {
-            res.status(404).json({ message: "Admin Not Found" });
-        }
-        const requests = admin.CumRequests;
-        return res.json({ success: true, requests });
-    } catch (error) {
-        console.error('error getting requests', error);
-        res.json({ message: "Internal Server Error" });
-    }
-});
-
-router.get('/get-sup-requests', authenticateUser, async (req, res) => {
-    try {
-        const admin = await Admin.findById(req.user.id);
-        if (!admin) {
-            res.status(404).json({ message: "Admin Not Found" });
-        }
-        const requests = admin.supRequests;
-        return res.json({ success: true, requests });
-    } catch (error) {
-        console.error('error getting requests', error);
-        res.json({ message: "Internal Server Error" });
-    }
-});
 
 module.exports = router;  

@@ -166,7 +166,7 @@ const MyGroup = (props) => {
   }
 `;
 
-const myStyle = `
+  const myStyle = `
 .meeting-box {
   background-color: #ffffff;
   border: 1px solid #d1d1d1;
@@ -239,7 +239,7 @@ const myStyle = `
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
-            {group.group.meetingDate &&  <div>
+            {(group.group.meetingDate && new Date(group.group.meetingDate) < new Date()) && <div>
               <div className="notify" style={{ position: "absolute", right: "40px" }}>
                 <style>{myStyle}</style>
                 <div>

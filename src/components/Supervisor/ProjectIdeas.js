@@ -49,8 +49,6 @@ const ProjectIdeas = () => {
   const [editMode, setEditMode] = useState(false);
   const [projectId, setProjectId] = useState('');
 
-  const [showFullText, setShowFullText] = useState(false);
-
   const addIdeaModalRef = useRef(null);
 
   const handleIdea = async () => {
@@ -248,8 +246,6 @@ const ProjectIdeas = () => {
   };
 
 
-
-
   return (
     <div>
       <div className="fypIdea"  >
@@ -289,7 +285,6 @@ const ProjectIdeas = () => {
           </div>
         </div>
       </div>
-
 
       <div className="fypIdea">
         <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel1" aria-hidden="true">
@@ -384,7 +379,7 @@ const ProjectIdeas = () => {
                             </div>
                           </td>
                           <td>{group.time}</td>
-                          <td>{group.date?group.date.split('T')[0]:""}</td>
+                          <td>{group.date ? group.date.split('T')[0] : ""}</td>
                           <td>
                             <button className="btn btn-sm" data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} type="button" onClick={() => {
                               setAddStudent({ projectTitle: group.projectTitle })
