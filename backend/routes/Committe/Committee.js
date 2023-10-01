@@ -168,9 +168,21 @@ router.post('/reset-password/:id/:token', (req, res) => {
 router.get('/get-members', async (req, res) => {
 
   try {
-    const members = await Committee.find();
-    res.json({ success: true, members })
-  } catch (error) {
+    const allCommitte = await Committee.find();
+    const superviors = await Supervisor.find({ isCommittee: true });
+
+    // Merge admin and committee members into the members array
+    const members = [...allCommitte, ...superviors];
+
+    if (members.length === 0) {
+        res.status(404).json({ message: 'Members Not Found' });
+    } else {
+        res.json({
+            success: true,
+            members
+        });
+    }
+} catch (error) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 

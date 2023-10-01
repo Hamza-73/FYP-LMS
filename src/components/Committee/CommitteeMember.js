@@ -19,7 +19,7 @@ const CommitteeMember = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
   const [register, setRegister] = useState({
-    fname: "", lname: "", username: "", department: "", designation: "", password: "", email: ""
+    fname: "", lname: "", username: "", department: "", designation: "", password: "", email: "", name:"",
   });
 
   const [user, setUser] = useState('');
@@ -300,7 +300,7 @@ const CommitteeMember = (props) => {
 
   // Function to reset input fields
   const handleClose = () => {
-    setRegister({ fname: "", lname: "", username: "", department: "", designation: "", password: "", email: "" });
+    setRegister({ fname: "", lname: "", name:"", username: "", department: "", designation: "", password: "", email: "" });
   }
 
   const handleSearch = (event) => {
@@ -311,26 +311,40 @@ const CommitteeMember = (props) => {
   const paginate = (array, page_size, page_number) => {
     return array.slice((page_number - 1) * page_size, page_number * page_size);
   };
-
   const filteredData = data.members.filter((member) => {
     const searchTerm = searchQuery.trim().toLowerCase(); // Remove leading/trailing spaces and convert to lowercase
     const searchWords = searchTerm.split(' ');
-
-    // Check if any word in the search query matches either first name or last name
-    const matchesFirstName = searchWords.some((word) =>
-      member.fname.toLowerCase().includes(word)
-    );
-    const matchesLastName = searchWords.some((word) =>
-      member.lname.toLowerCase().includes(word)
-    );
-
+  
+    // Check if member object has both "fname" and "lname" properties
+    if (member.fname && member.lname) {
+      const matchesFirstName = searchWords.some((word) =>
+        member.fname.toLowerCase().includes(word)
+      );
+      const matchesLastName = searchWords.some((word) =>
+        member.lname.toLowerCase().includes(word)
+      );
+  
+      if (matchesFirstName || matchesLastName) {
+        return true;
+      }
+    } else if (member.name) {
+      // If member object has only "name" property
+      const matchesName = searchWords.some((word) =>
+        member.name.toLowerCase().includes(word)
+      );
+  
+      if (matchesName) {
+        return true;
+      }
+    }
+  
+    // Check department and designation properties
     return (
-      matchesFirstName ||
-      matchesLastName ||
       member.department.toLowerCase().includes(searchTerm) ||
       member.designation.toLowerCase().includes(searchTerm)
     );
   });
+  
 
   const filteredDataPaginated = paginate(filteredData, recordsPerPage, currentPage);
 
@@ -466,7 +480,7 @@ const CommitteeMember = (props) => {
               <tbody>
                 {filteredDataPaginated.map((val, key) => (
                   <tr key={key}>
-                    <td>{val.fname + ' ' + val.lname}</td>
+                    <td>{ val.fname? val.fname + ' ' + val.lname : <>{val.name} <small>(sup)</small></>}</td>
                     <td>{val.department}</td>
                     <td>{val.designation}</td>
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>

@@ -427,7 +427,7 @@ const CommitteeMember = (props) => {
               <tbody>
                 {filteredDataPaginated.map((val, key) => (
                   <tr key={key}>
-                    <td>{val.fname + ' ' + val.lname}</td>
+                    <td>{ !val.isAdmin? val.fname + ' ' + val.lname : <>{val.fname + ' ' + val.lname } <small>(committee)</small></>}</td>
                     <td>{val.username}</td>
                     <td>{val.email}</td>
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
