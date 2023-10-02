@@ -61,13 +61,13 @@ const FypIdeas = () => {
         setExpandedGroups(updatedExpandedGroups);
     };
 
-    const truncateText = (text, maxLength) => {
-        if (text.length <= maxLength) {
-            return text;
+    const truncateText = (text, maxWords) => {
+        const words = text.split(' ');
+        if (words.length <= maxWords) {
+          return text;
         }
-        return text.slice(0, maxLength) + '....';
-    };
-
+        return words.slice(0, maxWords).join(' ') + '....';
+      };
     useEffect(() => {
         const getGroup = async () => {
             try {
@@ -267,7 +267,6 @@ const FypIdeas = () => {
                                                                     : (
                                                                         <>
                                                                             {truncateText(group.projectDetails.scope, 3)}
-                                                                            <span style={{ color: 'darkblue' }}> ...</span>
                                                                         </>
                                                                     )}
                                                             </div>
@@ -282,7 +281,6 @@ const FypIdeas = () => {
                                                                     : (
                                                                         <>
                                                                             {truncateText(group.projectDetails.description, 3)}
-                                                                            <span style={{ color: 'darkblue' }}> ...</span>
                                                                         </>
                                                                     )}
                                                             </div>

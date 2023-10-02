@@ -84,7 +84,8 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     supervisor.meeting.push(meeting._id);
     group.meetingid = meeting._id;
     group.meetingDate = parsedDate;
-    group.meetingTime = time ;
+    group.meetingTime = time;
+    group.meetingLink = meetingLink;
     group.meetingReport.push({
       id: meeting._id, date: parsedDate, review: 0
     });
@@ -190,10 +191,14 @@ router.delete('/delete-meeting/:id', async (req, res) => {
       });
     }
 
+    group.meetingLink = ''; group.meetingDate = '';
+    group.meetingTime = ''; group.meetingid = '';
+    group.meetingReport = group.meetingReport.filter(meet => { return !meet.id.equals(id) });
+    await group.save();
+
     if (!deletedMeeting) {
       return res.status(404).json({ message: 'Meeting not found' });
     }
-
 
     return res.json({ success: true, message: 'Meeting Cancelled successfully' });
   } catch (error) {
@@ -225,28 +230,29 @@ router.put('/meeting-review/:meetingId', authenticateUser, async (req, res) => {
     if (!group) {
       return res.status(200).json({ message: `Group Not Found` });
     }
-        
-    let index = -1 ;
+
+    let index = -1;
     // Find the index of the meeting in the array
-    group.meetingReport.forEach((meet , key)=>{
+    group.meetingReport.forEach((meet, key) => {
       console.log('meet is ', meet)
-      if(meet.id.equals(meeting._id)){
-      index = key ;
-      }});
+      if (meet.id.equals(meeting._id)) {
+        index = key;
+      }
+    });
     console.log('index is ', index);
-    
+
     if (index === -1) {
       return res.json({ success: false, message: "Meeting Not Found in Group" });
     }
-    
+
     // Update the review
     console.log('review is ', review);
     group.meetingReport[index].review = review;
     await group.save(); // Save the changes
-    
+
     await Meeting.findByIdAndDelete(meeting._id);
     console.log('After save');
-    
+
     return res.json({ success: true, message: "Reviews Given Successfully" });
   } catch (error) {
     // Handle errors here

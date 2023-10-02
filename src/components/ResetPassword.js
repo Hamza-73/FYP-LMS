@@ -37,7 +37,7 @@ const ResetPassword = (props) => {
             .then((res) => {
                 if (res.data.success) {
                     alert(res.data.message);
-                    navigate(`/${props.user}`)
+                    navigate(`/`)
                 }
             })
             .catch((err) => console.log(err));

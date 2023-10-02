@@ -239,7 +239,7 @@ const MyGroup = (props) => {
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
-            {(group.group.meetingDate && new Date(group.group.meetingDate) < new Date()) && <div>
+            {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
               <div className="notify" style={{ position: "absolute", right: "40px" }}>
                 <style>{myStyle}</style>
                 <div>

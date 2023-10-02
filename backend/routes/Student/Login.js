@@ -655,7 +655,7 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       instructions: group.instructions,
       docs: group.docs,
       meetingDate: group.meetingDate,
-      meetingLink: group.meetingLink,
+      meetingLink: group.meetingLink ? group.meetingLink : "",
       meetingTime: group.meetingTime,
       meetingId: group.meetingid
     }

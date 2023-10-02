@@ -128,11 +128,11 @@ const ProjectIdeas = () => {
   const handleDelete = async (id) => {
     try {
       const confirmDelete = window.confirm('Are you sure you want to delete this FYP Idea?');
-
+  
       if (confirmDelete) {
         console.log('handle delete starts');
-        console.log('project id is ', id)
-
+        console.log('project id is ', id);
+  
         const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:5000/supervisor/deleteProposal/${id}`, {
           method: 'DELETE',
@@ -140,28 +140,29 @@ const ProjectIdeas = () => {
             Authorization: token,
           },
         });
-
+  
         const json = await response.json();
         console.log('response is in deleting ', json);
-
+  
         if (json.success) {
           NotificationManager.success(json.message);
+          
           // Update the state to remove the deleted idea
           setIdea((prevState) => ({
             ...prevState,
-            ideas: prevState.ideas.filter((ideaItem) => ideaItem.projectId !== projectId),
+            ideas: prevState.ideas.filter((ideaItem) => ideaItem.projectId !== id),
           }));
         } else {
           NotificationManager.error(json.message);
         }
-      }
-      else {
+      } else {
         return;
       }
     } catch (error) {
       console.log('error in deleting idea', error);
     }
   };
+  
 
   const handleEdit = async (e) => {
     try {
@@ -243,11 +244,12 @@ const ProjectIdeas = () => {
     setExpandedGroups(updatedExpandedGroups);
   };
 
-  const truncateText = (text, maxLength) => {
-    if (text.length <= maxLength) {
+  const truncateText = (text, maxWords) => {
+    const words = text.split(' ');
+    if (words.length <= maxWords) {
       return text;
     }
-    return text.slice(0, maxLength) + '....';
+    return words.slice(0, maxWords).join(' ') + '....';
   };
 
 
@@ -363,7 +365,6 @@ const ProjectIdeas = () => {
                                 : (
                                   <>
                                     {truncateText(group.scope, 3)}
-                                    <span style={{ color: 'darkblue' }}> ...</span>
                                   </>
                                 )}
                             </div>
@@ -378,7 +379,6 @@ const ProjectIdeas = () => {
                                 : (
                                   <>
                                     {truncateText(group.description, 3)}
-                                    <span style={{ color: 'darkblue' }}> ...</span>
                                   </>
                                 )}
                             </div>

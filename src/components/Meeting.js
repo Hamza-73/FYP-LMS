@@ -564,7 +564,7 @@ const Meeting = (props) => {
                                 }
                                 target="_blank"
                               >
-                                {meeting.meetingLink}
+                                Link
                               </a>
                             </div>
                           )}
@@ -585,24 +585,32 @@ const Meeting = (props) => {
                             >
                               Edit
                             </button>
-                            {meeting.meetingDate < new Date() ? <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => {
-                                setMeetingId(meeting.meetingId);
-                                deleteMeeting(meeting.meetingId);
-                              }}
-                            >
-                              Cancel
-                            </button> : <button
-                              className="btn btn-danger btn-sm"
-                              data-toggle="modal"
-                              data-target="#exampleModal1"
-                              onClick={() => {
-                                setMeetingId(meeting.meetingId);
-                              }}
-                            >
-                              Review
-                            </button>}
+                            {
+                              new Date(meeting.meetingDate) > new Date() ? (
+                                <button
+                                  className="btn btn-danger btn-sm"
+                                  onClick={() => {
+                                    setMeetingId(meeting.meetingId);
+                                    deleteMeeting(meeting.meetingId);
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              ) : (
+                                <button
+                                  className="btn btn-danger btn-sm"
+                                  data-toggle="modal"
+                                  data-target="#exampleModal1"
+                                  onClick={() => {
+                                    setMeetingId(meeting.meetingId);
+                                  }}
+                                >
+                                  Review
+                                </button>
+                              )
+                            }
+
+
                           </div>
                         </div>
                       </div>
