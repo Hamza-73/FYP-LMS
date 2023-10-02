@@ -188,26 +188,26 @@ router.get('/get-members', async (req, res) => {
 
 });
 
-//delete member
+// Route to delete an Committee by ID
 router.delete('/delete/:id', async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
-
-    // Check if the provided ID is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid committee member ID' });
-    }
-
-    const deletedMember = await Committee.findByIdAndDelete(id);
-
-    if (!deletedMember) {
-      return res.status(404).json({ message: 'Committee member not found' });
-    }
-
-    res.json({ message: 'Committee member deleted successfully' });
+      const admin = await Committee.findByIdAndDelete(id);
+      if (!admin) {
+          const committee = await Supervisor.findById(id);
+          if (committee) {
+              committee.isCommittee = false;
+              await committee.save();
+              return res.json({ success: true, message: "Committee Deleted Successfully" });
+          } else {
+              return res.json({ success: false, message: "Committee Member Not Found" })
+          }
+      }
+      res.json({ message: 'Committee Member deleted' });
   } catch (error) {
-    console.error('Error deleting committee member:', error);
-    res.status(500).json({ message: 'Error deleting committee member', error });
+      console.error('error is ', error)
+      res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 

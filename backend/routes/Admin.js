@@ -160,13 +160,13 @@ router.post('/reset-password/:id/:token', (req, res) => {
 // Route to make a committee member an admin
 router.post('/make-admin', async (req, res) => {
     const { username } = req.body;
-
+    console.log('usernam eis', username)
     try {
         // Find the committee member by username
         const committeeMember = await Committee.findOne({ username });
 
         if (!committeeMember) {
-            return res.status(404).json({ success: false, message: "Committee member not found" });
+            return res.status(404).json({ success: false, message: "If It's a supervisor then you cannot make him/her Admin" });
         }
         if (committeeMember.isAdmin) {
             return res.status(201).json({ success: true, message: "Committee Member is Already Admin" });
@@ -186,7 +186,6 @@ router.post('/make-admin', async (req, res) => {
 // Route to make a committee member an admin
 router.post('/make-committee', async (req, res) => {
     const { username } = req.body;
-
     try {
         // Find the committee member by username
         const committeeMember = await Supervisor.findOne({ username });
@@ -194,20 +193,21 @@ router.post('/make-committee', async (req, res) => {
         if (!committeeMember) {
             return res.status(404).json({ success: false, message: "Supervisor not found" });
         }
-        if (committeeMember.isAdmin) {
-            return res.status(201).json({ success: true, message: "Supervisor is Already Admin" });
+        if (committeeMember.isCommittee) {
+            return res.status(201).json({ success: true, message: "Supervisor is Already Committee Member" });
         }
 
         // Update the committee member's role to "admin"
-        committeeMember.isAdmin = true;
+        committeeMember.isCommittee = true;
         await committeeMember.save();
 
-        res.json({ message: 'Supervisor is now a Committee Member', success: true });
+        return res.json({ supervisorId: committeeMember._id, success: true, message:"Supervisor is Now a Committee Member" });
     } catch (err) {
         console.error('Error making supervisor a committee member', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+
 
 // get detail of admin
 router.get('/detail', authenticateUser, async (req, res) => {

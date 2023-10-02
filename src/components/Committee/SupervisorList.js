@@ -7,8 +7,6 @@ import 'react-notifications/lib/notifications.css';
 
 const SupervisorList = (props) => {
   const history = useNavigate();
-  const [user, setUser] = useState('');
-
   const [data, setData] = useState({ members: [] });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -292,26 +290,33 @@ const SupervisorList = (props) => {
     }
   };
   
-
-  const makeCommittee = async () => {
+  const makeCommittee = async (username) => {
     try {
       const response = await fetch(`http://localhost:5000/admin/make-committee`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ username: user })
+        body: JSON.stringify({ username: username })
       });
       const json = await response.json();
-      console.log('json in making admin is ', json)
-      if (json.message) {
-        alert(json.message)
+  
+      if (json.success) {
+        alert(json.message);
+        // Fetch the updated data again after making a committee member
+        getMembers();
+      } else {
+        alert(json.message);
       }
-
+  
+      console.log('json in making admin is ', json);
     } catch (error) {
-
+      console.error('Error making committee member:', error);
+      // Handle error
     }
-  }
+  };
+  
+
 
   const location = useLocation();
   const [userData , setUserData] = useState({member:[]})
@@ -442,8 +447,7 @@ const SupervisorList = (props) => {
                         <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
                           disabled={val.isCommittee}
                           onClick={() => {
-                            setUser(val.username);
-                            makeCommittee()
+                            makeCommittee(val.username)
                           }}
                         >Make Committee</button></td>
                       </>}

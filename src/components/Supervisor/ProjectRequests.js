@@ -6,7 +6,6 @@ import 'react-notifications/lib/notifications.css';
 
 const ProjectRequests = (props) => {
   const [requests, setRequests] = useState({ request: [] });
-  const [choice, setChoice] = useState({ action: '', id: '' });
   const [improve, setImprove] = useState({ projectTitle: '', scope: '', description: '' });
   const [loading, setLoading] = useState(false);
 
@@ -42,13 +41,13 @@ const ProjectRequests = (props) => {
     }
   }, []);
 
-  const handleRequests = async (e) => {
+  const handleRequests = async (e, id) => {
     try {
       e.preventDefault();
       console.log('request is started');
       console.log('improve', improve)
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/supervisor/improve-request/${choice.id}`, {
+      const response = await fetch(`http://localhost:5000/supervisor/improve-request/${id}`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +65,7 @@ const ProjectRequests = (props) => {
 
       if (json.message && json.success) {
         setRequests(prevState => ({
-          request: prevState.request.filter(req => req.requestId !== choice.id)
+          request: prevState.request.filter(req => req.requestId !== id)
         }));
         setImprove({projectTitle:"",scope:"",description:""});
         NotificationManager.success(json.message,'',1000);
@@ -78,14 +77,13 @@ const ProjectRequests = (props) => {
     }
   };
 
-  const rejectRequest = async () => {
+  const rejectRequest = async (id) => {
     try {
       
       console.log('request is started');
-      console.log('choice is ', choice);
       console.log('improve', improve)
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/supervisor/reject-request/${choice.id}`, {
+      const response = await fetch(`http://localhost:5000/supervisor/reject-request/${id}`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +98,7 @@ const ProjectRequests = (props) => {
 
       if (json.message && json.success) {
         setRequests(prevState => ({
-          request: prevState.request.filter(req => req.requestId !== choice.id)
+          request: prevState.request.filter(req => req.requestId !== id)
         }));
         NotificationManager.success(json.message,'',1000);
       } else {
@@ -111,11 +109,11 @@ const ProjectRequests = (props) => {
     }
   };
 
-  const acceptRequest = async () => {
+  const acceptRequest = async (id) => {
     try {
       console.log('request is started');
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/supervisor/accept-request/${choice.id}`, {
+      const response = await fetch(`http://localhost:5000/supervisor/accept-request/${id}`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +127,7 @@ const ProjectRequests = (props) => {
 
       if (json.message && json.success) {
         setRequests(prevState => ({
-          request: prevState.request.filter(req => req.requestId !== choice.id)
+          request: prevState.request.filter(req => req.requestId !== id)
         }));
         NotificationManager.success(json.message,'',1000);
       } else {
@@ -223,16 +221,13 @@ const ProjectRequests = (props) => {
                               <div style={{ cursor: 'pointer' }}>
                                 <div className="d-grid gap-2 d-md-flex justify-content-md-end">
                                   <button className="btn btn-success btn-sm me-md-2" type="button" onClick={() => {
-                                    setChoice({ action: 'accept', id: group.requestId });
-                                    acceptRequest();
+                                    acceptRequest(group.requestId);
                                   }}>Accept</button>
                                   <button className="btn btn-warning btn-sm" type="button" onClick={(e) => {
-                                    setChoice({ action: 'reject', id: group.requestId });
-                                    rejectRequest();
+                                    rejectRequest(group.requestId);
                                   }}>Reject</button>
                                   <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={(e) => {
-                                    setChoice({ action: 'improve', id: group.requestId });
-                                    handleRequests(e);
+                                    handleRequests(e,group.requestId);
                                   }}>Improve</button>
                                 </div>
                               </div>

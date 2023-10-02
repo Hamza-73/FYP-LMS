@@ -22,29 +22,26 @@ const CommitteeMember = (props) => {
     fname: "", lname: "", username: "", department: "", designation: "", password: "", email: "", name:"",
   });
 
-  const [user, setUser] = useState('');
-
-  // Function to open the modal
-  const openModal = () => {
-    setShowModal(true);
-  };
-
+  
   // Function to close the modal
   const closeModal = () => {
     setShowModal(false);
   };
 
-  const makeAdmin = async () => {
+  const makeAdmin = async (username) => {
     try {
       const response = await fetch(`http://localhost:5000/admin/make-admin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ username: user })
+        body: JSON.stringify({ username: username })
       });
       const json = await response.json();
-      console.log('json in making admin is ', json)
+      console.log('json in making admin is ', json);
+      if(json.success){
+        getMembers();
+      }
       if (json.message) {
         alert(json.message)
       }
@@ -492,8 +489,7 @@ const CommitteeMember = (props) => {
                         <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
                           disabled={val.isAdmin}
                           onClick={() => {
-                            setUser(val.username);
-                            makeAdmin()
+                            makeAdmin(val.username)
                           }}
                         >Make Admin</button></td>
                       </>}

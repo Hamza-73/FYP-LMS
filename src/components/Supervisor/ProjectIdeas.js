@@ -65,17 +65,21 @@ const ProjectIdeas = () => {
         })
       });
       const json = await response.json();
+      
       if (!json.success) {
         NotificationManager.error(json.message);
         console.log('json message is ', json)
         return;
       }
+  
       if (json) {
         // Create a new idea object from the fypIdea state
         const newIdea = {
           projectTitle: fypIdea.projectTitle,
           description: fypIdea.description,
           scope: fypIdea.scope,
+          date: new Date().toISOString(), // Set current date and time
+          time: new Date().toLocaleTimeString() // Set current time
         };
         NotificationManager.success(json.message);
         // Update the state with the new idea
@@ -92,6 +96,7 @@ const ProjectIdeas = () => {
       console.log('error adding project request', error);
     }
   }
+  
 
   const handleAddStudent = async (e, projectTitle, rollNo) => {
     try {

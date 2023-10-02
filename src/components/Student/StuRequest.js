@@ -46,14 +46,14 @@ const StuRequest = (props) => {
         }
     }, []);
 
-    const handleRequests = async (e) => {
+    const handleRequests = async (e, id, action) => {
         try {
             if (choice.action === 'improve') {
                 e.preventDefault();
             }
             console.log('request is started');
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/student/process-request/${choice.id}/${choice.action}`, {
+            const response = await fetch(`http://localhost:5000/student/process-request/${id}/${action}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,9 +70,9 @@ const StuRequest = (props) => {
 
             if (json.message && json.success) {
                 NotificationManager.success(json.message, '', 1000);
-                 // Remove the request that was acted upon from the state
-                 setRequests(prevRequests => ({
-                    requests: prevRequests.requests.filter(request => request.projectId !== choice.id)
+                // Remove the request that was acted upon from the state
+                setRequests(prevRequests => ({
+                    requests: prevRequests.requests.filter(request => request.projectId !== id)
                 }));
             } else {
                 NotificationManager.error(json.message, '', 1000);;
@@ -97,7 +97,9 @@ const StuRequest = (props) => {
                                 <h5 className="modal-title">Register</h5>
                             </div>
                             <div className="modal-body">
-                                <form onSubmit={(e) => { handleRequests(e); }}>
+                                <form onSubmit={(e) => {
+                                    handleRequests(e, choice.id, 'improve');
+                                }}>
                                     <div className="mb-3">
                                         <label htmlFor="name" className="form-label">Project Title</label>
                                         <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
@@ -142,30 +144,29 @@ const StuRequest = (props) => {
                                         </thead>
                                         {requests.requests.map((group, groupKey) => (
                                             <tbody key={groupKey} style={{ textAlign: 'center' }}>
-                                                    <tr key={groupKey}>
-                                                        <td>{group.supervisorName}</td>
-                                                        <td>{group.projectTitle}</td>
-                                                        <td>{group.description}</td>
-                                                        <td>{group.scope}</td>
-                                                        <td>
-                                                            <div style={{ cursor: 'pointer' }}>
-                                                                <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                                                                    <button className="btn btn-success btn-sm me-md-2" type="button" onClick={() => {
-                                                                        setChoice({ action: 'accept', id: group.projectId });
-                                                                        handleRequests();
-                                                                    }}>Accept</button>
-                                                                    <button className="btn btn-warning btn-sm" type="button" onClick={(e) => {
-                                                                        setChoice({ action: 'reject', id: group.projectId });
-                                                                        handleRequests(e);
-                                                                    }}>Reject</button>
-                                                                    <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={(e) => {
-                                                                        setChoice({ action: 'improve', id: group.projectId });
-                                                                        handleRequests(e);
-                                                                    }}>Improve</button>
-                                                                </div>
+                                                <tr key={groupKey}>
+                                                    <td>{group.supervisorName}</td>
+                                                    <td>{group.projectTitle}</td>
+                                                    <td>{group.description}</td>
+                                                    <td>{group.scope}</td>
+                                                    <td>
+                                                        <div style={{ cursor: 'pointer' }}>
+                                                            <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                                <button className="btn btn-success btn-sm me-md-2" type="button" onClick={(e) => {
+                                                                    setChoice({ action: 'accept', id: group.projectId });
+                                                                    handleRequests(e, group.projectId, 'accept');
+                                                                }}>Accept</button>
+                                                                <button className="btn btn-warning btn-sm" type="button" onClick={(e) => {
+                                                                    setChoice({ action: 'reject', id: group.projectId });
+                                                                    handleRequests(e, group.projectId, 'reject');
+                                                                }}>Reject</button>
+                                                                <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={(e) => {
+                                                                    setChoice({ action: 'improve', id: group.projectId });
+                                                                }}>Improve</button>
                                                             </div>
-                                                        </td>
-                                                    </tr>
+                                                        </div>
+                                                    </td>
+                                                </tr>
                                             </tbody>
                                         ))}
                                     </table>
