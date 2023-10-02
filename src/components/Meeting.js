@@ -234,6 +234,12 @@ const Meeting = (props) => {
           input.checked = false;
         });
       }
+      if(json.success){
+        setData((prevData) => ({
+          ...prevData,
+          meeting: prevData.meeting.filter((meeting) => meeting.meetingId !== meetingId)
+        }));
+      }
     } catch (error) {
 
     }
@@ -459,8 +465,10 @@ const Meeting = (props) => {
                         });
                       }}
                     >Close</button>
-                    <button type="submit" className="btn btn-success">
-                      Edit
+                    <button type="submit" className="btn btn-success"
+                    disabled={!review}
+                    >
+                      Give Reviews
                     </button>
                   </div>
                 </form>

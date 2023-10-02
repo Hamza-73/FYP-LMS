@@ -221,7 +221,7 @@ router.put('/meeting-review/:meetingId', authenticateUser, async (req, res) => {
     }
     const currentDate = new Date();
     const checkDate = new Date(meeting.date)
-    if (checkDate < currentDate) {
+    if (checkDate > currentDate) {
       return res.status(200).json({ message: `There's still a while for the Meeting` });
     }
     const group = await Group.findOne({
