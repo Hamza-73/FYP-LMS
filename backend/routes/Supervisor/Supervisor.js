@@ -662,6 +662,9 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     if (supervisor.slots <= 0) {
       return res.status(500).json({ success: false, message: `You're Slots are full you cannot end any requests now` });
     }
+    if(supervisor.myIdeas.length>= supervisor.slots){
+      return res.json({success:false, message:"You cannot add idea greater than your number of slots"});
+    }
     // Notify all users about the new project idea
     const checkRequest = await ProjectRequest.findOne({ projectTitle });
     if (checkRequest) {
@@ -669,10 +672,6 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     }
 
     const users = await User.find();
-
-    // const userIds = users.map(user => user._id)
-    // console.log(userIds);
-
 
     // Create a new project request without specifying the student
     const projectRequest = new ProjectRequest({

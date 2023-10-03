@@ -165,8 +165,33 @@ router.post('/login', async (req, res) => {
       user.login = user.login + 1;
       if (user.login === 1) {
         user.unseenNotifications.push({
-          type: "Important", message: "You can reset password now after 1st reset you'll need to ask for Admin permission."
-        })
+          type: "Important", message: "You can reset password now after 1st login link has been sent to your email and will be expired after 24 hours."
+        });
+        const token = jwt.sign({ id: user.id }, JWT_KEY, { expiresIn: '1d' });
+
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'YOUR_EMAIL',
+          pass: 'YOUR_PASSWORD'
+        }
+      });
+
+      var mailOptions = {
+        from: 'YOUR_EMAIL',
+        to: user.email,
+        subject: 'Reset Password Link',
+        html: `<h4>The Link will expire in 24 hours</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
+        <p>The link will expire in 5 minutes.</p>`
+      };
+      // console.log('mailoption is')
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          return res.send({ success: true, message: "Check Your Email" })
+        }
+      });
       }
       await user.save();
 
@@ -264,7 +289,8 @@ router.post('/forgot-password', async (req, res) => {
         from: 'YOUR_EMAIL',
         to: email,
         subject: 'Reset Password Link',
-        text: `http://localhost:3000/studentMain/reset_password/${user._id}/${token}`,
+        html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
+        <p>The link will expire in 5 minutes.</p>`
       };
       // console.log('mailoption is')
       transporter.sendMail(mailOptions, function (error, info) {

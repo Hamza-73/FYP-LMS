@@ -124,7 +124,8 @@ router.post('/forgot-password', async (req, res) => {
                 from: 'YOUR_EMAIL',
                 to: email,
                 subject: 'Reset Password Link',
-                text: `http://localhost:3000/adminMain/reset_password/${user._id}/${token}`,
+                html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
+        <p>The link will expire in 5 minutes.</p>`
             };
 
             transporter.sendMail(mailOptions, function (error, info) {
@@ -201,7 +202,7 @@ router.post('/make-committee', async (req, res) => {
         committeeMember.isCommittee = true;
         await committeeMember.save();
 
-        return res.json({ supervisorId: committeeMember._id, success: true, message:"Supervisor is Now a Committee Member" });
+        return res.json({ supervisorId: committeeMember._id, success: true, message: "Supervisor is Now a Committee Member" });
     } catch (err) {
         console.error('Error making supervisor a committee member', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
