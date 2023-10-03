@@ -211,13 +211,13 @@ const Meeting = (props) => {
 
   const [userData, setUserData] = useState({ member: [] });
   const [loading, setLoading] = useState(false);
-  const [review, setReview] = useState(0);
+  const [review, setReview] = useState(false);
 
   const giveReview = async (e) => {
     try {
       e.preventDefault();
       console.log('review is ', review);
-      const response = await fetch(`http://localhost:5000/meeting/meeting-review/${meetingId}`, {
+      const response = await fetch(`http://localhost:5000/meeting/meeting-review/${meetingId}/${review}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -229,12 +229,8 @@ const Meeting = (props) => {
       console.log('json is in giving meeting', json);
       if (json) {
         alert(json.message)
-        handleStarClick(0);
-        document.querySelectorAll('input[name="rate"]').forEach((input) => {
-          input.checked = false;
-        });
       }
-      if(json.success){
+      if (json.success) {
         setData((prevData) => ({
           ...prevData,
           meeting: prevData.meeting.filter((meeting) => meeting.meetingId !== meetingId)
@@ -309,49 +305,7 @@ const Meeting = (props) => {
   }
   `;
 
-  const reviewStyle = `*{
-    margin: 0;
-    padding: 0;
-}
-.rate {
-    float: left;
-    height: 46px;
-    padding: 0 10px;
-}
-.rate:not(:checked) > input {
-    position:absolute;
-    top:-9999px;
-}
-.rate:not(:checked) > label {
-    float:right;
-    width:1em;
-    overflow:hidden;
-    white-space:nowrap;
-    cursor:pointer;
-    font-size:30px;
-    color:#ccc;
-}
-.rate:not(:checked) > label:before {
-    content: '★ ';
-}
-.rate > input:checked ~ label {
-    color: #ffc700;    
-}
-.rate:not(:checked) > label:hover,
-.rate:not(:checked) > label:hover ~ label {
-    color: #deb217;  
-}
-.rate > input:checked + label:hover,
-.rate > input:checked + label:hover ~ label,
-.rate > input:checked ~ label:hover,
-.rate > input:checked ~ label:hover ~ label,
-.rate > label:hover ~ input:checked ~ label {
-    color: #c59b08;
-}`;
 
-  const handleStarClick = (rating) => {
-    setReview(rating);
-  };
   return (
     <>
       <div className="meeting"  >
@@ -433,45 +387,43 @@ const Meeting = (props) => {
               </div>
               <div className="modal-body">
                 <form onSubmit={giveReview}>
-                  <style>{reviewStyle}</style>
                   <div className="mb-3">
-                    <div className="rate">
-                      {[...Array(5)].map((_, index) => {
-                        const rating = index + 1;
-                        return (
-                          <React.Fragment key={rating}>
-                            <input
-                              type="radio"
-                              id={`star${rating}`}
-                              name="rate"
-                              value={rating}
-                              onClick={() => {
-                                handleStarClick(rating)
-                              }} // pass the rating value
-                            />
-                            <label htmlFor={`star${rating}`} title={`${rating} stars`}></label>
-                          </React.Fragment>
-                        );
-                      })}
+                    <label>
+                      <input
+                        type="radio"
+                        name="reviewOption"
+                        value="true"
+                        onChange={() => setReview(true)}
+                      />
+                      Successful
+                    </label>
 
-                    </div>
+                    <label>
+                      <input
+                        type="radio"
+                        name="reviewOption"
+                        value="false"
+                        onChange={() => setReview(false)}
+                      />
+                      Not Successful
+                    </label>
                   </div>
+
                   <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal"
-                      onClick={() => {
-                        handleStarClick(0);
-                        document.querySelectorAll('input[name="rate"]').forEach((input) => {
-                          input.checked = false;
-                        });
-                      }}
-                    >Close</button>
-                    <button type="submit" className="btn btn-success"
-                    disabled={!review}
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      data-dismiss="modal"
+                      onClick={() => setReview(null)}
                     >
+                      Close
+                    </button>
+                    <button type="submit" className="btn btn-success" disabled={review === null}>
                       Give Reviews
                     </button>
                   </div>
                 </form>
+
               </div>
             </div>
           </div>

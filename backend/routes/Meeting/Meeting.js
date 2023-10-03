@@ -207,10 +207,9 @@ router.delete('/delete-meeting/:id', async (req, res) => {
   }
 });
 
-router.put('/meeting-review/:meetingId', authenticateUser, async (req, res) => {
+router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, res) => {
   try {
-    const { meetingId } = req.params;
-    const { review } = req.body;
+    const { meetingId, review } = req.params;
     const supervisor = await Supervisor.findById(req.user.id);
     if (!supervisor) {
       return res.status(404).json({ message: 'Supervisor not found' });
@@ -248,6 +247,9 @@ router.put('/meeting-review/:meetingId', authenticateUser, async (req, res) => {
     // Update the review
     console.log('review is ', review);
     group.meetingReport[index].review = review;
+    if(review){
+      group.meeting = group.meeting+1;
+    }
     await group.save(); // Save the changes
 
     await Meeting.findByIdAndDelete(meeting._id);

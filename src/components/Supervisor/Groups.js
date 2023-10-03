@@ -201,7 +201,7 @@ const Groups = (props) => {
                             </div>
                           </td>
                           <td>{project.projectTitle}</td>
-                          <td>{group.meetingReport.length}</td>
+                          <td>{group.meeting}</td>
                           <td>{group.isProp ? 'Submitted' : 'Pending'}</td>
                           <td>{group.isDoc ? 'Submitted' : 'Pending'}</td>
                           <td><button disabled={project.students.length === 2} onClick={() => setAddStudent({ projectTitle: project.projectTitle })} className="btn btn-sm" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>

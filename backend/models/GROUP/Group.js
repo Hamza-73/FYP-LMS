@@ -41,9 +41,10 @@ const groupSchema = new Schema({
 }],
   docs: [{
     docLink: { type: String },
-    review: { type: String }
+    review: { type: Boolean, default: false }
   }],
-  instructions : {type: String}
+  instructions : {type: String},
+  meeting : {type: Number , default : 0}
 });
 
 module.exports = mongoose.model('Group', groupSchema);

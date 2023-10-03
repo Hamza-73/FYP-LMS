@@ -13,7 +13,8 @@ const authenticateUser = require('../../middleware/auth')
 const JWT_KEY = 'hamzakhan1'
 const SharedRules = require('../../models/SharedRules');
 const Admin = require('../../models/Admin');
-const nodemailer = require('nodemailer')
+const nodemailer = require('nodemailer');
+const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
 
 
 // Registration route
@@ -64,44 +65,44 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-      // Find the admin by username
-      const admin = await Committee.findOne({ username });
+    // Find the admin by username
+    const admin = await Committee.findOne({ username });
 
-      // Check if the user is an admin or a committee member with an "admin" role
-      if (admin) {
-          // If the user is an admin
-          const isPasswordValid = await bcrypt.compare(password, admin.password);
+    // Check if the user is an admin or a committee member with an "admin" role
+    if (admin) {
+      // If the user is an admin
+      const isPasswordValid = await bcrypt.compare(password, admin.password);
 
-          if (isPasswordValid) {
-              // Generate JWT token for admin
-              const token = jwt.sign({ id: admin.id }, JWT_KEY);
+      if (isPasswordValid) {
+        // Generate JWT token for admin
+        const token = jwt.sign({ id: admin.id }, JWT_KEY);
 
-              res.json({ message: 'Committee login successful', success: true, token });
-          } else {
-              res.status(401).json({ success: false, message: 'Invalid username or password' });
-          }
+        res.json({ message: 'Committee login successful', success: true, token });
       } else {
-          // If the user is not an admin, check if they are a committee member with an "admin" role
-          const supervisor = await Supervisor.findOne({ username, isCommittee: true });
-
-          if (supervisor) {
-              const isPasswordValid = await bcrypt.compare(password, supervisor.password);
-
-              if (isPasswordValid) {
-                  // Generate JWT token for committee member acting as an admin
-                  const token = jwt.sign({ id: supervisor.id}, JWT_KEY);
-
-                  res.json({ message: 'Committee login successful', success: true, token });
-              } else {
-                  res.status(401).json({ success: false, message: 'Invalid username or password' });
-              }
-          } else {
-              res.status(404).json({ success: false, message: "Commiittee Member  not found" });
-          }
+        res.status(401).json({ success: false, message: 'Invalid username or password' });
       }
+    } else {
+      // If the user is not an admin, check if they are a committee member with an "admin" role
+      const supervisor = await Supervisor.findOne({ username, isCommittee: true });
+
+      if (supervisor) {
+        const isPasswordValid = await bcrypt.compare(password, supervisor.password);
+
+        if (isPasswordValid) {
+          // Generate JWT token for committee member acting as an admin
+          const token = jwt.sign({ id: supervisor.id }, JWT_KEY);
+
+          res.json({ message: 'Committee login successful', success: true, token });
+        } else {
+          res.status(401).json({ success: false, message: 'Invalid username or password' });
+        }
+      } else {
+        res.status(404).json({ success: false, message: "Commiittee Member  not found" });
+      }
+    }
   } catch (err) {
-      console.error('Error in admin login', err);
-      res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error('Error in admin login', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
@@ -109,7 +110,7 @@ router.post('/login', async (req, res) => {
 // Password reset route
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
-  
+
   Committee.findOne({ email: email })
     .then(user => {
       if (!user) {
@@ -175,14 +176,14 @@ router.get('/get-members', async (req, res) => {
     const members = [...allCommitte, ...superviors];
 
     if (members.length === 0) {
-        res.status(404).json({ message: 'Members Not Found' });
+      res.status(404).json({ message: 'Members Not Found' });
     } else {
-        res.json({
-            success: true,
-            members
-        });
+      res.json({
+        success: true,
+        members
+      });
     }
-} catch (error) {
+  } catch (error) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 
@@ -193,21 +194,21 @@ router.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-      const admin = await Committee.findByIdAndDelete(id);
-      if (!admin) {
-          const committee = await Supervisor.findById(id);
-          if (committee) {
-              committee.isCommittee = false;
-              await committee.save();
-              return res.json({ success: true, message: "Committee Deleted Successfully" });
-          } else {
-              return res.json({ success: false, message: "Committee Member Not Found" })
-          }
+    const admin = await Committee.findByIdAndDelete(id);
+    if (!admin) {
+      const committee = await Supervisor.findById(id);
+      if (committee) {
+        committee.isCommittee = false;
+        await committee.save();
+        return res.json({ success: true, message: "Committee Deleted Successfully" });
+      } else {
+        return res.json({ success: false, message: "Committee Member Not Found" })
       }
-      res.json({ message: 'Committee Member deleted' });
+    }
+    res.json({ message: 'Committee Member deleted' });
   } catch (error) {
-      console.error('error is ', error)
-      res.status(500).json({ message: 'Internal Server Error' });
+    console.error('error is ', error)
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
@@ -536,38 +537,60 @@ router.put('/allocate-group', async (req, res) => {
 
     // Check if a group with the provided projectTitle exists
     const group = await Group.findOne({ 'projects.projectTitle': projectTitle }).populate('supervisor');
-
     if (!group) {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
+    
     // Remove the group ID from the previous supervisor's groups
     const previousSupervisor = await Supervisor.findById(group.supervisorId);
-    if (previousSupervisor) {
-      previousSupervisor.groups = previousSupervisor.groups.filter(groupId => !groupId.equals(group._id));
-      previousSupervisor.slots += 1;
-      await previousSupervisor.save();
+    if (!previousSupervisor) {
+      return res.json({ success: false, message: "Supervisor Not Found" });
     }
-
+    
+    const projectRequest = await ProjectRequest.findOne({ projectTitle: projectTitle });
+    if (!projectRequest) {
+      return res.json({ success: false, message: "Project Not Found" });
+    }
+    
     // Check if the new supervisor has slots left
     const supervisor = await Supervisor.findOne({ username: newSupervisor });
-
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'New supervisor not found' });
     }
-
     if (supervisor.slots.length == 0) {
       return res.status(400).json({ success: false, message: 'New supervisor does not have available slots' });
     }
-
+    previousSupervisor.groups = previousSupervisor.groups.filter(groupId => !groupId.equals(group._id));
+    previousSupervisor.slots += 1;
+    // get requests to save it to new supervisor's projectRequest
+    const filteredRequest = previousSupervisor.projectRequest.filter(request => {
+      return request.project.equals(projectRequest._id);
+    });
+    previousSupervisor.unseenNotifications.push({
+      type : "Important", message:`You're group ${projectTitle} has been alocated to ${supervisor.name}`
+    })
+    previousSupervisor.projectRequest = previousSupervisor.projectRequest.filter(request => {
+      return !request.project.equals(projectRequest._id);
+    });
+    
     // Allocate the group to the new supervisor
     group.supervisor = supervisor.name;
     group.supervisorId = supervisor._id;
-
     // Add the group ID to the new supervisor's groups
     supervisor.groups.push(group._id);
     supervisor.slots -= 1;
+    
+    // Push filtered request to new supervisor's projectRequest
+    if (!supervisor.projectRequest) {
+      supervisor.projectRequest = []; // Initialize as an empty array if it's undefined
+    }    
+    supervisor.projectRequest = supervisor.projectRequest.concat(filteredRequest);
+    projectRequest.supervisor = supervisor._id;
+    supervisor.unseenNotifications.push({
+      type : "Important", message:`You've been allocated a group ${projectTitle}`
+    })
 
-    await Promise.all([group.save(), supervisor.save()]);
+    await Promise.all([group.save(), supervisor.save(), previousSupervisor.save(), projectRequest.save()]);
 
     res.json({ success: true, message: 'Group allocated to the new supervisor' });
   } catch (error) {

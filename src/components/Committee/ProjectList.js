@@ -160,10 +160,10 @@ const ProjectList = (props) => {
                           </div>
                         </td>
                         <td>{group.projectTitle}</td>
-                        {!showSidebar && <td>{group.remarks}<div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
+                        <td>{group.remarks} {!showSidebar && <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
                           <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.groupId)}></i>
-                        </div>
-                        </td>}
+                        </div>}
+                        </td>
                       </tr>
                     ))}
 

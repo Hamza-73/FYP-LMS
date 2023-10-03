@@ -12,6 +12,19 @@ import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'rec
 const Progress = (props) => {
 
     const [percentage, setPercentage] = useState(25);
+    const [meetingReport, setMeetingReport] = useState([{
+        id: "1",
+        date: "20-09-2023",
+        review: 4
+    }, {
+        id: "2",
+        date: "26-09-2023",
+        review: 5
+    }, {
+        id: "1",
+        date: "01-10-2023",
+        review: 5
+    },]);
 
     const [request, setRequest] = useState({
         username: '', projectTitle: '',
@@ -19,10 +32,7 @@ const Progress = (props) => {
     });
     const [groupDetails, setGroupDetails] = useState({});
     const [loading, setLoading] = useState(false);
-    const [meetingGraph, setMeetingGraph] = useState({
-        meetingTitle: '', type: '',
-        date: '', time: '', purpose: '',
-    });
+
 
     const sendRequest = async (e) => {
         try {
@@ -76,7 +86,7 @@ const Progress = (props) => {
             if (json) {
                 console.log('group detail is ', json);
                 setGroupDetails(json);
-                setMeetingGraph(json.group.meetingReport);
+                setMeetingReport(json.group.meetingReport); // Set meetingReport state with the fetched data
             }
             if (json.success && json.message) {
                 NotificationManager.success(json.message);
@@ -177,9 +187,9 @@ const Progress = (props) => {
                                                 </div>
                                             </div>
                                             <div className="modal-footer">
-                                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"
-                                            onClick={handleClose}
-                                            > Close</button>
+                                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"
+                                                    onClick={handleClose}
+                                                > Close</button>
                                                 <button type="submit"
                                                     className="btn"
                                                     style={{ background: 'maroon', color: 'white' }}
@@ -199,14 +209,15 @@ const Progress = (props) => {
                             <div className="container d-flex">
                                 <div className="my-3 box mx-4">
                                     <h3>Meeting Progress</h3>
-                                    <BarChart width={350} height={200} data={meetingGraph}>
+                                    {groupDetails.group.meetingReport.length>0 ? <BarChart width={350} height={200} data={meetingReport}>
                                         <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="meetingTitle" />
+                                        <XAxis dataKey="date" />
                                         <YAxis />
-                                        <Tooltip formatter={(value) => `Date: ${value}`} />
+                                        <Tooltip />
                                         <Legend />
-                                        <Bar dataKey="date" fill="#8884d8" name="Meeting Date" />
-                                    </BarChart>
+                                        <Bar dataKey="review" fill="#8884d8" name="Meeting Reviews" />
+                                    </BarChart> : <h4 className='my-6'>No Meetings Yet</h4>
+                                    }
                                 </div>
                                 <div className="box my-3 mx-4">
                                     <h3>Project Report</h3>
