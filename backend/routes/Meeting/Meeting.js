@@ -210,6 +210,7 @@ router.delete('/delete-meeting/:id', async (req, res) => {
 router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, res) => {
   try {
     const { meetingId, review } = req.params;
+    console.log('review is ', review)
     const supervisor = await Supervisor.findById(req.user.id);
     if (!supervisor) {
       return res.status(404).json({ message: 'Supervisor not found' });
@@ -233,27 +234,26 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
     let index = -1;
     // Find the index of the meeting in the array
     group.meetingReport.forEach((meet, key) => {
-      console.log('meet is ', meet)
       if (meet.id.equals(meeting._id)) {
         index = key;
       }
     });
-    console.log('index is ', index);
 
     if (index === -1) {
       return res.json({ success: false, message: "Meeting Not Found in Group" });
     }
 
     // Update the review
-    console.log('review is ', review);
     group.meetingReport[index].review = review;
     if(review){
+      group.meetingReport[index].value = 5;
       group.meeting = group.meeting+1;
+    }else{
+      group.meetingReport[index].value = 3;
     }
     await group.save(); // Save the changes
 
     await Meeting.findByIdAndDelete(meeting._id);
-    console.log('After save');
 
     return res.json({ success: true, message: "Reviews Given Successfully" });
   } catch (error) {

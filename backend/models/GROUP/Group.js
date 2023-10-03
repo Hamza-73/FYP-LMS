@@ -37,7 +37,8 @@ const groupSchema = new Schema({
   meetingReport: [{
   id :{ type: Schema.Types.ObjectId, ref: 'Meeting' },
   date: {type : Date},
-  review : {type : Number}
+  review : {type : Boolean, default: false},
+  value : { type : Number}
 }],
   docs: [{
     docLink: { type: String },

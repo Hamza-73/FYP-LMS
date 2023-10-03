@@ -7,24 +7,32 @@ import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Loading from '../Loading';
-import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
+import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Cell } from 'recharts';
 
 const Progress = (props) => {
 
     const [percentage, setPercentage] = useState(25);
-    const [meetingReport, setMeetingReport] = useState([{
-        id: "1",
-        date: "20-09-2023",
-        review: 4
-    }, {
-        id: "2",
-        date: "26-09-2023",
-        review: 5
-    }, {
-        id: "1",
-        date: "01-10-2023",
-        review: 5
-    },]);
+    const [review] = useState(props.review); // assuming review is a prop passed to your component
+    const [meetingReport, setMeetingReport] = useState([
+        {
+            id: "1",
+            date: "20-09-2023",
+            review: true,
+            value: 5
+        },
+        {
+            id: "2",
+            date: "26-09-2023",
+            review: false,
+            value: 3
+        },
+        {
+            id: "3",
+            date: "01-10-2023",
+            review: true,
+            value: 5
+        }
+    ]);
 
     const [request, setRequest] = useState({
         username: '', projectTitle: '',
@@ -209,15 +217,20 @@ const Progress = (props) => {
                             <div className="container d-flex">
                                 <div className="my-3 box mx-4">
                                     <h3>Meeting Progress</h3>
-                                    {groupDetails.group.meetingReport.length>0 ? <BarChart width={350} height={200} data={meetingReport}>
+                                    {groupDetails.group.meetingReport.length>0? <BarChart width={350} height={200} data={meetingReport}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="date" />
                                         <YAxis />
                                         <Tooltip />
                                         <Legend />
-                                        <Bar dataKey="review" fill="#8884d8" name="Meeting Reviews" />
-                                    </BarChart> : <h4 className='my-6'>No Meetings Yet</h4>
-                                    }
+                                        <Bar dataKey="value" name="Meeting Reviews">
+                                            {
+                                                meetingReport.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.review ? 'blue' : 'red'} />
+                                                ))
+                                            }
+                                        </Bar>
+                                    </BarChart> : <h4 className='my-6'>No Meeting Scheduled Yet</h4>}
                                 </div>
                                 <div className="box my-3 mx-4">
                                     <h3>Project Report</h3>

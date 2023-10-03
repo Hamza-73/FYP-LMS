@@ -397,7 +397,7 @@ const Meeting = (props) => {
                       />
                       Successful
                     </label>
-
+                    <br />
                     <label>
                       <input
                         type="radio"
