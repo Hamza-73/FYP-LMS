@@ -51,9 +51,29 @@ const Tasks = (props) => {
   };
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-    console.log('file is ', file);
-  };
+    const selectedFile = e.target.files[0];
+
+    // Check if a file is selected
+    if (selectedFile) {
+      // Check file type
+      const allowedTypes = ['application/pdf']; // Only allow PDF files
+      if (allowedTypes.includes(selectedFile.type)) {
+        // Check file size (in bytes)
+        const maxSize = 3 * 1024 * 1024; // 3MB
+        if (selectedFile.size <= maxSize) {
+          setFile(selectedFile);
+        } else {
+          // File size exceeds the limit
+          NotificationManager.error('File size must be less than 3MB.');
+          e.target.value = null; // Clear the file input
+        }
+      } else {
+        // Invalid file type
+        NotificationManager.error('Invalid file format. Please select a PDF file.');
+        e.target.value = null; // Clear the file input
+      }
+    }
+  }
 
   useEffect(() => {
     const groupDetail = async () => {

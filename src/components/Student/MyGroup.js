@@ -66,8 +66,27 @@ const MyGroup = (props) => {
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    setFile(selectedFile); // Set the file immediately
-    console.log('file is ', selectedFile); // Use the selected file immediately
+
+    // Check if a file is selected
+    if (selectedFile) {
+      // Check file type
+      const allowedTypes = ['application/pdf']; // Only allow PDF files
+      if (allowedTypes.includes(selectedFile.type)) {
+        // Check file size (in bytes)
+        const maxSize = 3 * 1024 * 1024; // 3MB
+        if (selectedFile.size <= maxSize) {
+          setFile(selectedFile);
+        } else {
+          // File size exceeds the limit
+          NotificationManager.error('File size must be less than 3MB.');
+          e.target.value = null; // Clear the file input
+        }
+      } else {
+        // Invalid file type
+        NotificationManager.error('Invalid file format. Please select a PDF file.');
+        e.target.value = null; // Clear the file input
+      }
+    }
   }
 
   const upload = async (e, type) => {

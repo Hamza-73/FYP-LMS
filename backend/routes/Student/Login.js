@@ -128,9 +128,12 @@ router.post('/doc', authenticateUser, async (req, res) => {
 
     const result = await cloudinary.uploader.upload(file.tempFilePath);
     console.log('result is ', result);
+    if(!groupUpdate.docs){
+      groupUpdate.docs = []
+    }
     groupUpdate.docs.push({
       docLink: result.url,
-      review: ''
+      review: false
     });
     await groupUpdate.save();
 

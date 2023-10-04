@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
-import Loading from '../Loading';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
-import 'react-notifications/lib/notifications.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import Loading from "../Loading";
+import {
+  NotificationContainer,
+  NotificationManager,
+} from "react-notifications";
+import "react-notifications/lib/notifications.css";
 
 const CommitteeMember = (props) => {
   const history = useNavigate();
@@ -356,6 +359,44 @@ const CommitteeMember = (props) => {
       setCurrentPage(currentPage - 1);
     }
   };
+  
+ const style = `
+  .heading {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .mb-3 {
+    margin-bottom: 15px;
+  }
+
+  .btn-secondary {
+    background-color: white;
+    color: black;
+  }
+
+  .btn-register {
+    background-color: maroon;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-formregister{
+    background-color:maroon;
+    color:white;
+  }
+  
+`;
+
 
   const location = useLocation();
   const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members'];
@@ -367,59 +408,186 @@ const CommitteeMember = (props) => {
     <>
       {/* REGISTER */}
       <div className="register">
-        <div className={`modal fade ${showModal ? 'show' : ''}`} id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden={!showModal} data-backdrop="static" data-keyboard="false" onHide={() => setEditMode(false)}>
+        <style>{style}</style>
+        <div
+          className={`modal fade ${showModal ? "show" : ""}`}
+          id="exampleModal"
+          tabIndex="-1"
+          role="dialog"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden={!showModal}
+          data-backdrop="static"
+          data-keyboard="false"
+          onHide={() => setEditMode(false)}
+        >
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title" >Register</h5>
+                <h5 className="modal-title">Register</h5>
               </div>
               <div className="modal-body">
                 <form onSubmit={editMode ? handleEdit : handleRegister}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">First Name</label>
-                    <input type="text" className="form-control" id="name" name='fname' value={register.fname} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Last Name</label>
-                    <input type="text" className="form-control" id="name" name='lname' value={register.lname} onChange={handleChange1} />
-                    {firstNameLastNameEqual && (
-                      <div className="alert alert-danger" role="alert">
-                        First name and last name should not be equal.
+                  <div className="row mb-3">
+                    <div className="col">
+                      <label htmlFor="name" className="form-label">
+                        First Name
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text">
+                          <i className="fas fa-user"></i>
+                        </span>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="name"
+                          name="fname"
+                          value={register.fname}
+                          onChange={handleChange1}
+                        />
                       </div>
-                    )}
+                    </div>
+                    <div className="col">
+                      <label htmlFor="name" className="form-label">
+                        Last Name
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text">
+                          <i className="fas fa-user"></i>
+                        </span>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="name"
+                          name="lname"
+                          value={register.lname}
+                          onChange={handleChange1}
+                        />
+                        {firstNameLastNameEqual && (
+                          <div className="text-danger">
+                            First name and last name should not be same.
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                    <input type="text" className="form-control" id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
+                    <label
+                      htmlFor="exampleInputusername1"
+                      className="form-label"
+                    >
+                      Username
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="fas fa-user"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="exampleInputusername2"
+                        name="username"
+                        value={register.username}
+                        onChange={handleChange1}
+                      />
+                    </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="exampleInputusername1" className="form-label">Email</label>
-                    <input type="email" className="form-control" id="email" name='email' value={register.email} onChange={handleChange1} />
+                    <label htmlFor="department" className="form-label">
+                      {" "}
+                      Department{" "}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text"><i className="fas fa-building"></i></span>
+                      <select
+                        type="text"
+                        className="form-control"
+                        id="department"
+                        name="department"
+                        value={register.department}
+                        onChange={handleChange1}
+                      >
+                        <option value="">Select Department</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Other">other</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="department" className="form-label"> Department </label>
-                    <input type="text" className="form-control" id="department" name="department" value={register.department} onChange={handleChange1} />
+                    <label htmlFor="designation" className="form-label">
+                      {" "}
+                      Designation{" "}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="fas fa-user-tie"></i>
+                      </span>
+                      <select
+                        className="form-select"
+                        id="designation"
+                        name="designation"
+                        value={register.designation}
+                        onChange={handleChange1}
+                      >
+                        <option value="Professor">Professor</option>
+                        <option value="Assistant Professor">
+                          Assistant Professor
+                        </option>
+                        <option value="Lecturer">Lecturer</option>
+                        <option value="External">External</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="mb-3">
-                    <label htmlFor="designation" className="form-label"> Designation </label>
-                    <select className="form-select" id="designation" name="designation" value={register.designation} onChange={handleChange1}>
-                      <option value="Professor">Professor</option>
-                      <option value="Assistant Professor">Assistant Professor</option>
-                      <option value="Lecturer">Lecturer</option>
-                    </select>
-                  </div>
-                  {!editMode ? <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                    <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
-                    <small>password should be of at least 4 characters </small>
-                  </div> : ''}
+                  {!editMode ? (
+                    <div className="mb-3">
+                      <label
+                        htmlFor="exampleInputPassword1"
+                        className="form-label"
+                      >
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        id="exampleInputPassword2"
+                        name="password"
+                        value={register.password}
+                        onChange={handleChange1}
+                      />
+                      <small>
+                        password should be of at least 4 characters{" "}
+                      </small>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                   <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={handleClose}>Close</button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      data-dismiss="modal"
+                      onClick={handleClose}
+                    >
+                      Close
+                    </button>
                     {editMode ? (
-                      <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>Save Changes</button>
+                      <button
+                        type="submit"
+                        className="btn"
+                        style={{ background: "maroon", color: "white" }}
+                      >
+                        Save Changes
+                      </button>
                     ) : (
-                      <button type="submit" className="btn btn-success" disabled={!(register.fname) || !(register.lname)
-                        || !(register.username) || !(register.department)}>
+                      <button
+                        type="submit"
+                        className="btn btn-formregister"
+                        disabled={
+                          !register.fname ||
+                          !register.lname ||
+                          !register.username ||
+                          !register.department
+                        }
+                      >
                         Register
                       </button>
                     )}
@@ -431,59 +599,73 @@ const CommitteeMember = (props) => {
         </div>
       </div>
 
-      {loading ? (<Loading />) : (<>
-        <div className='container' style={{ width: "90%" }}>
-          <h3 className='text-center'>Committee Members</h3>
-          <div className="mb-3">
-            <label htmlFor="recordsPerPage" className="form-label">Records per page:</label>
-            <select id="recordsPerPage" className="form-select" value={recordsPerPage} onChange={(e) => {
-              setRecordsPerPage(Number(e.target.value));
-              setCurrentPage(1); // Reset to the first page when changing the number of records per page
-            }}
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          <div className="container" style={{ width: "100%" }}>
+            <h3 className="text-center">Committee Members</h3>
+            <div className="mb-3">
+              <label htmlFor="recordsPerPage" className="form-label">
+                Records per page:
+              </label>
+              <select
+                id="recordsPerPage"
+                className="form-select"
+                value={recordsPerPage}
+                onChange={(e) => {
+                  setRecordsPerPage(Number(e.target.value));
+                  setCurrentPage(1); // Reset to the first page when changing the number of records per page
+                }}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search by name, department, or designation"
-              value={searchQuery}
-              onChange={handleSearch}
-            />
-          </div>
-          {filteredDataPaginated.length > 0 ? (
-            <table className="table table-hover text-center">
-              <thead>
-                <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Department</th>
-                  <th scope="col">Designation</th>
-                  <th scope="col">Edit</th>
-                  {(!showSidebar && !userData.member.isAdmin) && (
-                    <>
-                      <th scope="col">Remove</th>
-                      <th scope="col">Make Admin</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDataPaginated.map((val, key) => (
-                  <tr key={key}>
-                    <td>{ val.fname? val.fname + ' ' + val.lname : <>{val.name} <small>(sup)</small></>}</td>
-                    <td>{val.department}</td>
-                    <td>{val.designation}</td>
-                    <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                      <i className="fa-solid fa-pen-to-square"></i>
-                    </td>
-                    {(!showSidebar && !userData.member.isAdmin) &&
+            <div className="mb-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by name, department, or designation"
+                value={searchQuery}
+                onChange={handleSearch}
+              />
+            </div>
+            {filteredDataPaginated.length > 0 ? (
+              <table className="table table-hover text-center">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Department</th>
+                    <th scope="col">Designation</th>
+                    <th scope="col">Edit</th>
+                    {(!showSidebar && !userData.member.isAdmin) && (
+                      <>
+                        <th scope="col">Remove</th>
+                        <th scope="col">Make Admin</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className='text-center'>
+                  {filteredDataPaginated.map((val, key) => (
+                    <tr key={key}>
+                      <td>{val.fname + " " + val.lname}</td>
+                      <td>{val.department}</td>
+                      <td>{val.designation}</td>
+                      <td
+                        style={{ cursor: "pointer" }}
+                        data-toggle="modal"
+                        data-target="#exampleModal"
+                        onClick={() => openEditModal(val)}
+                      >
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </td>
+                      {(!showSidebar && !userData.member.isAdmin) &&
                       <>
                         <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
                         <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
@@ -493,31 +675,57 @@ const CommitteeMember = (props) => {
                           }}
                         >Make Admin</button></td>
                       </>}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div>No matching members found.</div>
-          )}
-          <div className="d-flex justify-content-between">
-            <button type="button" className="btn btn-success" disabled={currentPage === 1} onClick={handlePrevPage}
-            >  Previous </button>
-            <button type="button" className="btn btn-success" disabled={currentPage === Math.ceil(filteredData.length / recordsPerPage)} onClick={handleNextPage}
-            >  Next </button>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div>No result found</div>
+            )}
+            <div className="d-flex justify-content-between">
+              <button
+                type="button"
+                className="btn btn-success"
+                disabled={currentPage === 1}
+                onClick={handlePrevPage}
+              >
+                {" "}
+                Previous{" "}
+              </button>
+              <button
+                type="button"
+                className="btn btn-success"
+                disabled={
+                  currentPage ===
+                  Math.ceil(filteredData.length / recordsPerPage)
+                }
+                onClick={handleNextPage}
+              >
+                {" "}
+                Next{" "}
+              </button>
+            </div>
           </div>
-        </div>
-        {(!showSidebar && !userData.member.isAdmin) && (
           <div className="d-grid gap-2 col-6 mx-auto my-4">
-            <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
+            <button
+              style={{ background: "maroon" }}
+              type="button"
+              className="btn btn-danger mx-5"
+              data-toggle="modal"
+              data-target="#exampleModal"
+              onClick={() => {
+                setEditMode(false);
+                handleClose();
+              }}
+            >
               Register
             </button>
           </div>
-        )}
-        <NotificationContainer />
-      </>)}
+          <NotificationContainer />
+        </>
+      )}
     </>
   );
-}
+};
 
 export default CommitteeMember;

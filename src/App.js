@@ -5,6 +5,7 @@ import CommitteeMain from './components/CommitteeMain';
 import SupervisorMain from './components/SupervisorMain';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import logo from './images/logo.png'
+import landingLogo from './images/LoginLogo.jpg'
 import AdminMain from './components/AdminMain';
 
 const App = () => {
@@ -35,14 +36,15 @@ const App = () => {
 
   const style = `
   body{   
-  background-color: #ceb070;
+    background-color: White;
   }
+  
   .cards{
     border:none;
   }
   .m-box{
     display : flex;
-    margin-top:13%;
+    margin-top:6%;
   }
   .boxs{
     border: 1px solid black;
@@ -60,10 +62,7 @@ const App = () => {
     cursor:pointer;
     background : rgba(90,0,6,.7);
     background-image: linear-gradient(#00005b,#5a0006);
-    color : white;
-    box-shadow: 0 0 80px 80px rgba(0,0,0,.15);
-    -webkit-backdrop-filter: blur(106px);
-    backdrop-filter: blur(106px);
+    color : white;box-shadow: 0 18px 28px rgba(0, 0, 0, 1);
   }
   .boxs img{
     width: 60%;
@@ -89,7 +88,7 @@ const App = () => {
   return (
     <div>
       <Routes>
-        <Route path='/studentMain/*' element={<StudentMain />} />
+      <Route path='/studentMain/*' element={<StudentMain />} />
         <Route path='/supervisorMain/*' element={<SupervisorMain />} />
         <Route path='/committeeMain/*' element={<CommitteeMain />} />
         <Route path='/adminMain/*' element={<AdminMain />} />
@@ -98,22 +97,26 @@ const App = () => {
         <div>
           <style>{style}</style>
           <div className="cards text-center container">
+          <div>
+          <img src={landingLogo} alt="GCU Logo" />
+            <p>"Welcome to our FYP Proctoring System - Where your final year project journey begins!</p>
+          </div>
             <div className='m-box'>
               <div className="boxs" onClick={handleAdmin}>
                 <img src={logo} alt="" />
-                <h5>I'm Admin</h5>
+                <h5>Admin</h5>
               </div>
               <div className="boxs" onClick={handleCommittee}>
                 <img src={logo} alt="" />
-                <h5>I'm A Committee Member</h5>
+                <h5>Committee</h5>
               </div>
               <div className="boxs" onClick={handleSupervisor}>
                 <img src={logo} alt="" />
-                <h5>I'm A Supervisor</h5>
+                <h5>Supervisor</h5>
               </div>
               <div className="boxs" onClick={handleStudent}>
                 <img src={logo} alt="" />
-                <h5>I'm A Student</h5>
+                <h5>Student</h5>
               </div>
             </div>
           </div>
