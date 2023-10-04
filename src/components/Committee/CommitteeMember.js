@@ -654,7 +654,7 @@ const CommitteeMember = (props) => {
                 <tbody className='text-center'>
                   {filteredDataPaginated.map((val, key) => (
                     <tr key={key}>
-                      <td>{val.fname + " " + val.lname}</td>
+                      <td>{ val.fname? val.fname + ' ' + val.lname : <>{val.name} <small>(sup)</small></>}</td>
                       <td>{val.department}</td>
                       <td>{val.designation}</td>
                       <td
