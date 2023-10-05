@@ -25,7 +25,7 @@ const AdminMain = () => {
             <AdminNav title1='Dashboard' link1='dashboard' title2='Admins'  link2='admins'
              title5='Committee Members' link5='members' user='adminMain' detailLink = 'admin'
              title3='Students' link3='student'
-             hide='d-none' title4='Supervisor List' link4='supervisor'
+             hide='d-none' title4='Supervisors' link4='supervisor'
             />
           )}
         </div>

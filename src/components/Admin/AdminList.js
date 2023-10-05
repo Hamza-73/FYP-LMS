@@ -328,10 +328,48 @@ const CommitteeMember = (props) => {
   // Check if the current location is in the pathsWithoutSidebar array
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
+  const style = `
+  .heading {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .mb-3 {
+    margin-bottom: 15px;
+  }
+
+  .btn-secondary {
+    background-color: white;
+    color: black;
+  }
+
+  .btn-register {
+    background-color: maroon;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-formregister{
+    background-color:maroon;
+    color:white;
+  }
+  
+`;
+
   return (
     <>
       {/* REGISTER */}
       <div className="register">
+        <style>{style}</style>
         <div className={`modal fade ${showModal ? 'show' : ''}`} id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden={!showModal} data-backdrop="static" data-keyboard="false" onHide={() => setEditMode(false)}>
           <div className="modal-dialog" role="document">
             <div className="modal-content">

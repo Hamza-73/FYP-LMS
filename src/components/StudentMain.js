@@ -5,7 +5,7 @@ import ForgotPassword from './ForgotPassword'
 import Progress from './Student/Progress'
 import Tasks from './Student/Tasks'
 import MyGroup from './Student/MyGroup'
-import SideBar from './SideBar'
+import StuNav from './Student/StuNav'
 import FypIdeas from './Student/FypIdeas'
 import Notification from './Notification'
 import Dashboard from './Dashboard'
@@ -27,12 +27,12 @@ const StudentMain = (props) => {
       <>
         <div>
           {!showSidebar && (
-            <SideBar title1='Dashboard' link1='dashboard' title2='Project Progress' user='studentMain'
+            <StuNav title1='Dashboard' link1='dashboard' title2='Project Progress' user='studentMain'
               link2='progress' title3='Tasks' link3='tasks' title4='My Group'
               link4='group' title5='Fyp Ideas' link5='ideas' detailLink='student' title7='Requests'
-              link7='requests' link00='supervisors' title00='Supervisors' title01='Project List'
-              link01='project'
-              title6='Notification' link6='notification' hide='d-none'
+              link7='requests' link00='supervisors' title00='Supervisors' title6='Project List'
+              link6='project'
+              title01='Notification' link01='notification' hide='d-none'
             />
           )}
         </div>

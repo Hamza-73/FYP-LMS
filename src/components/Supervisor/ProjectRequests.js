@@ -8,6 +8,7 @@ const ProjectRequests = (props) => {
   const [requests, setRequests] = useState({ request: [] });
   const [improve, setImprove] = useState({ projectTitle: '', scope: '', description: '' });
   const [loading, setLoading] = useState(false);
+  const [requestId, setRequestId] = useState("");
 
   useEffect(() => {
     const getRequests = async () => {
@@ -41,13 +42,12 @@ const ProjectRequests = (props) => {
     }
   }, []);
 
-  const handleRequests = async (e, id) => {
+  const handleRequests = async (e) => {
     try {
       e.preventDefault();
       console.log('request is started');
-      console.log('improve', improve)
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/supervisor/improve-request/${id}`, {
+      const response = await fetch(`http://localhost:5000/supervisor/improve-request/${requestId}`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const ProjectRequests = (props) => {
 
       if (json.message && json.success) {
         setRequests(prevState => ({
-          request: prevState.request.filter(req => req.requestId !== id)
+          request: prevState.request.filter(req => req.requestId !== requestId)
         }));
         setImprove({projectTitle:"",scope:"",description:""});
         NotificationManager.success(json.message,'',1000);
@@ -226,9 +226,7 @@ const ProjectRequests = (props) => {
                                   <button className="btn btn-warning btn-sm" type="button" onClick={(e) => {
                                     rejectRequest(group.requestId);
                                   }}>Reject</button>
-                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={(e) => {
-                                    handleRequests(e,group.requestId);
-                                  }}>Improve</button>
+                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={()=>setRequestId(group.requestId)}>Improve</button>
                                 </div>
                               </div>
                             </td>

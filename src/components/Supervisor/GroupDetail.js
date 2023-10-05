@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import Loading from '../Loading';
+import React, { useEffect, useState } from "react";
+import Loading from "../Loading";
+import SideBar from "../SideBar";
+import { EngineeringSharp } from "@mui/icons-material";
 
 const GroupDetail = () => {
   const [group, setGroup] = useState({
@@ -119,7 +121,6 @@ const GroupDetail = () => {
   }
 
   const currentGroup = group.groups.length > 0 ? group.groups[currentIndex] : {};
-
   return (
     <div>
       {!loading ? (
@@ -159,27 +160,67 @@ const GroupDetail = () => {
             </div>
           </div>
           {group.groups.length > 0 ? (
-            <div className="container">
+            <div className="container" style={{ border: "none", height: "700px", width: "1000px" }}>
               <div className="upperpart">
                 <div className="proj-detail d-flex justify-content-between">
-                  <h4>Project Title</h4>
-                  <h5>{currentGroup.projects[0].projectTitle || 'N/A'}</h5>
-                </div>
-                <div className="proj-detail d-flex justify-content-between">
-                  <h4>Supervisor</h4>
-                  <h5>{currentGroup.supervisor || 'N/A'}</h5>
+                  <h4>
+                    <strong>Project Title:</strong>
+                  </h4>
+                  <h5 style={{
+                    fontStyle: "italic",
+                    textShadow: "0.5px 0.5px black",
+                  }}>{currentGroup.projects[0].projectTitle || "N/A"}</h5>
                 </div>
               </div>
 
-              <div className="mid">
+              <div className="">
                 <div>
-                  <h5>
-                    {currentGroup.projects[0].students[0] ? currentGroup.projects[0].students[0].name : "No Student Yet"} <br /> {currentGroup.projects[0].students[0] ? currentGroup.projects[0].students[0].rollNo : ""}
-                  </h5>
+                  <h4>
+                    <i
+                      class="fas fa-user"
+                      style={{ fontSize: "35px", color: "maroon" }}
+                    ></i>
+                    &ensp;
+                    {currentGroup.supervisor || "N/A"}
+                  </h4>
                 </div>
+
                 <div>
-                  <h5>
-                    {currentGroup.projects[0].students[1] ? currentGroup.projects[0].students[1].name : "No Student Yet"} <br /> {currentGroup.projects[0].students[1] ? currentGroup.projects[0].students[1].rollNo : ""}
+                  <br></br>
+
+                  <h5
+                    style={{
+                      fontStyle: "italic",
+                      textShadow: "0.5px 0.5px black",
+                    }}
+                  >
+
+                    <i
+                      class="fas fa-user"
+                      style={{ fontSize: "35px", color: "maroon" }}
+                    ></i>
+                    &ensp;
+                    {currentGroup.projects[0].students[0]
+                      ? currentGroup.projects[0].students[0].name
+                      : "No Student Yet"}{" "}
+                    &nbsp;{" "}
+                    {currentGroup.projects[0].students[0]
+                      ? currentGroup.projects[0].students[0].rollNo
+                      : ""}{" "}
+                    &ensp;
+
+                    <i
+                      class="fas fa-user"
+                      style={{ fontSize: "35px", color: "maroon" }}
+                    ></i>
+                    &ensp;
+                    {currentGroup.projects[0].students[1]
+                      ? currentGroup.projects[0].students[1].name
+                      : "No Student Yet"}{" "}
+                    &nbsp;{" "}
+                    {currentGroup.projects[0].students[1]
+                      ? currentGroup.projects[0].students[1].rollNo
+                      : ""}
                   </h5>
                 </div>
               </div>
@@ -202,21 +243,33 @@ const GroupDetail = () => {
                       </div>
                     ))
                   ) : (
-                    "No Uploaded Doc Yet"
+                    ""
                   )}
                 </div>
               </div>
-
-              <div className='d-flex justify-content-between'>
-                <button className="btn btn-success" onClick={handlePrevClick} disabled={currentIndex <= 0}
-                > Prev </button>
-                <button className="btn btn-success" onClick={handleNextClick} disabled={currentIndex === group.groups.length - 1}
-                > Next </button>
+              <div className="d-flex justify-content-between">
+                <button
+                  className="btn btn-success"
+                  onClick={handlePrevClick}
+                  disabled={currentIndex <= 0}
+                >
+                  {" "}
+                  Prev{" "}
+                </button>
+                <button
+                  className="btn btn-success"
+                  onClick={handleNextClick}
+                  disabled={currentIndex === group.groups.length - 1}
+                >
+                  {" "}
+                  Next{" "}
+                </button>
               </div>
-
             </div>
           ) : (
-            <h2 className='text-center'>You currently have no group in supervision.</h2>
+            <h2 className="text-center">
+              You currently have no group in supervision.
+            </h2>
           )}
         </>
       ) : (

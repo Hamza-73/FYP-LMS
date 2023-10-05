@@ -90,7 +90,7 @@ const SideBar = (props) => {
                                 <Link className="nav-link" to={`/${props.user}/${props.link6}`}>{props.title6}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link7}`}>{props.title7}</Link>
+                                <Link className="nav-link" to={`/${props.user}/${props.link7}`}><i style={{fontSize:"20px"}} className="fa-solid fa-bell"></i></Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link00}`}>{props.title00}</Link>

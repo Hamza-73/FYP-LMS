@@ -30,19 +30,19 @@ const SupervisorList = (props) => {
         return;
       }
       console.log('registering ', register)
-      const response = await fetch("http://localhost:5000/supervisor/create",{
-        method:"POST",
-        headers:{
-          "Content-Type" : "application/json"
+      const response = await fetch("http://localhost:5000/supervisor/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
         },
-        body : JSON.stringify( {
+        body: JSON.stringify({
           name: register.name.trim(),
           username: register.username.trim(),
           designation: register.designation,
           password: register.password,
           department: register.department.trim(),
           slots: parseInt(register.slots, 10),
-          email : register.email
+          email: register.email
         })
       });
       const json = await response.json();
@@ -62,7 +62,7 @@ const SupervisorList = (props) => {
 
         // Clear the register form fields
         setRegister({
-          name: "", username: "", department: "", designation: "", password: "", slots: "", email:""
+          name: "", username: "", department: "", designation: "", password: "", slots: "", email: ""
         });
       } else {
         NotificationManager.error(json.message);
@@ -77,7 +77,7 @@ const SupervisorList = (props) => {
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
       name: supervisor.name, username: supervisor.username, department: supervisor.department,
-      designation: supervisor.designation, slots: supervisor.slots.toString(), email : supervisor.email
+      designation: supervisor.designation, slots: supervisor.slots.toString(), email: supervisor.email
     });
   };
 
@@ -89,7 +89,7 @@ const SupervisorList = (props) => {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
-  
+
       if (register.username.indexOf('_') === -1) {
         NotificationManager.error('Username must contain at least one underscore (_).');
         return;
@@ -106,10 +106,10 @@ const SupervisorList = (props) => {
           designation: register.designation.trim(),
           department: register.department.trim(),
           slots: parseInt(register.slots, 10),
-          email : register.email
+          email: register.email
         })
       });
-  
+
       const updatedSupervisor = await response.json(); // Await the response here
       if (updatedSupervisor) {
         console.log('updated success')
@@ -120,11 +120,11 @@ const SupervisorList = (props) => {
             member._id === updatedSupervisor._id ? updatedSupervisor : member
           ),
         }));
-  
+
         NotificationManager.success('Edited Successfully');
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
-          name: '', username: '', department: '', designation: '', slots: '', email:''
+          name: '', username: '', department: '', designation: '', slots: '', email: ''
         });
       }
     } catch (error) {
@@ -132,13 +132,13 @@ const SupervisorList = (props) => {
       NotificationManager.error('Error in Editing');
     }
   };
-  
+
   const handleDelete = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this supervisor?');
     if (confirmed) {
       try {
-        const response = await fetch(`http://localhost:5000/supervisor/delete/${id}`,{
-          method:"DELETE"
+        const response = await fetch(`http://localhost:5000/supervisor/delete/${id}`, {
+          method: "DELETE"
         });
         const json = await response.json();
         console.log('json in deleting supervisor is ', json)
@@ -148,9 +148,9 @@ const SupervisorList = (props) => {
             ...prevData,
             members: prevData.members.filter((member) => member._id !== id),
           }));
-          if(json.success)
+          if (json.success)
             NotificationManager.success('Deleted Successfully');
-          if(!json.success){
+          if (!json.success) {
             NotificationManager.success(json.message);
           }
         }
@@ -211,7 +211,7 @@ const SupervisorList = (props) => {
   );
 
   const [register, setRegister] = useState({
-    name: "", username: "", department: "", designation: "", password: "", slots: "", email:""
+    name: "", username: "", department: "", designation: "", password: "", slots: "", email: ""
   });
 
   const handleChange1 = (e) => {
@@ -236,7 +236,7 @@ const SupervisorList = (props) => {
   };
 
   const handleClose = () => {
-    setRegister({ name: "", username: "", department: "", designation: "", password: "", slots: "" , email:""})
+    setRegister({ name: "", username: "", department: "", designation: "", password: "", slots: "", email: "" })
   }
 
   const paginate = (array, page_size, page_number) => {
@@ -289,7 +289,7 @@ const SupervisorList = (props) => {
       console.log('error is in sidebar: ', err);
     }
   };
-  
+
   const makeCommittee = async (username) => {
     try {
       const response = await fetch(`http://localhost:5000/admin/make-committee`, {
@@ -300,7 +300,7 @@ const SupervisorList = (props) => {
         body: JSON.stringify({ username: username })
       });
       const json = await response.json();
-  
+
       if (json.success) {
         alert(json.message);
         // Fetch the updated data again after making a committee member
@@ -308,28 +308,65 @@ const SupervisorList = (props) => {
       } else {
         alert(json.message);
       }
-  
+
       console.log('json in making admin is ', json);
     } catch (error) {
       console.error('Error making committee member:', error);
       // Handle error
     }
   };
-  
+
 
 
   const location = useLocation();
-  const [userData , setUserData] = useState({member:[]})
+  const [userData, setUserData] = useState({ member: [] })
   const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members', '/committeeMain/student', '/committeeMain/supervisor'];
 
   // Check if the current location is in the pathsWithoutSidebar array
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
+  const style = `
+  .heading {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .mb-3 {
+    margin-bottom: 15px;
+  }
+
+  .btn-secondary {
+    background-color: white;
+    color: black;
+  }
+
+  .btn-register {
+    background-color: maroon;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-formregister{
+    background-color:maroon;
+    color:white;
+  }
+  
+`;
 
   return (
     <>
       {/* REGISTER */}
       <div className="register">
+        <style>{style}</style>
         <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -338,30 +375,105 @@ const SupervisorList = (props) => {
               </div>
               <div className="modal-body">
                 <form onSubmit={editMode ? handleEdit : handleRegister}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Name</label>
-                    <input type="text" className="form-control" id="name" name='name' value={register.name} onChange={handleChange1} />
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      First Name
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="fas fa-user"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="name"
+                        name="name"
+                        value={register.name}
+                        onChange={handleChange1}
+                      />
+                    </div>
+                  </div>
+                  <div className="col">
+                    <label htmlFor="username" className="form-label">
+                      First Name
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="fas fa-user"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="username"
+                        name="username"
+                        value={register.username}
+                        onChange={handleChange1}
+                      />
+                    </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                    <input type="text" className="form-control" id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
+                    <label htmlFor="department" className="form-label">
+                      {" "}
+                      Department{" "}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text"><i className="fas fa-building"></i></span>
+                      <select
+                        type="text"
+                        className="form-control"
+                        id="department"
+                        name="department"
+                        value={register.department}
+                        onChange={handleChange1}
+                      >
+                        <option value="">Select Department</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Other">other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      Email
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i class="fa-regular fa-envelope"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="email"
+                        name="email"
+                        value={register.email}
+                        onChange={handleChange1}
+                      />
+                    </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="department" className="form-label">Department</label>
-                    <input type="text" className="form-control" id="department" name='department' value={register.department} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input type="email" className="form-control" id="email" name='email' value={register.email} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="department" className="form-label">Designation</label>
-                    <select className="form-select" name="designation" value={register.designation} onChange={handleChange1}>
-                      <option value="">Select Designation</option>
-                      <option value="Professor">Professor</option>
-                      <option value="Assistant Professor">Assistant Professor</option>
-                      <option value="Lecturer">Lecturer</option>
-                    </select>
+                    <label htmlFor="designation" className="form-label">
+                      {" "}
+                      Designation{" "}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="fas fa-user-tie"></i>
+                      </span>
+                      <select
+                        className="form-select"
+                        id="designation"
+                        name="designation"
+                        value={register.designation}
+                        onChange={handleChange1}
+                      >
+                        <option value="Professor">Professor</option>
+                        <option value="Assistant Professor">
+                          Assistant Professor
+                        </option>
+                        <option value="Lecturer">Lecturer</option>
+                        <option value="External">External</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="department" className="form-label">Slots</label>
@@ -425,7 +537,7 @@ const SupervisorList = (props) => {
                     <th scope="col">Designation</th>
                     <th scope="col">Slots</th>
                     <th scope="col">Edit</th>
-                    { (!showSidebar && !userData.member.isAdmin) && <>
+                    {(!showSidebar && !userData.member.isAdmin) && <>
                       <th scope="col">Remove</th>
                       <th scope="col">Make Committee</th>
                     </>}
@@ -442,15 +554,15 @@ const SupervisorList = (props) => {
                         <i className="fa-solid fa-pen-to-square"></i>
                       </td>
                       {(!showSidebar && !userData.member.isAdmin) &&
-                      <>
-                        <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
-                        <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                          disabled={val.isCommittee}
-                          onClick={() => {
-                            makeCommittee(val.username)
-                          }}
-                        >Make Committee</button></td>
-                      </>}
+                        <>
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
+                          <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
+                            disabled={val.isCommittee}
+                            onClick={() => {
+                              makeCommittee(val.username)
+                            }}
+                          >Make Committee</button></td>
+                        </>}
                     </tr>
                   ))}
                 </tbody>
@@ -465,7 +577,7 @@ const SupervisorList = (props) => {
               >  Next </button>
             </div>
           </div>
-          {  (!showSidebar && !userData.member.isAdmin) &&  <div className="d-grid gap-2 col-6 mx-auto my-4">
+          {(!showSidebar && !userData.member.isAdmin) && <div className="d-grid gap-2 col-6 mx-auto my-4">
             <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
               Register
             </button>

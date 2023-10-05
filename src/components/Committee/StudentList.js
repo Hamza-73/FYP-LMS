@@ -88,7 +88,7 @@ const StudentList = (props) => {
 
         // Clear the register form fields
         setRegister({
-          name: "", father: "", department: "", batch: "", semester: "", cnic: "", rollNo: "", email:""
+          name: "", father: "", department: "", batch: "", semester: "", cnic: "", rollNo: "", email: ""
         });
         setRollNoError(false);
 
@@ -106,7 +106,7 @@ const StudentList = (props) => {
     setSelectedStudent(student);
     setEditMode(true); // Set edit mode when opening the modal
     setRegister({
-      name: student.name, father: student.father, department: student.department, batch: student.batch, semester: student.semester, cnic: student.cnic, rollNo: student.rollNo, email : register.email
+      name: student.name, father: student.father, department: student.department, batch: student.batch, semester: student.semester, cnic: student.cnic, rollNo: student.rollNo, email: register.email
     });
   };
 
@@ -159,7 +159,7 @@ const StudentList = (props) => {
           body: JSON.stringify({
             name: register.name, father: register.father, department: register.department,
             batch: register.batch, semester: register.semester,
-            cnic: register.cnic, rollNo: register.rollNo, email:register.email
+            cnic: register.cnic, rollNo: register.rollNo, email: register.email
           })
         }
       );
@@ -176,7 +176,7 @@ const StudentList = (props) => {
         console.log('updated student is ', updatedStudent)
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
-          name: '', father: '', department: '', batch: '', semester: '', cnic: '', rollNo: '', email:""
+          name: '', father: '', department: '', batch: '', semester: '', cnic: '', rollNo: '', email: ""
         });
         NotificationManager.success('Edited Successfully');
         setRollNoError(false);
@@ -275,7 +275,7 @@ const StudentList = (props) => {
 
   const [register, setRegister] = useState({
     name: "", father: "", department: "", batch: "",
-    semester: "", cnic: "", rollNo: "", email:""
+    semester: "", cnic: "", rollNo: "", email: ""
   });
 
   const handleChange1 = (e) => {
@@ -305,7 +305,7 @@ const StudentList = (props) => {
   const handleClose = () => {
     setRegister({
       name: "", father: "", department: "", batch: "",
-      semester: "", cnic: "", rollNo: "", email:""
+      semester: "", cnic: "", rollNo: "", email: ""
     })
   }
 
@@ -341,18 +341,56 @@ const StudentList = (props) => {
       console.log('error is in sidebar: ', err);
     }
   };
-  
+
   const location = useLocation();
-  const [userData , setUserData] = useState({member:[]})
+  const [userData, setUserData] = useState({ member: [] })
   const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members', '/committeeMain/student'];
 
   // Check if the current location is in the pathsWithoutSidebar array
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
+  const style = `
+  .heading {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .mb-3 {
+    margin-bottom: 15px;
+  }
+
+  .btn-secondary {
+    background-color: white;
+    color: black;
+  }
+
+  .btn-register {
+    background-color: maroon;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-formregister{
+    background-color:maroon;
+    color:white;
+  }
+  
+`;
+
   return (
     <>
       {/* REGISTER */}
       <div className="register"  >
+        <style>{style}</style>
         <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -361,64 +399,172 @@ const StudentList = (props) => {
               </div>
               <div className="modal-body">
                 <form onSubmit={editMode ? handleEdit : handleRegister}>
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      First Name
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="fas fa-user"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="name"
+                        name="name"
+                        value={register.name}
+                        onChange={handleChange1}
+                      />
+                    </div>
+                  </div>
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      Father Name
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="fas fa-user"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="father"
+                        name="father"
+                        value={register.father}
+                        onChange={handleChange1}
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="department" className="form-label">
+                      {" "}
+                      Department{" "}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text"><i className="fas fa-building"></i></span>
+                      <select
+                        type="text"
+                        className="form-control"
+                        id="department"
+                        name="department"
+                        value={register.department}
+                        onChange={handleChange1}
+                      >
+                        <option value="">Select Department</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Other">other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      Email
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i class="fa-regular fa-envelope"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="email"
+                        name="email"
+                        value={register.email}
+                        onChange={handleChange1}
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="department" className="form-label">
+                      {" "}
+                      Batch{" "}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text"><i className="fas fa-building"></i></span>
+                      <select
+                        type="text"
+                        className="form-control"
+                        id="batch"
+                        name="batch"
+                        value={register.batch}
+                        onChange={handleChange1}
+                      >
+                        <option value="">Select Batch</option>
+                        <option value="2018-2022">2018-2022</option>
+                        <option value="2019-2023">2019-2023</option>
+                        <option value="2020-2024">2020-2024</option>
+                        <option value="2021-2025">2021-2025</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      Roll No
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i class="fa-solid fa-user-graduate"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="rollNo"
+                        name="rollNo"
+                        value={register.rollNo}
+                        onChange={handleChange1}
+                      />
+                      {rollNoError && <div className="alert alert-danger" role="alert">
+                        Roll No should be in XXXX-BSCS-XX format
+                      </div>}
+                    </div>
+                  </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Name</label>
-                    <input type="text" className="form-control" id="name" name='name' value={register.name} onChange={handleChange1} />
-                  </div><div className="mb-3">
-                    <label htmlFor="name" className="form-label">Father Name</label>
-                    <input type="text" className="form-control" id="father" name='father' value={register.father} onChange={handleChange1} />
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      Cnic
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i class="fa-solid fa-address-card"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="cnic"
+                        name="cnic"
+                        value={register.cnic}
+                        onChange={handleChange1}
+                      />
+                    </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="department" className="form-label">Department</label>
-                    <input type="text" className="form-control" id="department" name='department' value={register.department} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input type="email" className="form-control" id="email" name='email' value={register.email} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="batch" className="form-label">Batch</label>
-                    <select className="form-select" name="batch"
-                      value={register.batch} onChange={handleChange1}
-                    >
-                      <option value="">Select Batch</option>
-                      <option value="2018-2022">2018-2022</option>
-                      <option value="2019-2023">2019-2023</option>
-                      <option value="2020-2024">2020-2024</option>
-                      <option value="2021-2025">2021-2025</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="department" className="form-label">Roll #</label>
-                    <input type="text" className="form-control" id="rollNo" name='rollNo' value={register.rollNo} onChange={handleChange1} />
-                    {rollNoError && <div className="alert alert-danger" role="alert">
-                      Roll No should be in XXXX-BSCS-21 format
-                    </div>}
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="department" className="form-label">Cnic</label>
-                    <input type="text" className="form-control" id="cnic" name='cnic' value={register.cnic} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="semester" className="form-label">Semester</label>
-                    <select
-                      className="form-select"
-                      name="semester"
-                      value={register.semester}
-                      onChange={handleChange1}
-                    >
-                      <option value="">Select Semester</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                      <option value="6">6</option>
-                      <option value="7">7</option>
-                      <option value="8">8</option>
-                    </select>
+                    <label htmlFor="semester" className="form-label">
+                      {" "}
+                      Semester{" "}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                      <i class="fa-light fa-cassette-betamax"></i>
+                        </span>
+                      <select
+                        type="text"
+                        className="form-control"
+                        id="semester"
+                        name="semester"
+                        value={register.semester}
+                        onChange={handleChange1}
+                      >
+                        <option value="">Select Semester</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="modal-footer">
@@ -478,7 +624,7 @@ const StudentList = (props) => {
                   <th scope="col">Semester</th>
                   <th scope="col">Cnic</th>
                   <th scope="col">Edit</th>
-                 { (!showSidebar && !userData.member.isAdmin) && <th scope="col">Remove</th>}
+                  {(!showSidebar && !userData.member.isAdmin) && <th scope="col">Remove</th>}
                 </tr>
               </thead>
               <tbody className='text-center'>
@@ -493,7 +639,7 @@ const StudentList = (props) => {
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
                       <i class="fa-solid fa-pen-to-square"></i>
                     </td>
-                    { (!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>}
+                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>}
 
                   </tr>
                 ))}
@@ -510,7 +656,7 @@ const StudentList = (props) => {
           </div>
         </div>
 
-        { (!showSidebar && !userData.member.isAdmin) && <div className="d-grid gap-2 col-6 mx-auto my-4">
+        {(!showSidebar && !userData.member.isAdmin) && <div className="d-grid gap-2 col-6 mx-auto my-4">
           <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
             Register
           </button>

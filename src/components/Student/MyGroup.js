@@ -259,7 +259,7 @@ const MyGroup = (props) => {
         {
           group.group ? <>
             {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
-              <div className="notify" style={{ position: "absolute", right: "40px" }}>
+              <div className="notify" style={{ position: "absolute", right: "30px", top:"140px" }}>
                 <style>{myStyle}</style>
                 <div>
                   <div>
@@ -306,22 +306,63 @@ const MyGroup = (props) => {
 
 
             <div className="upperpart">
-              <div className="proj-detail d-flex justify-content-between">
-                <h4>Project Title</h4>
-                <h5>{group.group.projectTitle}</h5>
+                <div className="proj-detail d-flex justify-content-between">
+                  <h4>
+                    <strong>Project Title:</strong>
+                  </h4>
+                  <h5 style={{
+                    fontStyle: "italic",
+                    textShadow: "0.5px 0.5px black",
+                  }}>{group.group.projectTitle || "N/A"}</h5>
+                </div>
               </div>
-              <div className="proj-detail d-flex justify-content-between">
-                <h4>Supervisor</h4>
-                <h5>{group.group.supervisor}</h5>
-              </div>
-            </div>
 
-            <div className="mid">
-              <h5>{group.group.supervisor}</h5>
-              <h5>{group.group.groupMember.length > 0 ? group.group.groupMember[0].name : "No Group Member Yet"} <br /> {group.group.groupMember[0]?.rollNo}
-              </h5>
-              <h5>{group.group.myDetail[0].name} <br /> {group.group.myDetail[0].rollNo}</h5>
-            </div>
+              <div className="">
+                <div>
+                  <h4>
+                    <i
+                      class="fas fa-user"
+                      style={{ fontSize: "35px", color: "maroon" }}
+                    ></i>
+                    &ensp;
+                    {group.group.supervisor || "N/A"}
+                  </h4>
+                </div>
+
+                <div>
+                  <br></br>
+
+                  <h5
+                    style={{
+                      fontStyle: "italic",
+                      textShadow: "0.5px 0.5px black",
+                    }}
+                  >
+
+                    <i
+                      class="fas fa-user"
+                      style={{ fontSize: "35px", color: "maroon" }}
+                    ></i>
+                    &ensp;
+                    {group.group.myDetail[0] ? group.group.myDetail[0].name : ""}{" "}
+                    &nbsp;{" "}
+                    {group.group.myDetail[0] ? group.group.myDetail[0]?.rollNo:""}{" "}
+                    &ensp;
+
+                    <i
+                      class="fas fa-user"
+                      style={{ fontSize: "35px", color: "maroon" }}
+                    ></i>
+                    &ensp;
+                    {group.group.groupMember[1] ? group.group.groupMember[1].name : "No Member Yet"}{" "}
+                    &nbsp;{" "}
+                    {group.group.groupMember[1] ? group.group.groupMember[1]?.rollNo:""}{" "}
+                    &ensp;
+                  </h5>
+                </div>
+              </div>
+
+            
 
             <div className="last">
               <div className="meeting-row">

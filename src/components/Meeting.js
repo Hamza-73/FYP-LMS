@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Loading from './Loading';
+import '../css/meeting.css'
 
 const Meeting = (props) => {
   const myStyle = {
@@ -44,7 +45,13 @@ const Meeting = (props) => {
 
   const scheduleMeeting = async () => {
     try {
-      console.log('meeting is scheduling');
+      // Check if required fields are present
+      if (!meeting.meetingDate || !meeting.meetingTime || !meeting.meetingGroup || !meeting.purpose) {
+        alert("Error: Meeting date, time, project title, and purpose are required.");
+        return;
+      }
+  
+      console.log('Meeting is scheduling');
       const response = await fetch(`http://localhost:5000/meeting/meeting`, {
         method: "POST",
         headers: {
@@ -60,11 +67,11 @@ const Meeting = (props) => {
           type: meeting.meetingType
         })
       });
-
+  
       console.log('Response status:', response.status);
       const json = await response.json();
-      console.log('json meeting is ', json);
-
+      console.log('JSON meeting is ', json);
+  
       if (json) {
         // Clear the form fields
         setMeeting({
@@ -75,7 +82,7 @@ const Meeting = (props) => {
           meetingDate: "",
           meetingType: ""
         });
-
+  
         // Map properties from API response to the expected state structure
         const mappedMeeting = {
           meetingGroup: json.meeting.projectTitle,
@@ -85,7 +92,7 @@ const Meeting = (props) => {
           meetingDate: json.meeting.date,
           meetingType: json.meeting.type
         };
-
+  
         // Update the state with the newly scheduled meeting
         setData((prevData) => ({
           ...prevData,
@@ -96,10 +103,11 @@ const Meeting = (props) => {
         alert("Error: " + json.message, 'danger');
       }
     } catch (error) {
-      console.log('error dealing with requests', error);
+      console.log('Error dealing with requests', error);
       alert(`Some error occurred, try to reload the page or try again`, 'danger');
     }
   };
+  
 
   const editMeeting = async (e) => {
     try {
@@ -305,6 +313,10 @@ const Meeting = (props) => {
   }
   `;
 
+  function showDiv(divId, element) {
+    document.getElementById(divId).style.display =
+      element.value == 1 ? "block" : "none";
+  }
 
   return (
     <>
@@ -442,46 +454,86 @@ const Meeting = (props) => {
 
               <h6>Select a meeting type</h6>
 
-              <div className="d-flex">
-                <div className="select">
-                  <input
-                    type="radio"
-                    name="meetingType"
-                    value="In Person"
-                    checked={meeting.meetingType === 'In Person'}
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="inperson" className="mx-2">
-                    In Person
-                  </label>
-                </div>
-                <div className="select mx-4">
-                  <input
-                    type="radio"
-                    name="meetingType"
-                    value="Online"
-                    checked={meeting.meetingType === 'Online'}
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="online" className="mx-2">
-                    Online
-                  </label>
-                </div>
+              <h4>Select a meeting type</h4>{" "}
+              <select
+                id="test"
+                name="form-select"
+                onChange={(e) => showDiv("link", e.target)}
+              >
+                <option id="test">None</option>
+                <option
+                  id="test"
+                  value="0"
+                  checked={meeting.type === "In Person"}
+                  onChange={handleInputChange}
+                >
+                  In Person
+                </option>
+                <option id="test" value="1" checked={meeting.type === "Online"} onChange={handleInputChange}>
+                  Online
+                </option>
+              </select>{" "}
+              <br />
+              <br />
+              <div className="link" id="link">
+                <h4>
+                  <i class="fas fa-video" style={{ fontSize: "24px" }}></i>
+                  &ensp;Using
+                </h4>
+                <select id="test" name="form-select">
+                  <option value="0" checked={meeting.type === "Google Meet"}>
+                    Google Meet
+                  </option>
+                  <option value="1" checked={meeting.type === "Microsoft Teams"}>
+                    Microsoft Teams
+                  </option>
+                  <option value="2" checked={meeting.type === "Zoom"}>
+                    Zoom
+                  </option>
+                </select>{" "}
+                <br />
+                <textarea
+                  name="meetingLink"
+                  class="purpose"
+                  placeholder="Enter the link of the meeting"
+                  disabled={meeting.type === "In Person"}
+                  onChange={handleInputChange}
+                  value={meeting.meetingLink}
+                ></textarea>
               </div>
 
-              <div className="source d-flex" style={{ marginTop: "20px" }}>
-
-                <input type="time" placeholder='Meeting Time' onChange={handleInputChange} name='meetingTime' value={meeting.meetingTime} />
-                <input type="date" placeholder='Meeting Date' onChange={handleInputChange} name='meetingDate' value={meeting.meetingDate} />
-              </div>
-
-              <div className="link">
+              <div style={{ marginTop: "20px" }}>
+                <h6 for="appt">Choose a time and date for your meeting:</h6>{" "}
+                <input
+                  class="purpose1"
+                  type="time"
+                  id="appt"
+                  name="appt"
+                  min="08:00"
+                  max="18:00"
+                  value={meeting.time}
+                  onchange={handleInputChange}
+                  required
+                />{" "}
+                <br />
+                <input
+                  type="date"
+                  class="purpose1"
+                  for="appt"
+                  placeholder="Meeting Date"
+                  onChange={handleInputChange}
+                  name="date"
+                  value={meeting.date}
+                />
+              </div>{" "}
+              <br />
+              <div className="link" id="link">
                 <h1>Link</h1>
                 <textarea name="meetingLink" id="" disabled={meeting.meetingType === 'In Person'} cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
               </div>
               {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
 
-              <button className="btn btn-danger" style={{ background: "maroon" }} onClick={scheduleMeeting}>Schedule Metting</button>
+              <button className="btn btn-danger" style={{ background: "maroon" }} onClick={scheduleMeeting} >Schedule Metting</button>
 
             </div>
 
@@ -529,7 +581,7 @@ const Meeting = (props) => {
                             </div>
                           )}
                           <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
-                            <button
+                            {(new Date(meeting.meetingDate) > new Date()) &&<button
                               className="btn btn-danger btn-sm"
                               data-toggle="modal"
                               data-target="#exampleModal"
@@ -544,7 +596,7 @@ const Meeting = (props) => {
                               }}
                             >
                               Edit
-                            </button>
+                            </button>}
                             {
                               new Date(meeting.meetingDate) > new Date() ? (
                                 <button
@@ -569,8 +621,6 @@ const Meeting = (props) => {
                                 </button>
                               )
                             }
-
-
                           </div>
                         </div>
                       </div>

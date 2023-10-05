@@ -277,7 +277,12 @@ router.get('/detail', authenticateUser, async (req, res) => {
     console.log(userId)
     const member = await Committee.findById(userId);
     if (!member) {
-      return res.status(404).json({ message: 'Member not found' });
+      const member = await Supervisor.findById(userId);
+      if(!member){
+        return res.status(404).json({ message: 'Member not found' });
+      }else{
+        return res.send({ success: true, member, user: userId });
+      }      
     }
     return res.send({ success: true, member, user: userId });
   } catch (error) {

@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-// import image1 from '../images/logo.png'
 import image1 from '../../images/logo.png'
 import axios from 'axios'
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min';
 
-const ComNav = (props) => {
+const SideBar = (props) => {
     let history = useNavigate()
     const handleLogout = () => {
         localStorage.removeItem('token')
@@ -38,14 +36,14 @@ const ComNav = (props) => {
                         'Authorization': token
                     },
                 });
-                
+
                 if (!response.ok) {
                     console.log('error fetching detail', response);
                     return; // Exit early on error
                 }
 
                 const json = await response.json();
-                console.log('json is in sidebar: ', json);
+                // console.log('json is in sidebar: ', json);
                 if (json) {
                     //   console.log('User data is: ', json);
                     setUserData(json);
@@ -92,23 +90,13 @@ const ComNav = (props) => {
                                 <Link className="nav-link" to={`/${props.user}/${props.link6}`}>{props.title6}</Link>
                             </li>
                             <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link7}`}>{props.title7}</Link>
+                            </li>
+                            <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link00}`}>{props.title00}</Link>
                             </li>
-                            <li className="nav-item dropdown">
-                                <a
-                                    className="nav-link dropdown-toggle"
-                                    data-bs-toggle="dropdown"
-                                    data-bs-target="#yourDropdownMenuId"
-                                    role="button"
-                                    aria-expanded="false"
-                                >
-                                    {props.title0}
-                                </a>
-                                <ul className="dropdown-menu">
-                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link8}`}>{props.title8}</Link></li>
-                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link9}`}>{props.title9}</Link></li>
-                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link10}`}>{props.title10}</Link></li>
-                                </ul>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link01}`}><i style={{fontSize:"20px"}} className="fa-solid fa-bell"></i></Link>
                             </li>
                         </ul>
                         <form className={`d-flex ${!localStorage.getItem('token') ? 'd-none' : ''} `} role="search">
@@ -135,10 +123,10 @@ const ComNav = (props) => {
         </>
     )
 }
-ComNav.defaultProps = {
-    title5: "", title6: "", title7: "", title8: "",
+SideBar.defaultProps = {
+    title5: "" , title6: "" , title7: "" , title8: "",
     title00: "", title01: "", title02: "", link5: "/",
     link6: "/", link7: "/", link8: "/", link00: "/", link01: "/",
     link01: "/",
 }
-export default ComNav
+export default SideBar

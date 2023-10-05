@@ -215,6 +215,7 @@ const Progress = (props) => {
                     {groupDetails.group ? (
                         <>
                             <div className="container d-flex">
+                                <div className="d-flex mx-6" style={{position:"relative", marginLeft:"10%"}}>
                                 <div className="my-3 box mx-4">
                                     <h3>Meeting Progress</h3>
                                     {groupDetails.group.meetingReport.length>0? <BarChart width={350} height={200} data={meetingReport}>
@@ -226,7 +227,7 @@ const Progress = (props) => {
                                         <Bar dataKey="value" name="Meeting Reviews">
                                             {
                                                 meetingReport.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.review ? 'blue' : 'red'} />
+                                                    <Cell key={`cell-${index}`} fill={entry.review ? 'red' : 'blue'} />
                                                 ))
                                             }
                                         </Bar>
@@ -237,6 +238,7 @@ const Progress = (props) => {
                                     <div style={{ width: '190px', marginLeft: '25%' }}>
                                         <CircularProgressbar value={percentage} text={`${percentage}%`} />
                                     </div>
+                                </div>
                                 </div>
                             </div>
                             <div className="table">

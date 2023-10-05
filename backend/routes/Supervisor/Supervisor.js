@@ -200,9 +200,8 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-
+    console.log('improve code start');
     const projectRequest = supervisor.projectRequest.filter(request => request._id.equals(requestId));
-
     if (projectRequest.length <= 0) {
       return res.status(404).json({ success: false, message: 'Project request not found' });
     }

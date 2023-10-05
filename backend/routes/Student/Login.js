@@ -132,8 +132,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
       groupUpdate.docs = []
     }
     groupUpdate.docs.push({
-      docLink: result.url,
-      review: false
+      docLink: result.url, review: ""
     });
     await groupUpdate.save();
 

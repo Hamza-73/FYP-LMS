@@ -22,10 +22,10 @@ const CommitteeMember = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
   const [register, setRegister] = useState({
-    fname: "", lname: "", username: "", department: "", designation: "", password: "", email: "", name:"",
+    fname: "", lname: "", username: "", department: "", designation: "", password: "", email: "", name: "",
   });
 
-  
+
   // Function to close the modal
   const closeModal = () => {
     setShowModal(false);
@@ -42,7 +42,7 @@ const CommitteeMember = (props) => {
       });
       const json = await response.json();
       console.log('json in making admin is ', json);
-      if(json.success){
+      if (json.success) {
         getMembers();
       }
       if (json.message) {
@@ -300,7 +300,7 @@ const CommitteeMember = (props) => {
 
   // Function to reset input fields
   const handleClose = () => {
-    setRegister({ fname: "", lname: "", name:"", username: "", department: "", designation: "", password: "", email: "" });
+    setRegister({ fname: "", lname: "", name: "", username: "", department: "", designation: "", password: "", email: "" });
   }
 
   const handleSearch = (event) => {
@@ -314,7 +314,7 @@ const CommitteeMember = (props) => {
   const filteredData = data.members.filter((member) => {
     const searchTerm = searchQuery.trim().toLowerCase(); // Remove leading/trailing spaces and convert to lowercase
     const searchWords = searchTerm.split(' ');
-  
+
     // Check if member object has both "fname" and "lname" properties
     if (member.fname && member.lname) {
       const matchesFirstName = searchWords.some((word) =>
@@ -323,7 +323,7 @@ const CommitteeMember = (props) => {
       const matchesLastName = searchWords.some((word) =>
         member.lname.toLowerCase().includes(word)
       );
-  
+
       if (matchesFirstName || matchesLastName) {
         return true;
       }
@@ -332,19 +332,19 @@ const CommitteeMember = (props) => {
       const matchesName = searchWords.some((word) =>
         member.name.toLowerCase().includes(word)
       );
-  
+
       if (matchesName) {
         return true;
       }
     }
-  
+
     // Check department and designation properties
     return (
       member.department.toLowerCase().includes(searchTerm) ||
       member.designation.toLowerCase().includes(searchTerm)
     );
   });
-  
+
 
   const filteredDataPaginated = paginate(filteredData, recordsPerPage, currentPage);
 
@@ -359,8 +359,8 @@ const CommitteeMember = (props) => {
       setCurrentPage(currentPage - 1);
     }
   };
-  
- const style = `
+
+  const style = `
   .heading {
     text-align: center;
     margin-top: 40px;
@@ -487,6 +487,24 @@ const CommitteeMember = (props) => {
                         id="exampleInputusername2"
                         name="username"
                         value={register.username}
+                        onChange={handleChange1}
+                      />
+                    </div>
+                  </div>
+                  <div className="col">
+                    <label htmlFor="name" className="form-label">
+                      Email
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i class="fa-regular fa-envelope"></i>
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="email"
+                        name="email"
+                        value={register.email}
                         onChange={handleChange1}
                       />
                     </div>
@@ -654,7 +672,7 @@ const CommitteeMember = (props) => {
                 <tbody className='text-center'>
                   {filteredDataPaginated.map((val, key) => (
                     <tr key={key}>
-                      <td>{ val.fname? val.fname + ' ' + val.lname : <>{val.name} <small>(sup)</small></>}</td>
+                      <td>{val.fname ? val.fname + ' ' + val.lname : <>{val.name} <small>(sup)</small></>}</td>
                       <td>{val.department}</td>
                       <td>{val.designation}</td>
                       <td
@@ -666,15 +684,15 @@ const CommitteeMember = (props) => {
                         <i className="fa-solid fa-pen-to-square"></i>
                       </td>
                       {(!showSidebar && !userData.member.isAdmin) &&
-                      <>
-                        <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
-                        <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                          disabled={val.isAdmin}
-                          onClick={() => {
-                            makeAdmin(val.username)
-                          }}
-                        >Make Admin</button></td>
-                      </>}
+                        <>
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
+                          <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
+                            disabled={val.isAdmin}
+                            onClick={() => {
+                              makeAdmin(val.username)
+                            }}
+                          >Make Admin</button></td>
+                        </>}
                     </tr>
                   ))}
                 </tbody>

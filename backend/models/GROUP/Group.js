@@ -42,7 +42,7 @@ const groupSchema = new Schema({
 }],
   docs: [{
     docLink: { type: String },
-    review: { type: Boolean, default: false }
+    review: { type: String }
   }],
   instructions : {type: String},
   meeting : {type: Number , default : 0}
