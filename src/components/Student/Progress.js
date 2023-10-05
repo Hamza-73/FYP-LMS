@@ -16,23 +16,76 @@ const Progress = (props) => {
     const [meetingReport, setMeetingReport] = useState([
         {
             id: "1",
-            date: "20-09-2023",
+            date: "2023-10-1",
             review: true,
-            value: 5
+            value: 4
         },
         {
             id: "2",
-            date: "26-09-2023",
+            date: "2023-9-4",
             review: false,
-            value: 3
+            value: 2
         },
         {
             id: "3",
-            date: "01-10-2023",
+            date: "2023-10-15",
+            review: false,
+            value: 5
+        }, ,
+        {
+            id: "2",
+            date: "2023-9-4",
+            review: false,
+            value: 2
+        },
+        {
+            id: "3",
+            date: "2023-8-5",
             review: true,
             value: 5
-        }
+        },
+        {
+            id: "3",
+            date: "2023-11-5",
+            review: true,
+            value: 5
+        },
+
     ]);
+
+    const [chartData, setChartData] = useState([]);
+
+    const parseDate = (dateString) => {
+        const dateObj = new Date(dateString);
+        const month = dateObj.getMonth() + 1; // Adding 1 because months are 0-based
+        const year = dateObj.getFullYear();
+        return `${month}-${year}`;
+    };
+
+    useEffect(() => {
+        // Transform meetingReport data to get counts for each month
+        const transformedData = meetingReport.reduce((acc, meeting) => {
+            const monthYear = parseDate(meeting.date);
+
+            if (!acc[monthYear]) {
+                acc[monthYear] = { trueCount: 0, falseCount: 0, monthYear }; // Include monthYear property
+            }
+
+            if (meeting.review) {
+                acc[monthYear].trueCount++;
+            } else {
+                acc[monthYear].falseCount++;
+            }
+
+            return acc;
+        }, {});
+
+        // Convert the object back to an array
+        const chartData = Object.values(transformedData);
+        console.log('Transformed Data:', chartData);
+        setChartData(chartData);
+    }, [meetingReport]);
+
 
     const [request, setRequest] = useState({
         username: '', projectTitle: '',
@@ -215,30 +268,28 @@ const Progress = (props) => {
                     {groupDetails.group ? (
                         <>
                             <div className="container d-flex">
-                                <div className="d-flex mx-6" style={{position:"relative", marginLeft:"10%"}}>
-                                <div className="my-3 box mx-4">
-                                    <h3>Meeting Progress</h3>
-                                    {groupDetails.group.meetingReport.length>0? <BarChart width={350} height={200} data={meetingReport}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="date" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar dataKey="value" name="Meeting Reviews">
-                                            {
-                                                meetingReport.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.review ? 'red' : 'blue'} />
-                                                ))
-                                            }
-                                        </Bar>
-                                    </BarChart> : <h4 className='my-6'>No Meeting Scheduled Yet</h4>}
-                                </div>
-                                <div className="box my-3 mx-4">
-                                    <h3>Project Report</h3>
-                                    <div style={{ width: '190px', marginLeft: '25%' }}>
-                                        <CircularProgressbar value={percentage} text={`${percentage}%`} />
+                                <div className="d-flex mx-6" style={{ position: "relative", marginLeft: "10%" }}>
+                                    <div className="my-3 box mx-4">
+                                        <h3>Meeting Progress</h3>
+                                        {meetingReport.length > 0 ? <BarChart width={350} height={200} data={chartData}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="monthYear" />
+                                            <YAxis />
+                                            <Tooltip />
+                                            <Legend />
+                                            <Bar dataKey="trueCount" fill="red" name="Successful" />
+                                            <Bar dataKey="falseCount" fill="blue" name="Unsuccessful" />
+                                        </BarChart>
+
+                                            : <h4 className='my-6'>No Meetings Yet</h4>}
+
                                     </div>
-                                </div>
+                                    <div className="box my-3 mx-4">
+                                        <h3>Project Report</h3>
+                                        <div style={{ width: '190px', marginLeft: '25%' }}>
+                                            <CircularProgressbar value={percentage} text={`${percentage}%`} />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="table">

@@ -107,27 +107,38 @@ router.put('/edit-meeting/:id', async (req, res) => {
   const updatedMeetingData = req.body;
 
   try {
-    const updatedMeeting = await Meeting.findByIdAndUpdate(id, updatedMeetingData, {
-      new: true, // Return the updated meeting
+    const existingMeeting = await Meeting.findById(id);
+
+    if (!existingMeeting) {
+      return res.status(404).json({ message: 'Meeting not found' });
+    }
+    console.log('existing group ', existingMeeting.projectTitle)
+    const group = await Group.findOne({
+      'projects': {
+        $elemMatch: {
+          'projectTitle': existingMeeting.projectTitle
+        }
+      }
     });
+    if (!group) {
+      return res.status(404).json({ success: false, message: "Group Not Found" })
+    }
+
+    group.meetingDate = updatedMeetingData.date ? updatedMeetingData.date : group.meetingDate;
+    group.meetingTime = updatedMeetingData.time ? updatedMeetingData.time : group.meetingTime;
+    group.meetingLink = updatedMeetingData.meetingLink ? updatedMeetingData.meetingLink : group.meetingLink;
+    await group.save();
+
+    // Update the Meeting document
+    const updatedMeeting = await Meeting.findByIdAndUpdate(
+      id,
+      { $set: updatedMeetingData },
+      { new: true } // Return the updated meeting
+    );
 
     if (!updatedMeeting) {
       return res.status(404).json({ message: 'Meeting not found' });
     }
-
-    const group = await Group.findOne({ 'projects.projectTitle': updatedMeeting.projectTitle });
-    if (!group) {
-      return;
-    }
-    group.projects[0].students.map(async stu => {
-      const studentObj = await User.findById(stu.userId);
-      if (studentObj) {
-        studentObj.unseenNotifications.push({
-          type: "Important", message: "You're Meeting Time has been updated "
-        });
-        await studentObj.save();
-      }
-    })
 
     return res.json({ success: true, meeting: updatedMeeting });
   } catch (error) {
@@ -135,6 +146,7 @@ router.put('/edit-meeting/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 router.get('/get-meeting', authenticateUser, async (req, res) => {
   try {
@@ -245,10 +257,10 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
 
     // Update the review
     group.meetingReport[index].review = review;
-    if(review){
+    if (review) {
       group.meetingReport[index].value = 5;
-      group.meeting = group.meeting+1;
-    }else{
+      group.meeting = group.meeting + 1;
+    } else {
       group.meetingReport[index].value = 3;
     }
     await group.save(); // Save the changes
