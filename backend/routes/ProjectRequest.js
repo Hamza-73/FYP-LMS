@@ -1,9 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
-const ProjectRequest = require('../models/ProjectRequest/ProjectRequest');
-const User = require('../models/Student/User');
-const Supervisor = require('../models/Supervisor/Supervisor');
+const ProjectRequest = require('../models/ProjectRequest');
+const User = require('../models/User');
+const Supervisor = require('../models/Supervisor');
 
 router.get('/projects', async (req, res) => {
     try {

@@ -60,11 +60,45 @@ const ProjectProgress = (props) => {
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
+      getDetail();
       getProjects();
       setLoading(false);
     }, 1000)
 
   }, []);
+
+  const [userData, setUserData] = useState({ member: [] });
+
+  const getDetail = async () => {
+      try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+              console.log('token not found');
+              return;
+          }
+
+          const response = await fetch(`http://localhost:5000/committee/detail`, {
+              method: 'GET',
+              headers: {
+                  'Authorization': token
+              },
+          });
+
+          if (!response.ok) {
+              console.log('error fetching detail', response);
+              return; // Exit early on error
+          }
+
+          const json = await response.json();
+          console.log('json is in sidebar: ', json);
+          if (json) {
+              //   console.log('User data is: ', json);
+              setUserData(json);
+          }
+      } catch (err) {
+          console.log('error is in sidebar: ', err);
+      }
+  };
 
   const handleChange = (e) => {
     setdeadline({ ...deadline, [e.target.name]: e.target.value });
@@ -173,12 +207,12 @@ const ProjectProgress = (props) => {
                 </tbody>
               </table>
             </div>
-            <div>
+            { userData.member.isAdmin && <div>
               <div className='d-grid gap-2 d-md-flex justify-content-md-end buttonCls' style={{ position: "relative", marginTop: "4%", right: "9%" }}>
                 <button className="btn" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal" onClick={() => {
                 }}>Add Date</button>
               </div>
-            </div>
+            </div>}
           </>
         ) : (
           <h2 className='text-center'>No Groups have been enrolled for now.</h2>

@@ -1,17 +1,17 @@
 const express = require('express');
 const mongoose = require('mongoose')
 const router = express.Router();
-const Supervisor = require('../../models/Supervisor/Supervisor');
-const User = require('../../models/Student/User');
-const authenticateUser = require('../../middleware/auth');
+const Supervisor = require('../models/Supervisor');
+const User = require('../models/User');
+const authenticateUser = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const JWT_KEY = 'hamzakhan1';
 const bcrypt = require('bcryptjs');
 var jwt = require("jsonwebtoken");
-const Group = require('../../models/GROUP/Group')
-const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
-const Meeting = require('../../models/Meeting');
-const Admin = require('../../models/Admin');
+const Group = require('../models/Group')
+const ProjectRequest = require('../models/ProjectRequest');
+const Meeting = require('../models/Meeting');
+const Admin = require('../models/Admin');
 const nodemailer = require('nodemailer')
 
 router.post('/login', async (req, res) => {
@@ -649,7 +649,7 @@ router.post('/add-student/:projectTitle/:rollNo', authenticateUser, async (req, 
 
 // Supervisor sends a project request and notifies all users
 router.post('/send-project-idea', authenticateUser, async (req, res) => {
-  const { projectTitle, description, scope } = req.body;
+  const { projectTitle, description, scope, active } = req.body;
 
   try {
     const supervisorId = req.user.id;
@@ -658,12 +658,7 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-    if (supervisor.slots <= 0) {
-      return res.status(500).json({ success: false, message: `You're Slots are full you cannot end any requests now` });
-    }
-    if(supervisor.myIdeas.length>= supervisor.slots){
-      return res.json({success:false, message:"You cannot add idea greater than your number of slots"});
-    }
+    
     // Notify all users about the new project idea
     const checkRequest = await ProjectRequest.findOne({ projectTitle });
     if (checkRequest) {
@@ -676,7 +671,7 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     const projectRequest = new ProjectRequest({
       supervisor: supervisor._id,
       projectTitle, description,
-      scope, status: false
+      scope, status: false , active : active 
     });
 
     await projectRequest.save();

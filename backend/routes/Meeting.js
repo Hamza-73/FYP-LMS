@@ -1,16 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose')
 const router = express.Router();
-const Supervisor = require('../../models/Supervisor/Supervisor');
-const User = require('../../models/Student/User');
-const authenticateUser = require('../../middleware/auth');
+const Supervisor = require('../models/Supervisor');
+const User = require('../models/User');
+const authenticateUser = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const JWT_KEY = 'hamzakhan1'; // Replace with your actual JWT secret key
 const bcrypt = require('bcryptjs');
 var jwt = require("jsonwebtoken");
-const Group = require('../../models/GROUP/Group')
-const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
-const Meeting = require('../../models/Meeting');
+const Group = require('../models/Group')
+const ProjectRequest = require('../models/ProjectRequest');
+const Meeting = require('../models/Meeting');
 const moment = require('moment');
 
 router.post('/meeting', authenticateUser, async (req, res) => {

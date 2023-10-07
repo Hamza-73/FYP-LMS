@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import SideBar from '../SideBar';
 import Loading from '../Loading';
 
 const StuDash = (props) => {
@@ -102,11 +101,11 @@ const StuDash = (props) => {
                   <a href={userData.member.meetingLink} target='_blank' rel='noopener noreferrer'>
                     Link
                   </a>
-                </div>:''}
+                </div> : ''}
               </div>
             </div>
           ) : (
-            <h1 className='text-center my-5'>You have no meeting scheduled</h1>
+            <h1 className='text-center my-5' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You have no meeting scheduled</h1>
           )}
         </div>
       ) : (

@@ -7,7 +7,7 @@ import $ from 'jquery'; // Import jQuery
 
 const ProjectIdeas = () => {
   const [fypIdea, setFypIdea] = useState({
-    projectTitle: '', description: '', scope: ''
+    projectTitle: '', description: '', scope: '', active: true
   });
   const [idea, setIdea] = useState({
     supervisor: "", ideas: [{
@@ -61,23 +61,24 @@ const ProjectIdeas = () => {
           'Authorization': token
         }, body: JSON.stringify({
           projectTitle: fypIdea.projectTitle, description: fypIdea.description,
-          scope: fypIdea.scope
+          scope: fypIdea.scope, active: fypIdea.active
         })
       });
       const json = await response.json();
-      
+
       if (!json.success) {
         NotificationManager.error(json.message);
         console.log('json message is ', json)
         return;
       }
-  
+
       if (json) {
         // Create a new idea object from the fypIdea state
         const newIdea = {
           projectTitle: fypIdea.projectTitle,
           description: fypIdea.description,
           scope: fypIdea.scope,
+          active: fypIdea.active,
           date: new Date().toISOString(), // Set current date and time
           time: new Date().toLocaleTimeString() // Set current time
         };
@@ -96,7 +97,7 @@ const ProjectIdeas = () => {
       console.log('error adding project request', error);
     }
   }
-  
+
 
   const handleAddStudent = async (e, projectTitle, rollNo) => {
     try {
@@ -128,11 +129,11 @@ const ProjectIdeas = () => {
   const handleDelete = async (id) => {
     try {
       const confirmDelete = window.confirm('Are you sure you want to delete this FYP Idea?');
-  
+
       if (confirmDelete) {
         console.log('handle delete starts');
         console.log('project id is ', id);
-  
+
         const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:5000/supervisor/deleteProposal/${id}`, {
           method: 'DELETE',
@@ -140,13 +141,13 @@ const ProjectIdeas = () => {
             Authorization: token,
           },
         });
-  
+
         const json = await response.json();
         console.log('response is in deleting ', json);
-  
+
         if (json.success) {
           NotificationManager.success(json.message);
-          
+
           // Update the state to remove the deleted idea
           setIdea((prevState) => ({
             ...prevState,
@@ -162,7 +163,7 @@ const ProjectIdeas = () => {
       console.log('error in deleting idea', error);
     }
   };
-  
+
 
   const handleEdit = async (e) => {
     try {
@@ -276,6 +277,14 @@ const ProjectIdeas = () => {
                     <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
                     <textarea className="form-control" id="description" name='description' value={fypIdea.description} onChange={handleChange} />
                   </div>
+                  <div className="mb-3">
+                    <label htmlFor="isActive" className="form-label">Status</label>
+                    <select className="form-select" id="active" name="active" value={fypIdea.active} onChange={handleChange}>
+                      <option value={true}>Active</option>
+                      <option value={false}>Inactive</option>
+                    </select>
+                  </div>
+
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
                       setEditMode(false);
@@ -293,7 +302,7 @@ const ProjectIdeas = () => {
         </div>
       </div>
 
-      <div className="fypIdea">
+      <div className="addstudenyt">
         <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel1" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -420,7 +429,7 @@ const ProjectIdeas = () => {
               </div>
             </div>
           ) : (
-            <h2 className='text-center'>No Project Ideas! Add to see your ideas.</h2>
+            <h2 className='text-center' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>No Project Ideas! Add to see your ideas.</h2>
           )}
 
           <div className="d-grid gap-2 d-md-flex justify-content-md-end">

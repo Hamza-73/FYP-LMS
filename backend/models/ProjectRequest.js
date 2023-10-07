@@ -7,7 +7,8 @@ const projectRequestSchema = new Schema({
   projectTitle: { type: String, required: true },
   description: { type: String, required: true },
   scope: { type: String, required: true },
-  status:{ type : Boolean, default:false, required:true }
+  status:{ type : Boolean, default:false, required:true },
+  active: { type : Boolean, default:true, required:true }
 });
 
 module.exports = mongoose.model('ProjectRequest', projectRequestSchema);

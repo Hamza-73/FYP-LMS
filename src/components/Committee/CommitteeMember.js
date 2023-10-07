@@ -660,7 +660,7 @@ const CommitteeMember = (props) => {
                     <th scope="col">Name</th>
                     <th scope="col">Department</th>
                     <th scope="col">Designation</th>
-                    <th scope="col">Edit</th>
+                    {(!showSidebar || userData.member.isAdmin) && <th scope="col">Edit</th>}
                     {(!showSidebar && !userData.member.isAdmin) && (
                       <>
                         <th scope="col">Remove</th>
@@ -675,14 +675,14 @@ const CommitteeMember = (props) => {
                       <td>{val.fname ? val.fname + ' ' + val.lname : <>{val.name} <small>(sup)</small></>}</td>
                       <td>{val.department}</td>
                       <td>{val.designation}</td>
-                      <td
+                      {(!showSidebar || userData.member.isAdmin) && <td
                         style={{ cursor: "pointer" }}
                         data-toggle="modal"
                         data-target="#exampleModal"
                         onClick={() => openEditModal(val)}
                       >
                         <i className="fa-solid fa-pen-to-square"></i>
-                      </td>
+                      </td>}
                       {(!showSidebar && !userData.member.isAdmin) &&
                         <>
                           <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>

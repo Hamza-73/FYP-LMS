@@ -7,6 +7,7 @@ import 'react-notifications/lib/notifications.css';
 const ProjectList = (props) => {
 
   const history = useNavigate();
+  const [loading, setLoading] = useState(false)
 
   const [data, setData] = useState({ supervisorName: '', supervisorId: '', groups: [] });
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,16 +44,16 @@ const ProjectList = (props) => {
           },
           body: JSON.stringify({ remarks: remarks })
         });
-      const json = await response.data;
+      const json = await response.json();
       console.log('json is', json)
-      if (json) {
-        setRemarks(json);
+      if (json.success) {
         NotificationManager.sucess('Remarks have been given');
+        setRemarks(json);
+        getProjects();
       }
 
     } catch (error) {
       console.log('error is ', error)
-      NotificationManager.error('Some error occured Try Again');
     }
   }
 
@@ -69,6 +70,7 @@ const ProjectList = (props) => {
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
+      getDetail();
       getProjects();
     } else {
       history('/')
@@ -77,6 +79,41 @@ const ProjectList = (props) => {
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
+  };
+
+  const [userData, setUserData] = useState({ member: [] });
+
+  const getDetail = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('token not found');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/committee/detail`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token
+        },
+      });
+
+      if (!response.ok) {
+        console.log('error fetching detail', response);
+        return; // Exit early on error
+      }
+
+      const json = await response.json();
+      console.log('json is in sidebar: ', json);
+      if (json) {
+        //   console.log('User data is: ', json);
+        setUserData(json);
+        setLoading(false)
+      }
+    } catch (err) {
+      console.log('error is in sidebar: ', err);
+    }
   };
 
   const location = useLocation();
@@ -135,7 +172,7 @@ const ProjectList = (props) => {
                       <th scope="col">Name</th>
                       <th scope="col">Roll No</th>
                       <th scope="col">Project Title</th>
-                      {!showSidebar && <th scope="col">Remarks</th>}
+                      <th scope="col">Remarks</th>
                     </tr>
                   </thead>
                   <tbody style={{ textAlign: "center" }}>
@@ -160,7 +197,7 @@ const ProjectList = (props) => {
                           </div>
                         </td>
                         <td>{group.projectTitle}</td>
-                        <td>{group.remarks} {!showSidebar && <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
+                        <td>{group.remarks} {!showSidebar && userData.member.isAdmin && <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
                           <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.groupId)}></i>
                         </div>}
                         </td>

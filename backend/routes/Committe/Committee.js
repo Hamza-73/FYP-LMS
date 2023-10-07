@@ -2,11 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const Committee = require('../../models/Committee');
-const User = require('../../models/Student/User');
-const Group = require('../../models/GROUP/Group');
-const Supervisor = require('../../models/Supervisor/Supervisor')
+const User = require('../../models/User');
+const Group = require('../../models/Group');
+const Supervisor = require('../../models/Supervisor')
 const { body, validationResult } = require('express-validator');
-const Viva = require('../../models/Viva/Viva')
+const Viva = require('../../models/Viva')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authenticateUser = require('../../middleware/auth')
@@ -14,7 +14,7 @@ const JWT_KEY = 'hamzakhan1'
 const SharedRules = require('../../models/SharedRules');
 const Admin = require('../../models/Admin');
 const nodemailer = require('nodemailer');
-const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
+const ProjectRequest = require('../../models/ProjectRequest');
 
 
 // Registration route
@@ -279,7 +279,12 @@ router.get('/detail', authenticateUser, async (req, res) => {
     if (!member) {
       const member = await Supervisor.findById(userId);
       if(!member){
-        return res.status(404).json({ message: 'Member not found' });
+        const member = await Supervisor.findOne({ _id : userId, isAdmin: true});
+        if(!member){
+          return res.status(404).json({ message: 'Member not found' });
+        }else{
+          return res.send({ success: true, member, user: userId });
+        }
       }else{
         return res.send({ success: true, member, user: userId });
       }      
@@ -369,31 +374,49 @@ router.put('/edit/:id', async (req, res) => {
 router.put('/remarks/:groupId', async (req, res) => {
   const { groupId } = req.params;
   const { remarks } = req.body;
+
+  // Validate if groupId is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(groupId)) {
+    return res.status(400).json({ message: 'Invalid groupId' });
+  }
+
+  let responseSent = false; // Flag variable to track if response has been sent
+
   try {
     const group = await Group.findById(groupId);
     if (!group) {
+      responseSent = true; // Set the flag to true before sending response
       return res.status(404).json({ message: 'Group not found' });
     }
+    console.log('grpup is ');
     group.remarks = remarks;
-    group.projects.map(project => {
-      project.students.map(async stu => {
-        const student = await User.findById(stu.userId);
-        if (!student) {
-          return res.status(404).json({ message: 'Student not found' });
-        }
-        student.unseenNotifications.push({
-          type: 'Important', message: `You're Group has been given remarks by Committee`
-        })
-      })
-    })
+    const promises = group.projects[0].students.map(async stu => {
+      console.log('stud is ', stu)
+      const student = await User.findById(stu.userId);
+      console.log('student is ', student.name);
+      student.unseenNotifications.push({
+        type: 'Important', message: `Your Group has been given remarks by the Committee`
+      });
+      await student.save(); // Save the changes to the student
+      return student;
+    });
+
+    // Wait for all async operations (saving students) to complete
+    await Promise.all(promises);
+
+    // Save the group after all students have been updated
     await group.save();
-    res.json({ message: `Remarks have been given to the group ${group.supervisor} , ${group.projects.map(el => el.projectTitle)}`, remarks });
+      res.json({ success: true, message: 'Remarks given successfully', remarks });
 
   } catch (error) {
-    console.error('error giving marks', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('error giving remarks', error);
+    if (!responseSent) { // Only send response if it has not been sent already
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
 });
+
+
 
 router.get('/groups', async (req, res) => {
   try {

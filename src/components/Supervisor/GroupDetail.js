@@ -267,7 +267,7 @@ const GroupDetail = () => {
               </div>
             </div>
           ) : (
-            <h2 className="text-center">
+            <h2 className="text-center" style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>
               You currently have no group in supervision.
             </h2>
           )}

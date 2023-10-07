@@ -70,10 +70,43 @@ const EligibleGroup = (props) => {
   
   useEffect(() => {
     setTimeout(() => {
+      getDetail();
       getProjects();
     }, 1000)
   }, []);
   
+  const [userData, setUserData] = useState({ member: [] });
+
+  const getDetail = async () => {
+      try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+              console.log('token not found');
+              return;
+          }
+
+          const response = await fetch(`http://localhost:5000/committee/detail`, {
+              method: 'GET',
+              headers: {
+                  'Authorization': token
+              },
+          });
+
+          if (!response.ok) {
+              console.log('error fetching detail', response);
+              return; // Exit early on error
+          }
+
+          const json = await response.json();
+          console.log('json is in sidebar: ', json);
+          if (json) {
+              //   console.log('User data is: ', json);
+              setUserData(json);
+          }
+      } catch (err) {
+          console.log('error is in sidebar: ', err);
+      }
+  };
 
   const handleChange1 = (e) => {
     setViva({ ...viva, [e.target.name]: e.target.value });
@@ -162,7 +195,7 @@ const EligibleGroup = (props) => {
                   <th scope="col">Project Proposal</th>
                   <th scope="col">Documentation</th>
                   <th scope="col">Final Submission</th>
-                  <th scope="col">Viva</th>
+                  {userData.member.isAdmin && <th scope="col">Viva</th>}
                   <th scope="col">External</th>
                   <th scope="col">Grade</th>
                 </tr>
@@ -208,7 +241,7 @@ const EligibleGroup = (props) => {
                           </div>
                         </td>
                           <td>{
-                            group.vivaDate? (<>{
+                            group.vivaDate? ( userData.member.isAdmin && <>{
                               (new Date()> new Date(group.vivaDate) )  ? 'Taken' : ( <>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
                             }</>) : <> <button className='btn btn-sm' data-toggle="modal" data-target="#exampleModal1" style={{background:"maroon", color:"white"}} onClick={()=>{
                               setSelectedGroupId(group._id);

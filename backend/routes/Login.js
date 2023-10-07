@@ -1,19 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
-const User = require('../../models/Student/User');
+const User = require('../models/User');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const JWT_KEY = 'hamzakhan1'
-const authenticateUser = require('../../middleware/auth');
-const Supervisor = require('../../models/Supervisor/Supervisor');
-const ProjectRequest = require('../../models/ProjectRequest/ProjectRequest');
-const Group = require('../../models/GROUP/Group');
+const authenticateUser = require('../middleware/auth');
+const Supervisor = require('../models/Supervisor');
+const ProjectRequest = require('../models/ProjectRequest');
+const Group = require('../models/Group');
 const moment = require('moment');
 
 const multer = require('multer');
-const Viva = require('../../models/Viva/Viva');
+const Viva = require('../models/Viva');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/')
@@ -32,7 +32,7 @@ cloudinary.config({
   api_secret: '_zRYx_DFqV6FXNK664jRFxbKRP8'
 });
 
-const Admin = require('../../models/Admin');
+const Admin = require('../models/Admin');
 
 const nodemailer = require('nodemailer')
 

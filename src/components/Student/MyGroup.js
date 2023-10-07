@@ -389,7 +389,7 @@ const MyGroup = (props) => {
               <button className="btn btn-danger" onClick={requestMeeting}>Request Meeting</button>
               <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" disabled={group.group.finalSubmission && group.group.documentation}>Upload Document</button>
             </div>
-          </> : <h1 className='text-center my-4'>You're currently not enrolled in any Group.</h1>
+          </> : <h1 className='text-center my-4' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You're currently not enrolled in any Group.</h1>
         }
       </div> : <Loading />
       }

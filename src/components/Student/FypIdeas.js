@@ -289,7 +289,7 @@ const FypIdeas = () => {
                                                             <button
                                                                 type='button'
                                                                 className='btn btn-sm'
-                                                                disabled={groupDetails.group.groupId || group.supervisor === null}
+                                                                disabled={groupDetails.group.groupId || group.supervisor === null || !group.projectDetails.active}
                                                                 style={{ background: 'maroon', color: 'white' }}
                                                                 onClick={() => {
                                                                     setProject(group.projectDetails.projectTitle);
@@ -327,7 +327,7 @@ const FypIdeas = () => {
 
                         </>
                     ) : (
-                        <h2 className='text-center'>Currently No Project Idea/ Group is Available.</h2>
+                        <h2 className='text-center' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>Currently No Project Idea/ Group is Available.</h2>
                     )}
                 </div>
             ) : (

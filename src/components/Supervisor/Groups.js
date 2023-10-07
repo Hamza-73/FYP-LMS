@@ -122,7 +122,7 @@ const Groups = (props) => {
                     <input type="text" className="form-control" id="marks" name="marks" value={grades.marks} onChange={handleChange1} />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">External</label>
+                    <label htmlFor="exampleInputPassword1" className="form-label">Chair Person</label>
                     <input type="text" className="form-control" id="external" name="external" value={grades.external} onChange={handleChange1} />
                   </div>
                   <div className="modal-footer">
@@ -221,7 +221,7 @@ const Groups = (props) => {
           </div>
         </>
       ) : (
-        <h2 className='text-center'>You currently have no group in supervision.</h2>
+        <h2 className='text-center' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You currently have no group in supervision.</h2>
       )}
       <NotificationContainer />
     </div>

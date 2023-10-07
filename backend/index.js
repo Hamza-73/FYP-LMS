@@ -42,13 +42,14 @@ connection.once('open', () => {
   console.log('MongoDB database connection established successfully');
 });
 
-const loginRoute = require('./routes/Student/Login'); 
-const superRoute = require('./routes/Supervisor/Supervisor');
+const loginRoute = require('./routes/Login'); 
+const superRoute = require('./routes/Supervisor');
 const committeeRoute = require('./routes/Committe/Committee');
 const vivaRoute = require('./routes/Committe/Viva');
-const meetingRoute = require('./routes/Meeting/Meeting');
+const meetingRoute = require('./routes/Meeting');
 const projectRoute = require('./routes/ProjectRequest');
 const adminRoute = require('./routes/Admin');
+const externalRoute = require('./routes/External');
 
 app.use('/student', loginRoute);
 app.use('/supervisor', superRoute);
@@ -57,6 +58,7 @@ app.use('/viva', vivaRoute);
 app.use('/meeting', meetingRoute);
 app.use('/projects', projectRoute);
 app.use('/admin', adminRoute);
+app.use('/external', externalRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

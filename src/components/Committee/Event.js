@@ -200,7 +200,7 @@ const Event = (props) => {
                   </tbody>
                 </table>
               ) : (
-                <div>No matching members found.</div>
+                <h1 style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>No Vivas Scheduled Yet</h1>
               )}
             </div>
           </>

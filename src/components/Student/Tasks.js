@@ -419,7 +419,7 @@ const Tasks = (props) => {
               )}
             </>
           ) : (
-            <h1 className="text-center my-5">You're not enrolled in any group yet</h1>
+            <h1 className="text-center my-5" style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You're not enrolled in any group yet</h1>
           )}
         </div>
       ) : (

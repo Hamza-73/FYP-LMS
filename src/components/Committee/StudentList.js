@@ -544,8 +544,8 @@ const StudentList = (props) => {
                     </label>
                     <div className="input-group">
                       <span className="input-group-text">
-                      <i class="fa-light fa-cassette-betamax"></i>
-                        </span>
+                        <i class="fa-light fa-cassette-betamax"></i>
+                      </span>
                       <select
                         type="text"
                         className="form-control"
@@ -623,8 +623,11 @@ const StudentList = (props) => {
                   <th scope="col">Batch</th>
                   <th scope="col">Semester</th>
                   <th scope="col">Cnic</th>
-                  <th scope="col">Edit</th>
-                  {(!showSidebar && !userData.member.isAdmin) && <th scope="col">Remove</th>}
+                  {(!showSidebar || userData.member.isAdmin) && <th scope="col">Edit</th>}
+                  {(!showSidebar && !userData.member.isAdmin) &&
+                    <>
+                      <th scope="col">Remove</th>
+                    </>}
                 </tr>
               </thead>
               <tbody className='text-center'>
@@ -636,10 +639,15 @@ const StudentList = (props) => {
                     <td>{val.batch}</td>
                     <td>{val.semester}</td>
                     <td>{val.cnic}</td>
-                    <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                      <i class="fa-solid fa-pen-to-square"></i>
-                    </td>
-                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>}
+                   { (!showSidebar || userData.member.isAdmin) && <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                          <i class="fa-solid fa-pen-to-square"></i>
+                        </td>}
+                    {(!showSidebar && !userData.member.isAdmin) &&
+                      <>
+                        
+                        <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
+                      </>
+                    }
 
                   </tr>
                 ))}

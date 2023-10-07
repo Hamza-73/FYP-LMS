@@ -342,7 +342,7 @@ const Progress = (props) => {
                             </div>
                         </>
                     ) : (
-                        <h1 className="text-center my-3">You're not currently enrolled in any Group</h1>
+                        <h1 className="text-center my-3" style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You're not currently enrolled in any Group</h1>
                     )}
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls">
                         <button

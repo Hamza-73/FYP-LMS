@@ -7,9 +7,9 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin'); // Import the Admin model
 const Committee = require('../models/Committee'); // Import the Admin model
 const authenticateUser = require('../middleware/auth');
-const User = require('../models/Student/User');
-const Supervisor = require('../models/Supervisor/Supervisor');
-const nodemailer = require('nodemailer')
+const User = require('../models/User');
+const Supervisor = require('../models/Supervisor');
+const nodemailer = require('nodemailer');
 
 // Registration route for admins
 router.post('/register', [
@@ -75,24 +75,8 @@ router.post('/login', async (req, res) => {
             } else {
                 res.status(401).json({ success: false, message: 'Invalid username or password' });
             }
-        } else {
-            // If the user is not an admin, check if they are a committee member with an "admin" role
-            const committeeAdmin = await Committee.findOne({ username, isAdmin: true });
-
-            if (committeeAdmin) {
-                const isPasswordValid = await bcrypt.compare(password, committeeAdmin.password);
-
-                if (isPasswordValid) {
-                    // Generate JWT token for committee member acting as an admin
-                    const token = jwt.sign({ id: committeeAdmin.id, role: 'admin' }, JWT_KEY);
-
-                    res.json({ message: 'Admin login successful', success: true, token });
-                } else {
-                    res.status(401).json({ success: false, message: 'Invalid username or password' });
-                }
-            } else {
-                res.status(404).json({ success: false, message: "Admin  not found" });
-            }
+        } else{
+            return res.json({ success: false , message:"User doesnot exist"});
         }
     } catch (err) {
         console.error('Error in admin login', err);
@@ -167,7 +151,19 @@ router.post('/make-admin', async (req, res) => {
         const committeeMember = await Committee.findOne({ username });
 
         if (!committeeMember) {
-            return res.status(404).json({ success: false, message: "If It's a supervisor then you cannot make him/her Admin" });
+            const supervisor = await Supervisor.findOne({ username });
+            if (!supervisor) {
+                return res.status(404).json({ success: false, message: "Committee Member Not Found" });
+            }
+            if (!supervisor.isCommittee) {
+                return res.status(404).json({ success: false, message: "Supervisor first needs to be a Committee Member to qualify for Co-Admin" });
+            } if (supervisor.isAdmin) {
+                return res.status(201).json({ success: true, message: "Supervisor is Already Admin" });
+            } else {
+                supervisor.isAdmin = true;
+                await supervisor.save();
+                return res.json({ message: 'Supervisor is now an admin', success: true });
+            }
         }
         if (committeeMember.isAdmin) {
             return res.status(201).json({ success: true, message: "Committee Member is Already Admin" });
@@ -299,17 +295,15 @@ router.get('/get-members', async (req, res) => {
     try {
         const allAdmins = await Admin.find();
         const committeeMembers = await Committee.find({ isAdmin: true });
+        const supervisors = await Supervisor.find({ isAdmin: true })
 
         // Merge admin and committee members into the members array
-        const members = [...allAdmins, ...committeeMembers];
+        const members = [...allAdmins, ...committeeMembers, ...supervisors];
 
         if (members.length === 0) {
             res.status(404).json({ message: 'Members Not Found' });
         } else {
-            res.json({
-                success: true,
-                members
-            });
+            res.json({ success: true, members });
         }
     } catch (error) {
         console.error('error is ', error);

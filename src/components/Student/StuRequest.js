@@ -174,7 +174,7 @@ const StuRequest = (props) => {
                             </div>
                         </div>
                     ) : (
-                        <h1 className='text-center'>You have no requests for now.</h1>
+                        <h1 className='text-center' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You have no requests for now.</h1>
                     )}
                 </>
             ) : (
