@@ -55,7 +55,7 @@ const ProjectProgress = (props) => {
     }
   }
 
-  const typeOptions = ['final', 'proposal', 'documentation']
+  const typeOptions = [ 'proposal', 'documentation']
 
   useEffect(() => {
     setLoading(true);
@@ -156,15 +156,12 @@ const ProjectProgress = (props) => {
                     <th scope="col">My Group</th>
                     <th scope="col">Project Proposal</th>
                     <th scope="col">Documentation</th>
-                    <th scope="col">Final Submission</th>
-                    <th scope="col">External</th>
-                    <th scope="col">Grade</th>
                   </tr>
                 </thead>
                 <tbody style={{ textAlign: "center" }}>
                   {group.groups
                     .filter((group) =>
-                      !group.proposal || !group.documentation || !group.finalSubmission
+                      !group.proposal || !group.documentation 
 
                     ).map((group, groupIndex) => (
                       group.projects.map((project, projectKey) => (
@@ -192,15 +189,6 @@ const ProjectProgress = (props) => {
                               ) : 'Pending')}
                             </div>
                           </td>
-                          <td>
-                            <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                              {(group.finalSubmission ? (
-                                <a href={group.finalSubmission} target="_blank" rel="noopener noreferrer">Final Submission</a>
-                              ) : 'Pending')}
-                            </div>
-                          </td>
-                          <td>{group.external ? group.external : 0}</td>
-                          <td>{group.marks ? group.marks : 0}</td>
                         </tr>
                       ))
                     ))}

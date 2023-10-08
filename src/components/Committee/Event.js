@@ -189,7 +189,6 @@ const Event = (props) => {
                         <td>{val.projectTitle}</td>
                         <td> <a target='_blank' href={val.documentation.proposal}>Proposal</a></td>
                         <td> <a target='_blank' href={val.documentation.documentation}>Documentation</a></td>
-                        <td> <a target='_blank' href={val.documentation.finalSubmission}>Project</a></td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
                         <td data-toggle="modal" data-target="#exampleModal1" onClick={() => {

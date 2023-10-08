@@ -194,17 +194,14 @@ const EligibleGroup = (props) => {
                   <th scope="col">My Group</th>
                   <th scope="col">Project Proposal</th>
                   <th scope="col">Documentation</th>
-                  <th scope="col">Final Submission</th>
                   {userData.member.isAdmin && <th scope="col">Viva</th>}
-                  <th scope="col">External</th>
-                  <th scope="col">Grade</th>
                 </tr>
               </thead>
               <tbody style={{ textAlign: "center" }}>
                 {group.groups
                   .filter((group) =>
                     
-                  group.proposal && group.documentation && group.finalSubmission
+                  group.proposal && group.documentation
                   && !group.vivaDate
                     
                   ).map((group, groupIndex) => (
@@ -233,13 +230,6 @@ const EligibleGroup = (props) => {
                             ) : 'Pending')}
                           </div>
                         </td>
-                        <td>
-                          <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                            {(group.finalSubmission ? (
-                              <a href={group.finalSubmission} target="_blank" rel="noopener noreferrer">Final Submission</a>
-                            ) : 'Pending')}
-                          </div>
-                        </td>
                           <td>{
                             group.vivaDate? ( userData.member.isAdmin && <>{
                               (new Date()> new Date(group.vivaDate) )  ? 'Taken' : ( <>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
@@ -248,9 +238,6 @@ const EligibleGroup = (props) => {
                               setViva({projectTitle: project.projectTitle})
                             }} >Add Viva</button></>
                             }</td>
-
-                        <td>{group.external ? group.external : 0}</td>
-                        <td>{group.marks ? group.marks : 0}</td>
                       </tr>
                     ))
                   ))}

@@ -52,12 +52,12 @@ router.post('/upload', authenticateUser, async (req, res) => {
 
     console.log('type is ', type);
 
-    if (type === 'documentation' && !groupUpdate.docDate) {
-      return res.status(500).json({ success: false, message: 'Deadline for Documentation Has Not Been Announced Yet.' });
+    if (type === 'proposal' && !groupUpdate.propDate) {
+      return res.status(500).json({ success: false, message: 'Deadline for Proposal Has Not Been Announced Yet.' });
     }
 
-    if (type === 'final' && !groupUpdate.finalDate) {
-      return res.status(500).json({ success: false, message: 'Deadline for Final Submission Has Not Been Announced Yet.' });
+    if (type === 'documentation' && !groupUpdate.docDate) {
+      return res.status(500).json({ success: false, message: 'Deadline for Documentation Has Not Been Announced Yet.' });
     }
 
     const file = req.files[type];
@@ -79,20 +79,11 @@ router.post('/upload', authenticateUser, async (req, res) => {
           });
 
           if (type === 'proposal') {
-            studentObj.isProp = true;
-            groupUpdate.isProp = true;
             groupUpdate.proposal = result.url;
             groupUpdate.propSub = moment(new Date(), 'DD-MM-YYYY').toDate();
           } else if (type === 'documentation') {
-            studentObj.isDoc = true;
-            groupUpdate.isDoc = true;
             groupUpdate.documentation = result.url;
             groupUpdate.docSub = moment(new Date(), 'DD-MM-YYYY').toDate();
-          } else if (type === 'final') {
-            studentObj.isFinal = true;
-            groupUpdate.isFinal = true;
-            groupUpdate.finalSubmission = result.url;
-            groupUpdate.finalSub = moment(new Date(), 'DD-MM-YYYY').toDate();
           } else {
             return res.status(404).json({ success: false, message: "The Type Is Not Correct" })
           }
@@ -128,7 +119,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
 
     const result = await cloudinary.uploader.upload(file.tempFilePath);
     console.log('result is ', result);
-    if(!groupUpdate.docs){
+    if (!groupUpdate.docs) {
       groupUpdate.docs = []
     }
     groupUpdate.docs.push({
@@ -171,29 +162,29 @@ router.post('/login', async (req, res) => {
         });
         const token = jwt.sign({ id: user.id }, JWT_KEY, { expiresIn: '1d' });
 
-      var transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'YOUR_EMAIL',
-          pass: 'YOUR_PASSWORD'
-        }
-      });
+        var transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'YOUR_EMAIL',
+            pass: 'YOUR_PASSWORD'
+          }
+        });
 
-      var mailOptions = {
-        from: 'YOUR_EMAIL',
-        to: user.email,
-        subject: 'Reset Password Link',
-        html: `<h4>The Link will expire in 24 hours</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
+        var mailOptions = {
+          from: 'YOUR_EMAIL',
+          to: user.email,
+          subject: 'Reset Password Link',
+          html: `<h4>The Link will expire in 24 hours</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
         <p>The link will expire in 5 minutes.</p>`
-      };
-      // console.log('mailoption is')
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          return res.send({ success: true, message: "Check Your Email" })
-        }
-      });
+        };
+        // console.log('mailoption is')
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            return res.send({ success: true, message: "Check Your Email" })
+          }
+        });
       }
       await user.save();
 
@@ -675,10 +666,9 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       supervisorId: group.supervisorId, projectTitle: group.projects[0].projectTitle,
       projectId: group.projects[0].projectId,
       groupMember: group.projects[0].students.filter(stu => !stu.userId.equals(userId)),
-      proposal: group.proposal, documentation: group.documentation, finalSubmission: group.finalSubmission,
+      proposal: group.proposal, documentation: group.documentation,
       docDate: group.docDate, propDate: group.propDate,
-      finalDate: group.finalDate, docSub: group.docSub,
-      propSub: group.propSub, finalSub: group.finalSub,
+      propSub: group.propSub,
       viva: viva, meetingReport: group.meetingReport,
       instructions: group.instructions,
       docs: group.docs,
@@ -1039,6 +1029,84 @@ router.post('/request-meeting', authenticateUser, async (req, res) => {
   } catch (error) {
     console.error('error sending meeting request', error);
     return res.json({ message: "Internal Server Error" });
+  }
+});
+
+//Request Supervisor for date Extension
+router.post('/extension', authenticateUser, async (req, res) => {
+  try {
+    const { type, date } = req.body;
+    console.log('request body is ', req.body)
+    console.log('type is ', type)
+    console.log('date ios ', date)
+    if (!(type === 'documentation' || type === 'proposal')) {
+      return res.json({ success: false, message: "Invalid Extension Type" });
+    }
+    const [year, month, day] = date.split('-');
+    const formattedDate = `${month}-${day}-${year}`;
+    const newDate = new Date(formattedDate);
+
+    // Check if the date is a valid date
+    if (isNaN(newDate.getTime())) {
+      return res.json({ success: false, message: "Invalid date format" });
+    }
+
+    if (newDate < new Date()) {
+      return res.json({ success: false, message: "Enter a future date" });
+    }
+
+    const student = await User.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student Not found' });
+    }
+
+    const group = await Group.findById(student.group);
+    if (!group) {
+      return res.status(404).json({ success: false, message: 'Group Not found' });
+    }
+
+    const supervisor = await Supervisor.findById(group.supervisorId);
+    if (!supervisor) {
+      return res.status(404).json({ success: false, message: 'Supervisor Not found' });
+    }
+
+    // Check if the request type already exists in the supervisor's extension requests
+    const isRequestExists = supervisor.extensionRequest.some(request => {
+      if(request.type === type){
+        console.log('request os ', request)
+        return request.type === type;
+      }
+    });
+
+    if (isRequestExists) {
+      return res.json({ success: false, message: `Request Already sent for Extension of ${type}` });
+    }
+
+    group.extensionRequest.push({
+      type: type,
+      date: newDate
+    });
+
+    await group.save();
+    supervisor.extensionRequest.push({
+      type: type,
+      date: newDate,  // Store the newDate object instead of the original date string
+      student: student.name,
+      group: group.projects[0].projectTitle,
+      requestId: group.extensionRequest[group.extensionRequest.length - 1]
+    });
+
+    supervisor.unseenNotifications.push({
+      type: "Important",
+      message: `Request for extension by group: ${group.projects[0].projectTitle}`
+    });
+
+    await supervisor.save();
+
+    return res.json({ success: true, message: "Extension request sent successfully" });
+  } catch (error) {
+    console.error('error in sending extension request', error);
+    return res.json({ success: false, message: "Internal Server Error" });
   }
 });
 

@@ -12,7 +12,9 @@ const Group = require('../models/Group')
 const ProjectRequest = require('../models/ProjectRequest');
 const Meeting = require('../models/Meeting');
 const Admin = require('../models/Admin');
-const nodemailer = require('nodemailer')
+const Committee = require('../models/Committee');
+const nodemailer = require('nodemailer');
+const { RequestPageOutlined } = require('@mui/icons-material');
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -100,7 +102,7 @@ router.post('/forgot-password', async (req, res) => {
         html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
         <p>The link will expire in 5 minutes.</p>`
       };
-      
+
       // console.log('mailoption is')
       transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
@@ -658,7 +660,7 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-    
+
     // Notify all users about the new project idea
     const checkRequest = await ProjectRequest.findOne({ projectTitle });
     if (checkRequest) {
@@ -671,7 +673,7 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     const projectRequest = new ProjectRequest({
       supervisor: supervisor._id,
       projectTitle, description,
-      scope, status: false , active : active 
+      scope, status: false, active: active
     });
 
     await projectRequest.save();
@@ -781,7 +783,7 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' })
     }
     console.log('group is ', group);
-    if (!group.proposal || !group.documentation || !group.finalSubmission) {
+    if (!group.proposal || !group.documentation) {
       return res.status(500).json({ success: false, message: 'One of the Documentation is Pending' });
     }
     if (group.vivaDate > new Date()) {
@@ -1046,6 +1048,84 @@ router.put('/reviews/:groupId/:index', authenticateUser, async (req, res) => {
   } catch (error) {
     console.error('error in giving reviw', error);
     return res.json({ message: "Internal Server Error" });
+  }
+});
+
+router.post('/extension/:requestId/:action', authenticateUser, async (req, res) => {
+  try {
+    const { requestId, action } = req.params;
+    console.log('super', req.user.id);
+    const supervisor = await Supervisor.findById(req.user.id);
+    if (!supervisor) {
+      return res.status(404).json({ message: 'Supervisor not found' });
+    }
+
+    const request = supervisor.extensionRequest.filter(request => {  
+      if(request.requestId){
+        return request.requestId.equals(requestId) 
+      }
+    });
+
+    if (request.length<0) {
+      return res.json({ success: false, message: 'Request Not Found' });
+    }
+
+    const group = await Group.findOne({ 'projects.projectTitle': request.group });
+    if (!group) {
+      return res.json({ success: false, message: 'Group Not Found' });
+    }
+
+    group.extensionRequest = group.extensionRequest.filter(request => { return !request._id.equals(requestId) });
+
+    await Promise.all([supervisor.save(), group.save()]);
+
+    if (action === 'accept') {
+      const supervisors = await Supervisor.find({ isAdmin: true });
+      const committeeMembers = await Committee.find({ isAdmin: true });
+      supervisors.forEach(async sup => {
+        sup.requests.push({
+          type: request.type,
+          date: request.date,
+          group: request.group,
+          supervisor: supervisor.name,
+        });
+        await sup.save();
+      });
+      committeeMembers.forEach(async sup => {
+        sup.requests.push({
+          type: request.type,
+          date: request.date,
+          group: request.group,
+          supervisor: supervisor.name,
+        });
+        await sup.save();
+      });
+      group.projects[0].students.forEach(async stu => {
+        const stuObj = await User.findById(stu.userId);
+        stuObj.unseenNotifications.push({
+          type: 'Important',
+          message: `Your request for extension of ${request.type} has been accepted`,
+        });
+        await stuObj.save();
+      });
+      return res.json({
+        success: true,
+        message: 'Request Accepted',
+      });
+    } else {
+      group.projects[0].students.forEach(async stu => {
+        const stuObj = await User.findById(stu.userId);
+        stuObj.unseenNotifications.push({
+          type: 'Important',
+          message: `Your request for extension of ${request.type} has been rejected`,
+        });
+        await stuObj.save();
+      });
+      return res.json({ success: true, message: 'Rejected' });
+    }
+  } catch (error) {
+    console.error('error in handling extension', error);
+    return res.json({ message: 'Internal Server Error' });
   }
 });
 

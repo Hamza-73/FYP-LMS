@@ -38,7 +38,7 @@ const ComNav = (props) => {
                         'Authorization': token
                     },
                 });
-                
+
                 if (!response.ok) {
                     console.log('error fetching detail', response);
                     return; // Exit early on error
@@ -79,23 +79,30 @@ const ComNav = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link2}`}>{props.title2}</Link>
                             </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link3}`}>{props.title3}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link4}`}>{props.title4}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link5}`}>{props.title5}</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link6}`}>{props.title6}</Link>
+                            <li className="nav-item dropdown">
+                                <a
+                                    className="nav-link dropdown-toggle"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-target="#yourDropdownMenuId"
+                                    role="button"
+                                    aria-expanded="false"
+                                >
+                                    {props.title001}
+                                </a>
+                                <ul className="dropdown-menu">
+                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link3}`}>{props.title3}</Link> </li>
+                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link4}`}>{props.title4}</Link></li>
+                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link5}`}>{props.title5}</Link></li>
+                                </ul>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link00}`}>{props.title00}</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link01}`}>{props.title01}</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link02}`}>{props.title02}</Link>
                             </li>
                             <li className="nav-item dropdown">
                                 <a
@@ -108,6 +115,7 @@ const ComNav = (props) => {
                                     {props.title0}
                                 </a>
                                 <ul className="dropdown-menu">
+                                    <li><Link className="dropdown-item" to={`/${props.user}/${props.link6}`}>{props.title6}</Link> </li>
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link8}`}>{props.title8}</Link></li>
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link9}`}>{props.title9}</Link></li>
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link10}`}>{props.title10}</Link></li>

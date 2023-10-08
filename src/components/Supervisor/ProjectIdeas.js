@@ -194,6 +194,7 @@ const ProjectIdeas = () => {
                 projectTitle: fypIdea.projectTitle,
                 description: fypIdea.description,
                 scope: fypIdea.scope,
+                active : fypIdea.active
               };
             }
             return ideaItem;

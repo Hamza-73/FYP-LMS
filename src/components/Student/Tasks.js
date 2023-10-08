@@ -15,7 +15,7 @@ const Tasks = (props) => {
       supervisor: '', supervisorId: '', projectTitle: '',
       projectId: '', groupMember: [{ userId: '', name: '', rollNo: '', _id: '' }],
       proposal: false, documentation: false, docDate: '----', propDate: '',
-      viva: '', finalDate: '',
+      viva: ''
     },
   });
   const [loading, setLoading] = useState(false);
@@ -168,14 +168,6 @@ const Tasks = (props) => {
           parseISODate(group.group.docDate)
         );
         setRemainingTime(newRemainingTime);
-      } else if (
-        group.group.finalDate &&
-        new Date(group.group.finalDate) > new Date()
-      ) {
-        const newRemainingTime = calculateTimeRemaining(
-          parseISODate(group.group.finalDate)
-        );
-        setRemainingTime(newRemainingTime);
       }
     }
     // Update the remaining time initially
@@ -205,12 +197,7 @@ const Tasks = (props) => {
     new Date(group.group.docDate) > new Date()
   ) {
     currentTaskType = 'documentation';
-  } else if (
-    group.group.finalDate &&
-    new Date(group.group.finalDate) > new Date()
-  ) {
-    currentTaskType = 'final';
-  }
+  } 
 
   return (
     <div>
@@ -342,72 +329,6 @@ const Tasks = (props) => {
                         target="_blank"
                       >
                         View Uploaded Document
-                      </a>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {currentTaskType === 'final' && (
-                // Show finalDate and upload final document
-                <div className="task">
-                  <h1>Task Submission</h1>
-                  <h4>Instructions:</h4>
-                  <h6>Final Document Submission</h6>
-                  <h6>Submit PDF Only, max size should be 3MB</h6>
-                  <div className="boxes d-flex justify-content-evenly">
-                    <div>Submission Status</div>
-                    <div>
-                      {group.group.finalDocument ? 'Submitted' : 'Pending'}
-                    </div>
-                  </div>
-                  <div className="boxes d-flex justify-content-evenly">
-                    <div>Due Date</div>
-                    <div>
-                      {group.group.finalDate
-                        ? formatISODateToDDMMYYYY(group.group.finalDate)
-                        : 'TBA'}
-                    </div>
-                  </div>
-                  <div className="boxes d-flex justify-content-evenly">
-                    <div>Time Remaining</div>
-                    <div>
-                      {new Date(group.group.finalDate) > new Date()
-                        ? remainingTime
-                        : '-----'}
-                    </div>
-                  </div>
-                  <div className="boxes d-flex justify-content-evenly">
-                    <div>Grading Status</div>
-                    <div>{group.group.marks ? 'Graded' : 'Not Graded'}</div>
-                  </div>
-                  {!group.group.finalDocument ? (
-                    <div className='boxes text-center'>
-                      <input
-                        type="file"
-                        onChange={(e) => handleFileChange(e)}
-                        name="final"
-                      />
-                      <button
-                        className="btn"
-                        type="button"
-                        style={{ color: 'white', fontWeight: '600' }}
-                        onClick={() => {
-                          setType('final');
-                          upload();
-                        }}
-                      >
-                        Add Final Document
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="boxes text-center">
-                      <a
-                        style={{ textDecoration: 'none', color: 'white' }}
-                        href={group.group.proposal}
-                        target="_blank"
-                      >
-                        View Uploaded Final Doc
                       </a>
                     </div>
                   )}

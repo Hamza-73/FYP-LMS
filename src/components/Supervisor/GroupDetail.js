@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Loading from "../Loading";
-import SideBar from "../SideBar";
-import { EngineeringSharp } from "@mui/icons-material";
 
 const GroupDetail = () => {
   const [group, setGroup] = useState({
@@ -57,6 +55,7 @@ const GroupDetail = () => {
         },
       });
       const json = await response.json();
+      console.log('json is ', json)
       setGroup(json);
       setLoading(false);
     } catch (error) {
@@ -111,13 +110,50 @@ const GroupDetail = () => {
   }
 `;
 
+  const myStyle = `
+.meeting-box {
+  background-color: #ffffff;
+  border: 1px solid #d1d1d1;
+  border-radius: 6px;
+  width: 200px;
+  height: 100px;
+  padding: 16px;
+  margin: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.items {
+  display: flex;
+  justify-content: space-between;
+}
+.meeting-box a {
+  text-decoration: none;
+  color: #007bff;
+}
+`
+
   const handleChange = (e) => {
     setReview({ ...review, [e.target.name]: e.target.value });
   }
 
-  const handleClose = () => {
+  const handleClose = (id, action) => {
     setReview({ text: "", index: "" });
     setGroupId('');
+  }
+
+  const handleRequest = async (id,action) => {
+    try {
+      const response = await fetch(`http://localhost:5000/supervisor/extension/${id}/${action}`,{
+        method:"POST",
+        headers:{
+          "Authorization" : localStorage.getItem('token')
+        }
+      });
+      const json = await response.json();
+      console.log('json is ', json);
+      alert(json.message);
+    } catch (error) {
+      console.log('error in json ', error);
+    }
   }
 
   const currentGroup = group.groups.length > 0 ? group.groups[currentIndex] : {};
@@ -161,6 +197,44 @@ const GroupDetail = () => {
           </div>
           {group.groups.length > 0 ? (
             <div className="container" style={{ border: "none", height: "700px", width: "1000px" }}>
+              {currentGroup.extensionRequest && currentGroup.extensionRequest.length > 0 && currentGroup.extensionRequest.map((item, i) => (
+                <div className="notify" style={{ position: "absolute", right: "30px", top: `${140 + i * 200}px` }} key={i}>
+                  <style>{myStyle}</style>
+                  <div>
+                    <div>
+                      <div>
+                        <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
+                          <div className="container">
+                            <h4 className='text-center'>Requests</h4>
+                            <div className="items d-flex justify-content-between">
+                              <h5 style={{ marginRight: "5px" }}>Type</h5>
+                              <h6>{item.type}</h6>
+                            </div>
+                            <div className="items d-flex justify-content-between">
+                              <h5 style={{ marginRight: "5px" }}>Date</h5>
+                              <h6>{new Date(item.date).toLocaleDateString('en-GB')}
+                              </h6>
+                            </div>
+                            <div>
+                              <button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
+                              onClick={()=>{
+                                handleRequest(item._id,'accept')
+                              }}
+                              >Accept</button>
+                              <button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
+                              onClick={()=>{
+                                handleRequest(item._id,'rejected')
+                              }}
+                              >Reject</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
               <div className="upperpart">
                 <div className="proj-detail d-flex justify-content-between">
                   <h4>
@@ -177,7 +251,7 @@ const GroupDetail = () => {
                 <div>
                   <h4>
                     <i
-                      class="fas fa-user"
+                      className="fas fa-user"
                       style={{ fontSize: "35px", color: "maroon" }}
                     ></i>
                     &ensp;
@@ -196,7 +270,7 @@ const GroupDetail = () => {
                   >
 
                     <i
-                      class="fas fa-user"
+                      className="fas fa-user"
                       style={{ fontSize: "35px", color: "maroon" }}
                     ></i>
                     &ensp;
@@ -210,7 +284,7 @@ const GroupDetail = () => {
                     &ensp;
 
                     <i
-                      class="fas fa-user"
+                      className="fas fa-user"
                       style={{ fontSize: "35px", color: "maroon" }}
                     ></i>
                     &ensp;

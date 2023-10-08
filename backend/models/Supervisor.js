@@ -29,6 +29,19 @@ const supervisorSchema = new Schema({
   isLogin: { type: Boolean, default: false },
   isAdmin: { type: Boolean, default: false },
   isCommittee: { type: Boolean, default: false },
+  extensionRequest: [{
+    type: { type: String },
+    date: { type: Date },
+    group: { type: String },
+    student: { type: String },
+    requestId : { type : String }
+  }],
+  requests: [{
+    type: { type: String },
+    date : { type : Date },
+    group: { type: String },
+    supervisor: { type: Schema.Types.ObjectId }
+  }]
 });
 
 module.exports = mongoose.model('Supervisor', supervisorSchema);

@@ -11,6 +11,12 @@ const committeeSchema = new Schema({
   password: { type: String, required: true, minlength: 4 },
   isAdmin: { type: Boolean, default: false },
   isLogin : {type : Boolean, default:false},
+  requests : [{
+    type : { type : String },
+    date : { type : Date },
+    group : { type : String},
+    supervisor : { type : String }
+  }]
 });
 
 module.exports = mongoose.model('Committee', committeeSchema);

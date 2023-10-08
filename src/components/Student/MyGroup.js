@@ -17,7 +17,7 @@ const MyGroup = (props) => {
     }
   });
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState('');
+  const [Extensiontype, setExtensiontype] = useState('');
   const [file, setFile] = useState();
 
 
@@ -89,7 +89,40 @@ const MyGroup = (props) => {
     }
   }
 
-  const upload = async (e, type) => {
+  const [date, setDate] = useState('');
+  const [type, setType] = useState('');
+  const handleClose = () =>{
+    setDate('')
+    setExtensiontype('')
+  }
+
+  const requestextension = async (e) => {
+    try {
+      e.preventDefault();
+      console.log('extension state:', Extensiontype); // Log the extension state
+      console.log('extension state:', date); // Log the extension state
+      const response = await fetch('http://localhost:5000/student/extension', {
+        method: 'POST',
+        headers: {
+          "Content-Type" : "application/json",
+          Authorization: localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          type: Extensiontype,
+          date: date
+        }),
+      });
+      const json = await response.json();
+      console.log('json in sending extension is ', json);
+      alert(json.message);
+      handleClose();
+    } catch (error) {
+      console.log('error in extension', error);
+    }
+  }
+
+
+  const upload = async (e) => {
     e.preventDefault();
     try {
       if (!file) {
@@ -206,7 +239,6 @@ const MyGroup = (props) => {
 }
 `
 
-
   const [review, setReview] = useState('');
 
   return (
@@ -234,7 +266,41 @@ const MyGroup = (props) => {
         </div>
       </div>
 
-      <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="extensionModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="extensionModalLabel">Extension Request</h1>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              <>
+                <form onSubmit={requestextension}>
+                  <div className="mb-3">
+                    <label htmlFor="date" className="form-label">Date</label>
+                    <input type="date" className="form-control" id="date" name='date' value={date} onChange={(e) => setDate(e.target.value)} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="type" className="form-label">Extension Type</label>
+                    <select className="form-select" id="type" name="Extensiontype" value={Extensiontype} onChange={(e) => setExtensiontype(e.target.value)}>
+                      <option value="">Select a type</option>
+                      <option value="proposal">Proposal</option>
+                      <option value="documentation">Documentation</option>
+                    </select>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"  onClick={handleClose}>Close</button>
+                    <button type="submit" className="btn btn-danger">Request</button>
+                  </div>
+                </form>
+              </>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
@@ -246,7 +312,7 @@ const MyGroup = (props) => {
                 <form>
                   <textarea className='form-control' value={review ? review : "No Reviews Yet"} />
                   <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close" onClick={() => setReview('')}> Close</button>
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
                   </div>
                 </form>
               </>
@@ -259,7 +325,7 @@ const MyGroup = (props) => {
         {
           group.group ? <>
             {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
-              <div className="notify" style={{ position: "absolute", right: "30px", top:"140px" }}>
+              <div className="notify" style={{ position: "absolute", right: "30px", top: "140px" }}>
                 <style>{myStyle}</style>
                 <div>
                   <div>
@@ -306,63 +372,63 @@ const MyGroup = (props) => {
 
 
             <div className="upperpart">
-                <div className="proj-detail d-flex justify-content-between">
-                  <h4>
-                    <strong>Project Title:</strong>
-                  </h4>
-                  <h5 style={{
+              <div className="proj-detail d-flex justify-content-between">
+                <h4>
+                  <strong>Project Title:</strong>
+                </h4>
+                <h5 style={{
+                  fontStyle: "italic",
+                  textShadow: "0.5px 0.5px black",
+                }}>{group.group.projectTitle || "N/A"}</h5>
+              </div>
+            </div>
+
+            <div className="">
+              <div>
+                <h4>
+                  <i
+                    class="fas fa-user"
+                    style={{ fontSize: "35px", color: "maroon" }}
+                  ></i>
+                  &ensp;
+                  {group.group.supervisor || "N/A"}
+                </h4>
+              </div>
+
+              <div>
+                <br></br>
+
+                <h5
+                  style={{
                     fontStyle: "italic",
                     textShadow: "0.5px 0.5px black",
-                  }}>{group.group.projectTitle || "N/A"}</h5>
-                </div>
+                  }}
+                >
+
+                  <i
+                    class="fas fa-user"
+                    style={{ fontSize: "35px", color: "maroon" }}
+                  ></i>
+                  &ensp;
+                  {group.group.myDetail[0] ? group.group.myDetail[0].name : ""}{" "}
+                  &nbsp;{" "}
+                  {group.group.myDetail[0] ? group.group.myDetail[0]?.rollNo : ""}{" "}
+                  &ensp;
+
+                  <i
+                    class="fas fa-user"
+                    style={{ fontSize: "35px", color: "maroon" }}
+                  ></i>
+                  &ensp;
+                  {group.group.groupMember[1] ? group.group.groupMember[1].name : "No Member Yet"}{" "}
+                  &nbsp;{" "}
+                  {group.group.groupMember[1] ? group.group.groupMember[1]?.rollNo : ""}{" "}
+                  &ensp;
+                </h5>
               </div>
+            </div>
 
-              <div className="">
-                <div>
-                  <h4>
-                    <i
-                      class="fas fa-user"
-                      style={{ fontSize: "35px", color: "maroon" }}
-                    ></i>
-                    &ensp;
-                    {group.group.supervisor || "N/A"}
-                  </h4>
-                </div>
 
-                <div>
-                  <br></br>
-
-                  <h5
-                    style={{
-                      fontStyle: "italic",
-                      textShadow: "0.5px 0.5px black",
-                    }}
-                  >
-
-                    <i
-                      class="fas fa-user"
-                      style={{ fontSize: "35px", color: "maroon" }}
-                    ></i>
-                    &ensp;
-                    {group.group.myDetail[0] ? group.group.myDetail[0].name : ""}{" "}
-                    &nbsp;{" "}
-                    {group.group.myDetail[0] ? group.group.myDetail[0]?.rollNo:""}{" "}
-                    &ensp;
-
-                    <i
-                      class="fas fa-user"
-                      style={{ fontSize: "35px", color: "maroon" }}
-                    ></i>
-                    &ensp;
-                    {group.group.groupMember[1] ? group.group.groupMember[1].name : "No Member Yet"}{" "}
-                    &nbsp;{" "}
-                    {group.group.groupMember[1] ? group.group.groupMember[1]?.rollNo:""}{" "}
-                    &ensp;
-                  </h5>
-                </div>
-              </div>
-
-            
 
             <div className="last">
               <div className="meeting-row">
@@ -387,9 +453,10 @@ const MyGroup = (props) => {
 
             <div className="d-flex justify-content-between">
               <button className="btn btn-danger" onClick={requestMeeting}>Request Meeting</button>
-              <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" disabled={group.group.finalSubmission && group.group.documentation}>Upload Document</button>
+              <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal2">Extension Request</button>
+              <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">Upload Document</button>
             </div>
-          </> : <h1 className='text-center my-4' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You're currently not enrolled in any Group.</h1>
+          </> : <h1 className='text-center my-4' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You're currently not enrolled in any Group.</h1>
         }
       </div> : <Loading />
       }

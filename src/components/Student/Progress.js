@@ -182,12 +182,9 @@ const Progress = (props) => {
                 updatedPercentage += 25;
             }
             if (groupDetails.group.documentation) {
-                updatedPercentage += 20;
+                updatedPercentage += 30;
             }
-            if (groupDetails.group.finalSubmission) {
-                updatedPercentage += 20;
-            }
-            if (groupDetails.group.marks > 0) updatedPercentage += 10;
+            if (groupDetails.group.marks > 0) updatedPercentage += 20;
 
             setPercentage(updatedPercentage);
         }

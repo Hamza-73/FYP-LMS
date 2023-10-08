@@ -17,7 +17,6 @@ const groupSchema = new Schema({
   marks: { type: Number },
   external: { type: Number },
   proposal: { type: String },
-  finalSubmission: { type: String },
   documentation: { type: String },
   isProp: { type: Boolean, default: false },
   isDoc: { type: Boolean, default: false },
@@ -30,22 +29,23 @@ const groupSchema = new Schema({
   meetingid: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
   meetingDate: { type: Date },
-  meetingTime : {type : String},
-  isFinal: { type: Boolean, default: false },
-  finalDate: { type: Date },
-  finalSub: { type: Date },
+  meetingTime: { type: String },
   meetingReport: [{
-  id :{ type: Schema.Types.ObjectId, ref: 'Meeting' },
-  date: {type : Date},
-  review : {type : Boolean, default: false},
-  value : { type : Number}
-}],
+    id: { type: Schema.Types.ObjectId, ref: 'Meeting' },
+    date: { type: Date },
+    review: { type: Boolean, default: false },
+    value: { type: Number }
+  }],
   docs: [{
     docLink: { type: String },
     review: { type: String }
   }],
-  instructions : {type: String},
-  meeting : {type: Number , default : 0}
+  instructions: { type: String },
+  meeting: { type: Number, default: 0 },
+  extensionRequest: [{
+    type: { type: String },
+    date: { type: Date }
+  }]
 });
 
 module.exports = mongoose.model('Group', groupSchema);

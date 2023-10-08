@@ -30,7 +30,7 @@ router.post('/schedule-viva', async (req, res) => {
     }
 
     console.log('Group is ', group)
-    if (!(group.isProp && group.isDoc)) {
+    if (!(group.documentation && group.proposal)) {
       return res.status(500).json({ success: false, message: `Documentation or Proposal is Pending` })
     }
     const parsedDate = moment(vivaDate, 'DD-MM-YYYY').toDate();
@@ -107,7 +107,6 @@ router.get('/vivas', async (req, res) => {
         documentation: {
           proposal: group.proposal,
           documentation: group.documentation,
-          finalSubmission : group.finalSubmission
         }
       };
     });

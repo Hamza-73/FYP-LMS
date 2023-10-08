@@ -62,14 +62,14 @@ const Dashboard = (props) => {
     {!loading? <div>
       <div className='d-flex justify-content-between mx-5' style={{position:"relative", marginTop :"-10px"}}>
         <div className='my-3' style={{ width: "45%" }}>
-          <h1 className='text-center' style={{ fontFamily: "Georgia, serif" }}>FYP PROCTORING</h1>
-          <p style={{ padding: "20px", lineHeight: "2" }} className='text-center'>FYP proctoring is a centralized platform that provides students with complete guideline regarding the FYP process, its rules and regulation. Students can communicate with their supervisor throughout the process and can request for meeting. Supervisors have authority to assign task, manage project progress, keep track of ongoing progress, provide feedback and can schedule meeting with their students. Additionally, the administration is responsible for student registration, verification and keep track of progress of all final year projects.</p>
+          <h1 className='text-center' style={{ fontFamily: "Georgia, serif", color:"white" }}>FYP PROCTORING</h1>
+          <p style={{ padding: "20px", lineHeight: "2", color:"white" }} className='text-center'>FYP proctoring is a centralized platform that provides students with complete guideline regarding the FYP process, its rules and regulation. Students can communicate with their supervisor throughout the process and can request for meeting. Supervisors have authority to assign task, manage project progress, keep track of ongoing progress, provide feedback and can schedule meeting with their students. Additionally, the administration is responsible for student registration, verification and keep track of progress of all final year projects.</p>
         </div>
         <div className='my-2' style={{ border: "none", width: "37%", maxHeight: "60vh", overflowY: "auto" }}>
           {rules.rule.map((elm, index) => {
             return (
               <div className="rules" key={index}> 
-                <h2 style={{ fontFamily: "Georgia, serif" }}>{capitalize(elm.role)}</h2>
+                <h2 style={{ fontFamily: "Georgia, serif", color:"white" }}>{capitalize(elm.role)}</h2>
                 <ul style={{ padding: "0px 20px", paddingRight: "150px" }}>
                   {elm.rules.map((rule, ruleIndex) => (
                     <li key={ruleIndex}>{rule}</li>

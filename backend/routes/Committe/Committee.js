@@ -278,16 +278,16 @@ router.get('/detail', authenticateUser, async (req, res) => {
     const member = await Committee.findById(userId);
     if (!member) {
       const member = await Supervisor.findById(userId);
-      if(!member){
-        const member = await Supervisor.findOne({ _id : userId, isAdmin: true});
-        if(!member){
+      if (!member) {
+        const member = await Supervisor.findOne({ _id: userId, isAdmin: true });
+        if (!member) {
           return res.status(404).json({ message: 'Member not found' });
-        }else{
+        } else {
           return res.send({ success: true, member, user: userId });
         }
-      }else{
+      } else {
         return res.send({ success: true, member, user: userId });
-      }      
+      }
     }
     return res.send({ success: true, member, user: userId });
   } catch (error) {
@@ -406,7 +406,7 @@ router.put('/remarks/:groupId', async (req, res) => {
 
     // Save the group after all students have been updated
     await group.save();
-      res.json({ success: true, message: 'Remarks given successfully', remarks });
+    res.json({ success: true, message: 'Remarks given successfully', remarks });
 
   } catch (error) {
     console.error('error giving remarks', error);
@@ -498,20 +498,12 @@ router.post('/dueDate', async (req, res) => {
       return res.status(404).json({ message: "Groups Not Found" });
     }
 
-    if ((type === 'documentation' || type === 'final') && !groups[0].propDate) {
+    if ((type === 'documentation') && !groups[0].propDate) {
       return res.status(500).json({ success: false, message: "Due Date For Propsal Has Not been announced Yet." });
     }
 
-    else if ((type === 'documentation' || type === 'final') && groups[0].propDate > currentDate) {
+    else if ((type === 'documentation') && groups[0].propDate > currentDate) {
       return res.status(500).json({ success: false, message: "Due Date For Propsal is not ended yet." });
-    }
-
-    else if (type === 'final' && !groups[0].docDate) {
-      return res.status(500).json({ success: false, message: "Due Date For Documentation Has Not been announced Yet." });
-    }
-
-    else if ((type === 'final') && groups[0].docDate > currentDate) {
-      return res.status(500).json({ success: false, message: "Due Date For Documentation is not ended yet." });
     }
 
 
@@ -533,10 +525,6 @@ router.post('/dueDate', async (req, res) => {
             group.docDate = dueDate;
             stu.docDate = dueDate;
             console.log('documentation');
-          } else if (type === 'final') {
-            group.finalDate = dueDate;
-            stu.finalDate = dueDate;
-            console.log('final');
           }
           group.instructions = instructions;
           stu.unseenNotifications.push({
@@ -569,18 +557,18 @@ router.put('/allocate-group', async (req, res) => {
     if (!group) {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
-    
+
     // Remove the group ID from the previous supervisor's groups
     const previousSupervisor = await Supervisor.findById(group.supervisorId);
     if (!previousSupervisor) {
       return res.json({ success: false, message: "Supervisor Not Found" });
     }
-    
+
     const projectRequest = await ProjectRequest.findOne({ projectTitle: projectTitle });
     if (!projectRequest) {
       return res.json({ success: false, message: "Project Not Found" });
     }
-    
+
     // Check if the new supervisor has slots left
     const supervisor = await Supervisor.findOne({ username: newSupervisor });
     if (!supervisor) {
@@ -596,27 +584,27 @@ router.put('/allocate-group', async (req, res) => {
       return request.project.equals(projectRequest._id);
     });
     previousSupervisor.unseenNotifications.push({
-      type : "Important", message:`You're group ${projectTitle} has been alocated to ${supervisor.name}`
+      type: "Important", message: `You're group ${projectTitle} has been alocated to ${supervisor.name}`
     })
     previousSupervisor.projectRequest = previousSupervisor.projectRequest.filter(request => {
       return !request.project.equals(projectRequest._id);
     });
-    
+
     // Allocate the group to the new supervisor
     group.supervisor = supervisor.name;
     group.supervisorId = supervisor._id;
     // Add the group ID to the new supervisor's groups
     supervisor.groups.push(group._id);
     supervisor.slots -= 1;
-    
+
     // Push filtered request to new supervisor's projectRequest
     if (!supervisor.projectRequest) {
       supervisor.projectRequest = []; // Initialize as an empty array if it's undefined
-    }    
+    }
     supervisor.projectRequest = supervisor.projectRequest.concat(filteredRequest);
     projectRequest.supervisor = supervisor._id;
     supervisor.unseenNotifications.push({
-      type : "Important", message:`You've been allocated a group ${projectTitle}`
+      type: "Important", message: `You've been allocated a group ${projectTitle}`
     })
 
     await Promise.all([group.save(), supervisor.save(), previousSupervisor.save(), projectRequest.save()]);
@@ -628,5 +616,74 @@ router.put('/allocate-group', async (req, res) => {
   }
 });
 
+router.post('/make-extension/:requestId', authenticateUser, async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { date } = req.body;
+    console.log('date is ', date)
+    const [year, month, day] = date.split('-');
+    const formattedDate = `${month}-${day}-${year}`;
+    const newDate = new Date(formattedDate);
+    let supervisor;
+    supervisor = await Supervisor.findById(req.user.id);
+    if (!supervisor) {
+      supervisor = await Committee.findById(req.user.id);
+      if (!supervisor) {
+        return res.json({ message: "user Not Found" });
+      }
+    }
+    const request = supervisor.requests.filter(request => {
+      return request._id.equals(requestId);
+    });
+    if (request.length <= 0) {
+      return res.json({ success: false, message: "Request Not Found" });
+    }
+    const group = await Group.findOne({
+      'projects.projectTitle': request[0].group
+    });
+    if (!group) {
+      return res.json({ success: false, message: "Group Not Found" });
+    }
+    const type = request[0].type;
+    if (type === 'documentation') {
+      group.docDate = newDate;
+    } else if (type === 'proposal') {
+      group.propDate = newDate;
+    } else {
+      return res.json({ success: false, message: "Invalid Type" });
+    }
+    await group.save();
+    group.projects[0].students.forEach(async stu => {
+      const stuObj = await User.findById(stu.userId)
+      stuObj.unseenNotifications.push({
+        type: "Important", message: `Time extended for ${type}`
+      });
+      await stuObj.save();
+    });
+    const supervisors = await Supervisor.find({ isAdmin: true });
+    const committeeMembers = await Committee.find({ isAdmin: true });
+    supervisors.forEach(async sup => {
+      const filteredRequest = sup.requests.filter(req => {
+        return !req._id.equals(requestId);
+      });
+      sup.requests = filteredRequest
+      await sup.save()
+    });
+    committeeMembers.forEach(async sup => {
+      const filteredRequest = sup.requests.filter(req => {
+        return !req._id.equals(requestId);
+      });
+      sup.requests = filteredRequest
+      await sup.save()
+    });
+    return res.json({
+      success: true, message: "Time Extended"
+    });
+  } catch (error) {
+    console.error('error in handling extenion', error);
+    return res.json({ message: "Internal Server Error" });
+
+  }
+})
 
 module.exports = router;

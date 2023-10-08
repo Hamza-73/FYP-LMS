@@ -130,6 +130,7 @@ const CumDashboard = (props) => {
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
+      getDetail();
       getRules();
     } else {
       history('/');
@@ -140,11 +141,44 @@ const CumDashboard = (props) => {
     return word[0].toUpperCase() + word.slice(1, word.length)
   }
 
-   // Function to reset the modal state
-   const resetModalState = () => {
+  // Function to reset the modal state
+  const resetModalState = () => {
     setDefineRole('');
     setModalRules([]);
     setEditRuleIndex(-1);
+  };
+
+  const [userData, setUserData] = useState({ member: [] });
+
+  const getDetail = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('token not found');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/committee/detail`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token
+        },
+      });
+
+      if (!response.ok) {
+        console.log('error fetching detail', response);
+        return; // Exit early on error
+      }
+
+      const json = await response.json();
+      console.log('json is in sidebar: ', json);
+      if (json) {
+        //   console.log('User data is: ', json);
+        setUserData(json);
+      }
+    } catch (err) {
+      console.log('error is in sidebar: ', err);
+    }
   };
 
   return (
@@ -196,7 +230,7 @@ const CumDashboard = (props) => {
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={()=>{
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => {
                 setLoading(false); resetModalState()
               }}>Close</button>
               <button type="button" className="btn btn-warning" onClick={() => getRole(defineRole)} disabled={!defineRole}>Get Roles</button>
@@ -221,11 +255,11 @@ const CumDashboard = (props) => {
         }) : <Loading />}
       </div>
 
-      <div className='d-grid gap-2 d-md-flex justify-content-md-end' style={{ position: "relative", right: "5.5rem", bottom: "2rem" }}>
+      {userData.member.isAdmin && <div className='d-grid gap-2 d-md-flex justify-content-md-end' style={{ position: "relative", right: "5.5rem", bottom: "2rem" }}>
         <button style={{ background: "maroon" }} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#exampleModal">
           Edit Rules
         </button>
-      </div>
+      </div>}
       <NotificationContainer />
     </div>
   );
