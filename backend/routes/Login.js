@@ -1035,13 +1035,10 @@ router.post('/request-meeting', authenticateUser, async (req, res) => {
 //Request Supervisor for date Extension
 router.post('/extension', authenticateUser, async (req, res) => {
   try {
-    const { type, date } = req.body;
+    const { date } = req.body;
     console.log('request body is ', req.body)
-    console.log('type is ', type)
     console.log('date ios ', date)
-    if (!(type === 'documentation' || type === 'proposal')) {
-      return res.json({ success: false, message: "Invalid Extension Type" });
-    }
+
     const [year, month, day] = date.split('-');
     const formattedDate = `${month}-${day}-${year}`;
     const newDate = new Date(formattedDate);
@@ -1065,6 +1062,18 @@ router.post('/extension', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group Not found' });
     }
 
+    if (!group.docDate) {
+      return res.json({ success: false, message: "Doc Date has not been announced Yet" });
+    }
+    const newDocdate = new Date(group.docDate)
+    if (newDocdate < newDate) {
+      return res.json({ success: false, message: "Extended Date cannot be before Documentation Date" })
+    }
+
+    if (group.extensionRequest.length > 0) {
+      return res.status(404).json({ success: false, message: 'You can only send request once' });
+    }
+
     const supervisor = await Supervisor.findById(group.supervisorId);
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor Not found' });
@@ -1072,28 +1081,25 @@ router.post('/extension', authenticateUser, async (req, res) => {
 
     // Check if the request type already exists in the supervisor's extension requests
     const isRequestExists = supervisor.extensionRequest.some(request => {
-      if(request.type === type){
-        console.log('request os ', request)
-        return request.type === type;
-      }
+      return request.group === group.projects[0].projectTitle
     });
 
     if (isRequestExists) {
-      return res.json({ success: false, message: `Request Already sent for Extension of ${type}` });
+      return res.json({ success: false, message: `Request Already sent for Extension` });
     }
 
     group.extensionRequest.push({
-      type: type,
       date: newDate
     });
 
     await group.save();
+    const requestId = group.extensionRequest[group.extensionRequest.length - 1]._id;
+    const mongooseId = new mongoose.Types.ObjectId(requestId);
     supervisor.extensionRequest.push({
-      type: type,
       date: newDate,  // Store the newDate object instead of the original date string
       student: student.name,
       group: group.projects[0].projectTitle,
-      requestId: group.extensionRequest[group.extensionRequest.length - 1]
+      requestId: mongooseId
     });
 
     supervisor.unseenNotifications.push({

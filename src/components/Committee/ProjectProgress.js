@@ -8,7 +8,6 @@ import Loading from '../Loading';
 
 const ProjectProgress = (props) => {
   const [group, setGroup] = useState({ groups: [] });
-  const [selectedGroupId, setSelectedGroupId] = useState('');
   const [deadline, setdeadline] = useState({ dueDate: '', type: '', instructions: '' });
 
   const [loading, setLoading] = useState(false);
@@ -39,7 +38,7 @@ const ProjectProgress = (props) => {
     try {
       e.preventDefault();
       console.log('duedate starts');
-      const response = await fetch(`http://localhost:5000/committee/dueDate/${selectedGroupId}`, {
+      const response = await fetch(`http://localhost:5000/committee/dueDate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -115,7 +114,7 @@ const ProjectProgress = (props) => {
                   <h5 className="modal-title" >Upload Deadline</h5>
                 </div>
                 <div className="modal-body">
-                  <form onSubmit={(e) => handleDate(e, selectedGroupId)}>
+                  <form onSubmit={(e) => handleDate(e)}>
                     <div className="mb-3">
                       <label htmlFor="remrks" className="form-label">Type</label>
                       <select className="form-control" id="type" name='type' value={deadline.type} onChange={handleChange}>
@@ -134,7 +133,7 @@ const ProjectProgress = (props) => {
                       <textarea type='text' className="form-control" id="instructions" name='instructions' value={deadline.instructions} onChange={handleChange} />
                     </div>
                     <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={(e) => { setdeadline({ type: "", dueDate: "", instructions: "" }); setSelectedGroupId('') }}>Close</button>
+                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={(e) => { setdeadline({ type: "", dueDate: "", instructions: "" }); }}>Close</button>
                       <button type="submit" className="btn btn-success" disabled={!deadline.type || !deadline.date}> Add deadline </button>
                     </div>
                   </form>
@@ -197,8 +196,7 @@ const ProjectProgress = (props) => {
             </div>
             { userData.member.isAdmin && <div>
               <div className='d-grid gap-2 d-md-flex justify-content-md-end buttonCls' style={{ position: "relative", marginTop: "4%", right: "9%" }}>
-                <button className="btn" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal" onClick={() => {
-                }}>Add Date</button>
+                <button className="btn" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal" >Add Date</button>
               </div>
             </div>}
           </>

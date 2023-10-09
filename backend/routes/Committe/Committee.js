@@ -371,34 +371,33 @@ router.put('/edit/:id', async (req, res) => {
 
 
 // give remarks to students
-router.put('/remarks/:groupId', async (req, res) => {
+router.post('/remarks/:groupId', async (req, res) => {
   const { groupId } = req.params;
   const { remarks } = req.body;
 
-  // Validate if groupId is a valid ObjectId
-  if (!mongoose.Types.ObjectId.isValid(groupId)) {
-    return res.status(400).json({ message: 'Invalid groupId' });
-  }
-
-  let responseSent = false; // Flag variable to track if response has been sent
 
   try {
     const group = await Group.findById(groupId);
     if (!group) {
-      responseSent = true; // Set the flag to true before sending response
       return res.status(404).json({ message: 'Group not found' });
     }
-    console.log('grpup is ');
+
     group.remarks = remarks;
     const promises = group.projects[0].students.map(async stu => {
-      console.log('stud is ', stu)
-      const student = await User.findById(stu.userId);
-      console.log('student is ', student.name);
-      student.unseenNotifications.push({
-        type: 'Important', message: `Your Group has been given remarks by the Committee`
-      });
-      await student.save(); // Save the changes to the student
-      return student;
+      console.log('Processing student: ', stu);
+      try {
+        const student = await User.findById(stu.userId);
+        console.log('Student processed successfully: ', student.name);
+        student.unseenNotifications.push({
+          type: 'Important',
+          message: `Your Group has been given remarks by the Committee`
+        });
+        await student.save(); // Save the changes to the student
+        return student;
+      } catch (error) {
+        console.error('Error processing student: ', error);
+        throw error; // Rethrow the error to reject the promise
+      }
     });
 
     // Wait for all async operations (saving students) to complete
@@ -406,13 +405,11 @@ router.put('/remarks/:groupId', async (req, res) => {
 
     // Save the group after all students have been updated
     await group.save();
-    res.json({ success: true, message: 'Remarks given successfully', remarks });
 
+    res.json({ success: true, message: 'Remarks given successfully', remarks });
   } catch (error) {
-    console.error('error giving remarks', error);
-    if (!responseSent) { // Only send response if it has not been sent already
-      res.status(500).json({ message: 'Internal server error' });
-    }
+    console.error('Error giving remarks', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -485,8 +482,10 @@ router.get('/progress', async (req, res) => {
 // Add due date
 router.post('/dueDate', async (req, res) => {
   try {
+    console.log('due datw starts')
     const { type, dueDate, instructions } = req.body;
     const currentDate = new Date();
+    const newDate = new Date(dueDate);
     // Validate if the due date is not behind the current date
     if (new Date(dueDate) < currentDate) {
       return res.status(400).json({ message: "Due Date cannot be behind the current date" });
@@ -511,8 +510,8 @@ router.post('/dueDate', async (req, res) => {
 
     for (const group of groups) {
       for (const project of group.projects) {
+        console.log('project is ', project.projectTitle)
         for (const student of project.students) {
-          // console.log('project is ', project)
           const stu = await User.findById(student.userId);
           if (!stu) {
             continue; // Skip this student and continue with the next one
@@ -644,19 +643,12 @@ router.post('/make-extension/:requestId', authenticateUser, async (req, res) => 
     if (!group) {
       return res.json({ success: false, message: "Group Not Found" });
     }
-    const type = request[0].type;
-    if (type === 'documentation') {
-      group.docDate = newDate;
-    } else if (type === 'proposal') {
-      group.propDate = newDate;
-    } else {
-      return res.json({ success: false, message: "Invalid Type" });
-    }
+    group.docDate = newDate;
     await group.save();
     group.projects[0].students.forEach(async stu => {
       const stuObj = await User.findById(stu.userId)
       stuObj.unseenNotifications.push({
-        type: "Important", message: `Time extended for ${type}`
+        type: "Important", message: `Time extended for Documentation`
       });
       await stuObj.save();
     });

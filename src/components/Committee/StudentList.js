@@ -623,9 +623,9 @@ const StudentList = (props) => {
                   <th scope="col">Batch</th>
                   <th scope="col">Semester</th>
                   <th scope="col">Cnic</th>
-                  {(!showSidebar || userData.member.isAdmin) && <th scope="col">Edit</th>}
                   {(!showSidebar && !userData.member.isAdmin) &&
                     <>
+                      <th scope="col">Edit</th>
                       <th scope="col">Remove</th>
                     </>}
                 </tr>
@@ -639,12 +639,11 @@ const StudentList = (props) => {
                     <td>{val.batch}</td>
                     <td>{val.semester}</td>
                     <td>{val.cnic}</td>
-                   { (!showSidebar || userData.member.isAdmin) && <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                          <i class="fa-solid fa-pen-to-square"></i>
-                        </td>}
                     {(!showSidebar && !userData.member.isAdmin) &&
                       <>
-                        
+                        <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                          <i class="fa-solid fa-pen-to-square"></i>
+                        </td>
                         <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
                       </>
                     }

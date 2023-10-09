@@ -14,7 +14,10 @@ const Event = (props) => {
   const history = useNavigate();
   const [data, setData] = useState({ vivas: [] });
 
-  const [viva, setViva] = useState({ projectTitle: '', vivaDate: new Date(), vivaTime: '' });
+  const [viva, setViva] = useState({
+    projectTitle: '', vivaDate: new Date(), vivaTime: '',
+    external: "", internal: ""
+  });
   const [loading, setLoading] = useState(false);
   const [isFieldsModified, setIsFieldsModified] = useState(false);
 
@@ -33,6 +36,8 @@ const Event = (props) => {
           projectTitle: viva.projectTitle,
           vivaDate: viva.vivaDate,
           vivaTime: viva.vivaTime,
+          internal: viva.internal,
+          external: viva.external
         }),
       });
       const json = await response.json();
@@ -40,6 +45,7 @@ const Event = (props) => {
 
       if (json.message && json.success) {
         NotificationManager.success(json.message);
+        getVivas()
       } else {
         NotificationManager.error(json.message);
       }
@@ -58,14 +64,12 @@ const Event = (props) => {
       const json = await response.json();
       console.log('json is ', json)
 
-      if (json.message && json.success) {
+      if (json.success) {
         setData(json);
-        NotificationManager.success(json.message);
       }
       setLoading(false)
     } catch (error) {
       console.log('error dealing with requests', error);
-      NotificationManager.error('Some Error occurred reload page/ try again');
     } finally {
       setLoading(false);
     }
@@ -106,12 +110,13 @@ const Event = (props) => {
   return (
     <div>
 
+
       <div className="viva">
         <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Register</h5>
+                <h5 className="modal-title">Schedule Viva</h5>
               </div>
               <div className="modal-body">
                 <form onSubmit={(e) => editViva(e)}>
@@ -138,14 +143,30 @@ const Event = (props) => {
                       <TimePicker onChange={handleTimeChange} value={viva.vivaTime} />
                     </div>
                   </div>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      Internal
+                    </label>
+                    <div>
+                      <input className='input-form' name='internal' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.internal} />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      External
+                    </label>
+                    <div>
+                      <input className='input-form' name='external' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.external} />
+                    </div>
+                  </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">
                       Close
                     </button>
                     <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                      disabled={!isFieldsModified || !viva.projectTitle}
+                      disabled={!isFieldsModified || !viva.projectTitle || !viva.external || !viva.internal}
                     >
-                      Edit
+                      Schedule
                     </button>
                   </div>
                 </form>
@@ -170,7 +191,6 @@ const Event = (props) => {
                       <th scope="col">Project Title</th>
                       <th scope="col">Project Proposal</th>
                       <th scope="col">Documentation</th>
-                      <th scope="col">Project Submission</th>
                       <th scope="col">Viva Date</th>
                       <th scope="col">Viva Time</th>
                       <th scope="col">Edit</th>
@@ -192,14 +212,17 @@ const Event = (props) => {
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
                         <td data-toggle="modal" data-target="#exampleModal1" onClick={() => {
-                          setViva({ projectTitle: val.projectTitle, date: val.vivaDate, time: val.vivaTime })
+                          setViva({
+                            projectTitle: val.projectTitle, date: val.vivaDate,
+                            time: val.vivaTime, external: val.external, internal: val.internal ? val.internal : ""
+                          })
                         }}><i class="fa-solid fa-pen-to-square"></i></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <h1 style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>No Vivas Scheduled Yet</h1>
+                <h1 style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>No Vivas Scheduled Yet</h1>
               )}
             </div>
           </>

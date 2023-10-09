@@ -13,13 +13,19 @@ const authenticateUser = require('../../middleware/auth')
 const JWT_KEY = 'hamzakhan1'
 const SharedRules = require('../../models/SharedRules');
 const moment = require('moment');
+const External = require('../../models/External');
 
 
 // Schedule a viva for a specific group's project
 router.post('/schedule-viva', async (req, res) => {
   try {
-    const { projectTitle, vivaDate, vivaTime } = req.body;
+    const { projectTitle, vivaDate, vivaTime, external, internal } = req.body;
+    console.log('external is ', external)
+    console.log('internal is ', internal)
 
+    if (new Date(vivaDate) < new Date()) {
+      return res.json({ success: false, message: "Enter a valid date" })
+    }
     // Find the group by project title
     const group = await Group.findOne({
       'projects.projectTitle': projectTitle
@@ -29,11 +35,64 @@ router.post('/schedule-viva', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' });
     }
 
-    console.log('Group is ', group)
+    console.log('Group is ', group.projects[0].projectTitle)
     if (!(group.documentation && group.proposal)) {
       return res.status(500).json({ success: false, message: `Documentation or Proposal is Pending` })
     }
+
+    const externalMember = await External.findOne({ username: external });
+    if (!externalMember) {
+      return res.status(404).json({ success: false, message: 'External Member not found' });
+    }
+
     const parsedDate = moment(vivaDate, 'DD-MM-YYYY').toDate();
+
+    const internalMember = await Supervisor.findOne({ username: internal })
+    if (!internalMember) {
+      return res.status(404).json({ success: false, message: 'Internal Member not found' });
+    }
+
+    if (group.supervisorId.equals(internalMember._id)) {
+      return res.json({ success: false, message: `${internal} is the supervisor of this group so select another internal member for this group` });
+    }
+
+    externalMember.groups.forEach(grp => {
+      let count = 0;
+      if (new Date(grp.date) === parsedDate) {
+        count += 1;
+      } if (count >= 2) {
+        return res.json({ success: false, message: "External Member Already have 2 Vivas Schduled on this Date" });
+      }
+    });
+
+    internalMember.groups.forEach(grp => {
+      let count = 0;
+      if (new Date(grp.date) === parsedDate) {
+        count += 1;
+      } if (count >= 2) {
+        return res.json({ success: false, message: "Internal Member Already have 2 Vivas Schduled on this Date" });
+      }
+    });
+
+    externalMember.groups.push({
+      id: group._id,
+      name: projectTitle,
+      date: parsedDate
+    });
+    console.log('external save');
+
+    internalMember.vivas.push({
+      id: group._id,
+      name: projectTitle,
+      date: parsedDate
+    });
+    console.log('internal save 1');
+    internalMember.unseenNotifications.push({
+      type: "Important", message: `You have a viva scheduled with ${projectTitle} on ${parsedDate}`
+    })
+    console.log('internal save notidication');
+    await Promise.all([internalMember.save(), externalMember.save()])
+    console.log('internal save 1');
     // Iterate through each project within the group and schedule a viva for each project
     group.projects.forEach(async (project) => {
       console.log('Project is ', project)
@@ -47,22 +106,25 @@ router.post('/schedule-viva', async (req, res) => {
           name: student.name,
           rollNo: student.rollNo
         })),
-        vivaDate: new Date(parsedDate),
-        vivaTime: vivaTime
+        vivaDate: new Date(parsedDate), vivaTime: vivaTime,
+        external: external, internal: internal
       });
       group.viva = viva._id;
       group.vivaDate = new Date(parsedDate);
-
+      group.external = external;
+      group.vivaTime = vivaTime;
+      group.internal = internal;
+      console.log('viva created')
       await Promise.all([group.save(), viva.save()]);
       console.log('Viva is ', viva)
       // Send notification to group users and supervisors about the scheduled viva
-      const notificationMessage = `A viva has been scheduled for the project "${project.projectTitle}" on ${vivaDate}`;
+      const notificationMessage = `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate}`;
 
       // Send notifications to students
       project.students.forEach(async (student) => {
         const user = await User.findById(student.userId);
         if (user) {
-          user.unseenNotifications.push({ type:"Reminder", message: notificationMessage });
+          user.unseenNotifications.push({ type: "Reminder", message: notificationMessage });
           user.vivaTime = vivaTime;
           user.vivaDate = parsedDate;
           user.viva = viva._id;
@@ -74,7 +136,7 @@ router.post('/schedule-viva', async (req, res) => {
       const supervisor = await Supervisor.findById(group.supervisor._id);
       console.log('Super visor is ', supervisor)
       if (supervisor) {
-        supervisor.unseenNotifications.push({ message: notificationMessage });
+        supervisor.unseenNotifications.push({ type: "Reminder", message: notificationMessage });
         await supervisor.save();
       }
     });
@@ -84,6 +146,112 @@ router.post('/schedule-viva', async (req, res) => {
   } catch (err) {
     console.error('Error scheduling viva:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.put('/edit', async (req, res) => {
+  try {
+    const { projectTitle, vivaDate, vivaTime, external, internal } = req.body;
+    // Use findOneAndUpdate to find and update the document
+    const updatedViva = await Viva.findOneAndUpdate(
+      { projectTitle: projectTitle },
+      { vivaDate: vivaDate, vivaTime: vivaTime },
+      { new: true }
+    );
+
+    if (new Date(vivaDate) < new Date()) {
+      return res.json({ success: false, message: "Enter a valid date" })
+    }
+
+    const group = await Group.findOne({
+      'projects.projectTitle': projectTitle
+    }).populate('supervisor projects.students');
+
+    if (external && !group.internal === external) {
+      const externalMember = await External.findOne({ username: external });
+      if (!externalMember) {
+        return res.status(404).json({ success: false, message: 'External Member not found' });
+      }
+
+      externalMember.groups.push({
+        id: group._id,
+        name: projectTitle, date: parsedDate
+      });
+
+      externalMember.groups.forEach(grp => {
+        let count = 0;
+        if (new Date(grp.date) === parsedDate) {
+          count += 1;
+        } if (count >= 2) {
+          return res.json({ success: false, message: "External Member Already have 2 Vivas Schduled on this Date" });
+        }
+      });
+      await externalMember.save()
+    }
+
+    const parsedDate = moment(vivaDate, 'DD-MM-YYYY').toDate();
+    if (internal && !group.internal === internal) {
+      const internalMember = await Supervisor.findOne({ username: internal })
+      if (!internalMember) {
+        return res.status(404).json({ success: false, message: 'Internal Member not found' });
+      }
+
+      if (group.supervisorId.equals(internalMember._id)) {
+        return res.json({ success: false, message: `${internal} is the supervisor of this group so select another internal member for this group` });
+      }
+
+      internalMember.groups.forEach(grp => {
+        let count = 0;
+        if (new Date(grp.date) === parsedDate) {
+          count += 1;
+        } if (count >= 2) {
+          return res.json({ success: false, message: "Internal Member Already have 2 Vivas Schduled on this Date" });
+        }
+      });
+
+      console.log('external save');
+
+      internalMember.vivas.push({
+        id: group._id,
+        name: projectTitle,
+        date: parsedDate
+      });
+      console.log('internal save 1');
+      internalMember.unseenNotifications.push({
+        type: "Important", message: `You have a viva scheduled with ${projectTitle} on ${parsedDate}`
+      })
+      console.log('internal save notidication');
+      await internalMember.save()
+    }
+    updatedViva.external = external;
+    updatedViva.internal = internal;
+    await updatedViva.save();
+    group.vivaDate = vivaDate; group.vivaTime = vivaTime;
+    group.external = external; group.internal = internal;
+    await group.save();
+
+    group.projects.map(proj => {
+      proj.students.map(async stu => {
+        const student = await User.findById(stu.userId);
+        if (!student) {
+          return;
+        }
+        student.vivaDate = vivaDate;
+        student.unseenNotifications.push({
+          type: "Important",
+          message: `Viva Date has been changed by the Committee 
+          It's now ${vivaDate} at ${vivaTime}
+          `
+        });
+        await student.save();
+      })
+    })
+
+    // Send the updated document as the response
+    res.json({ success: true, message: "Viva Updated Successfully", updatedViva });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -139,85 +307,5 @@ router.get('/detail', authenticateUser, async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
-
-router.post('/dueDate', async (req, res) => {
-  try {
-    const { projectTitle, dueDate } = req.body;
-    const group = await Group.findOne({
-      'projects.projectTitle': projectTitle
-    });
-    if (!group) {
-      return res.status(500).json({ success: false, message: 'Group not found' });
-    }
-    // Parse the date in "DD-MM-YYYY" format and convert it to ISO format
-    const isoDueDate = moment(dueDate, 'DD-MM-YYYY').toISOString();
-
-    group.propDate = isoDueDate;
-
-    for (const grp of group.projects) {
-      console.log('projects is ', grp);
-      for (const studentId of grp.students) {
-        const stu = await User.findById(studentId.userId);
-        if (!stu) {
-          return res.status(500).json({ success: false, message: 'Student not found' });
-        }
-        console.log('Student is ', stu);
-        stu.propDate = isoDueDate;
-        await stu.save();
-      }
-    }
-
-    await group.save();
-    return res.json({ success: true, message: 'Due Date is added' });
-
-  } catch (error) {
-    console.error('error is ', error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-});
-
-router.put('/edit', async (req, res) => {
-  try {
-    const { projectTitle, vivaDate, vivaTime } = req.body;
-    // Use findOneAndUpdate to find and update the document
-    const updatedViva = await Viva.findOneAndUpdate(
-      { projectTitle: projectTitle },
-      { vivaDate: vivaDate, vivaTime: vivaTime },
-      { new: true }
-    );
-    
-    const group = await Group.findOne({
-      'projects.projectTitle': projectTitle
-    }).populate('supervisor projects.students');
-
-    group.vivaDate = vivaDate;
-    await group.save();
-
-    group.projects.map(proj=>{
-      proj.students.map(async stu=>{
-        const student = await User.findById(stu.userId);
-        if(!student){
-          return;
-        }
-        student.vivaDate = vivaDate;
-        student.unseenNotifications.push({
-          type : "Important",
-          message : `Viva Date has been changed by the Committee 
-          It's now ${vivaDate} at ${vivaTime}
-          `
-        });
-        student.vivaTime = vivaTime;  
-        await student.save();
-      })
-    })
-
-    // Send the updated document as the response
-    res.json({ success: true, message: "Viva Updated Successfully", updatedViva });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 
 module.exports = router;

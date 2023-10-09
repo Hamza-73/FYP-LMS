@@ -22,6 +22,7 @@ const groupSchema = new Schema({
   isDoc: { type: Boolean, default: false },
   viva: { type: Schema.Types.ObjectId, ref: 'Viva' },
   vivaDate: { type: String },
+  vivaTime: { type: String },
   propDate: { type: Date },
   propSub: { type: Date },
   docDate: { type: Date },
@@ -43,9 +44,10 @@ const groupSchema = new Schema({
   instructions: { type: String },
   meeting: { type: Number, default: 0 },
   extensionRequest: [{
-    type: { type: String },
     date: { type: Date }
-  }]
+  }],
+  external: { type: String },
+  internal: { type: String }
 });
 
 module.exports = mongoose.model('Group', groupSchema);

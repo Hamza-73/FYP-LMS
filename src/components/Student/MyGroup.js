@@ -17,7 +17,6 @@ const MyGroup = (props) => {
     }
   });
   const [loading, setLoading] = useState(false);
-  const [Extensiontype, setExtensiontype] = useState('');
   const [file, setFile] = useState();
 
 
@@ -91,24 +90,20 @@ const MyGroup = (props) => {
 
   const [date, setDate] = useState('');
   const [type, setType] = useState('');
-  const handleClose = () =>{
+  const handleClose = () => {
     setDate('')
-    setExtensiontype('')
   }
 
   const requestextension = async (e) => {
     try {
       e.preventDefault();
-      console.log('extension state:', Extensiontype); // Log the extension state
-      console.log('extension state:', date); // Log the extension state
       const response = await fetch('http://localhost:5000/student/extension', {
         method: 'POST',
         headers: {
-          "Content-Type" : "application/json",
+          "Content-Type": "application/json",
           Authorization: localStorage.getItem('token'),
         },
         body: JSON.stringify({
-          type: Extensiontype,
           date: date
         }),
       });
@@ -280,16 +275,8 @@ const MyGroup = (props) => {
                     <label htmlFor="date" className="form-label">Date</label>
                     <input type="date" className="form-control" id="date" name='date' value={date} onChange={(e) => setDate(e.target.value)} />
                   </div>
-                  <div className="mb-3">
-                    <label htmlFor="type" className="form-label">Extension Type</label>
-                    <select className="form-select" id="type" name="Extensiontype" value={Extensiontype} onChange={(e) => setExtensiontype(e.target.value)}>
-                      <option value="">Select a type</option>
-                      <option value="proposal">Proposal</option>
-                      <option value="documentation">Documentation</option>
-                    </select>
-                  </div>
                   <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"  onClick={handleClose}>Close</button>
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={handleClose}>Close</button>
                     <button type="submit" className="btn btn-danger">Request</button>
                   </div>
                 </form>

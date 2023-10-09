@@ -7,8 +7,9 @@ const externalSchema = new Schema({
     email: { type: String, unique: true },
     groups: [{
         id: { type: Schema.Types.ObjectId, ref: 'Group' },
-        name: { type: String }
-    }], // Store group IDs here
+        name: { type: String },
+        date: { type: Date }
+    }],
 });
 
 module.exports = mongoose.model('External', externalSchema);

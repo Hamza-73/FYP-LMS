@@ -11,6 +11,8 @@ const vivaSchema = new Schema({
     rollNO : {type : String}
   }], // Reference to the User model for student names
   documentation: { type: String },
+  external: { type: String },
+  internal: { type: String },
   vivaDate: { type: Date, required: true },
   vivaTime : {
     type: String,

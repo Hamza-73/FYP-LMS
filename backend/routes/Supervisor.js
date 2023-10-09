@@ -1060,23 +1060,27 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
       return res.status(404).json({ message: 'Supervisor not found' });
     }
 
-    const request = supervisor.extensionRequest.filter(request => {  
-      if(request.requestId){
-        return request.requestId.equals(requestId) 
+    const request = supervisor.extensionRequest.filter(request => {
+      if (request.requestId) {
+        console.log('request is ', request)
+        return request.requestId.equals(requestId)
       }
     });
 
-    if (request.length<0) {
+    if (request.length < 0) {
       return res.json({ success: false, message: 'Request Not Found' });
     }
+    console.log('request ois outside', request)
 
-    const group = await Group.findOne({ 'projects.projectTitle': request.group });
+    const group = await Group.findOne({ 'projects.projectTitle': request[0].group });
     if (!group) {
       return res.json({ success: false, message: 'Group Not Found' });
     }
-
-    group.extensionRequest = group.extensionRequest.filter(request => { return !request._id.equals(requestId) });
-
+    
+    supervisor.extensionRequest = supervisor.extensionRequest.filter( request => {
+      return !request.requestId.equals(requestId)
+    })
+    
     await Promise.all([supervisor.save(), group.save()]);
 
     if (action === 'accept') {
@@ -1084,18 +1088,16 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
       const committeeMembers = await Committee.find({ isAdmin: true });
       supervisors.forEach(async sup => {
         sup.requests.push({
-          type: request.type,
-          date: request.date,
-          group: request.group,
+          date: request[0].date,
+          group: request[0].group,
           supervisor: supervisor.name,
         });
         await sup.save();
       });
       committeeMembers.forEach(async sup => {
         sup.requests.push({
-          type: request.type,
-          date: request.date,
-          group: request.group,
+          date: request[0].date,
+          group: request[0].group,
           supervisor: supervisor.name,
         });
         await sup.save();

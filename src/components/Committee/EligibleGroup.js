@@ -10,7 +10,10 @@ const EligibleGroup = (props) => {
   const [selectedGroupId, setSelectedGroupId] = useState('');
 
 
-  const [viva, setViva] = useState({ projectTitle: '', vivaDate: new Date(), vivaTime: '' });
+  const [viva, setViva] = useState({
+    projectTitle: '', vivaDate: new Date(), vivaTime: '',
+    external: "", internal: ""
+  });
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({ vivas: [] });
   const [isFieldsModified, setIsFieldsModified] = useState(false);
@@ -42,6 +45,8 @@ const EligibleGroup = (props) => {
   const scheduleViva = async (e) => {
     try {
       e.preventDefault();
+      console.log('internal ', viva.internal)
+      console.log('external ', viva.external)
       const response = await fetch(`http://localhost:5000/viva/schedule-viva`, {
         method: 'POST',
         headers: {
@@ -51,6 +56,8 @@ const EligibleGroup = (props) => {
           projectTitle: viva.projectTitle,
           vivaDate: viva.vivaDate,
           vivaTime: viva.vivaTime,
+          internal: viva.internal,
+          external: viva.external
         }),
       });
       const json = await response.json();
@@ -67,45 +74,45 @@ const EligibleGroup = (props) => {
     }
   };
 
-  
+
   useEffect(() => {
     setTimeout(() => {
       getDetail();
       getProjects();
     }, 1000)
   }, []);
-  
+
   const [userData, setUserData] = useState({ member: [] });
 
   const getDetail = async () => {
-      try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-              console.log('token not found');
-              return;
-          }
-
-          const response = await fetch(`http://localhost:5000/committee/detail`, {
-              method: 'GET',
-              headers: {
-                  'Authorization': token
-              },
-          });
-
-          if (!response.ok) {
-              console.log('error fetching detail', response);
-              return; // Exit early on error
-          }
-
-          const json = await response.json();
-          console.log('json is in sidebar: ', json);
-          if (json) {
-              //   console.log('User data is: ', json);
-              setUserData(json);
-          }
-      } catch (err) {
-          console.log('error is in sidebar: ', err);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('token not found');
+        return;
       }
+
+      const response = await fetch(`http://localhost:5000/committee/detail`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token
+        },
+      });
+
+      if (!response.ok) {
+        console.log('error fetching detail', response);
+        return; // Exit early on error
+      }
+
+      const json = await response.json();
+      console.log('json is in sidebar: ', json);
+      if (json) {
+        //   console.log('User data is: ', json);
+        setUserData(json);
+      }
+    } catch (err) {
+      console.log('error is in sidebar: ', err);
+    }
   };
 
   const handleChange1 = (e) => {
@@ -133,7 +140,7 @@ const EligibleGroup = (props) => {
   return (
     <div>
       <div>
-        
+
       </div>
       <div className="viva">
         <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -143,7 +150,7 @@ const EligibleGroup = (props) => {
                 <h5 className="modal-title">Schedule Viva</h5>
               </div>
               <div className="modal-body">
-                <form onSubmit={  (e) => scheduleViva(e)}>
+                <form onSubmit={(e) => scheduleViva(e)}>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">
                       Project Title
@@ -167,12 +174,28 @@ const EligibleGroup = (props) => {
                       <TimePicker onChange={handleTimeChange} value={viva.vivaTime} />
                     </div>
                   </div>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      Internal
+                    </label>
+                    <div>
+                      <input className='input-form' name='internal' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.internal} />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      External
+                    </label>
+                    <div>
+                      <input className='input-form' name='external' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.external} />
+                    </div>
+                  </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">
                       Close
                     </button>
                     <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                      disabled={!isFieldsModified || !viva.projectTitle}
+                      disabled={!isFieldsModified || !viva.projectTitle || !viva.external || !viva.internal}
                     >
                       Schedule
                     </button>
@@ -200,10 +223,10 @@ const EligibleGroup = (props) => {
               <tbody style={{ textAlign: "center" }}>
                 {group.groups
                   .filter((group) =>
-                    
-                  group.proposal && group.documentation
-                  && !group.vivaDate
-                    
+
+                    group.proposal && group.documentation
+                    && !group.vivaDate
+
                   ).map((group, groupIndex) => (
                     group.projects.map((project, projectKey) => (
                       <tr key={projectKey}>
@@ -230,14 +253,14 @@ const EligibleGroup = (props) => {
                             ) : 'Pending')}
                           </div>
                         </td>
-                          <td>{
-                            group.vivaDate? ( userData.member.isAdmin && <>{
-                              (new Date()> new Date(group.vivaDate) )  ? 'Taken' : ( <>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
-                            }</>) : <> <button className='btn btn-sm' data-toggle="modal" data-target="#exampleModal1" style={{background:"maroon", color:"white"}} onClick={()=>{
-                              setSelectedGroupId(group._id);
-                              setViva({projectTitle: project.projectTitle})
-                            }} >Add Viva</button></>
-                            }</td>
+                        <td>{
+                          group.vivaDate ? (userData.member.isAdmin && <>{
+                            (new Date() > new Date(group.vivaDate)) ? 'Taken' : (<>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
+                          }</>) : <> <button className='btn btn-sm' data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} onClick={() => {
+                            setSelectedGroupId(group._id);
+                            setViva({ projectTitle: project.projectTitle })
+                          }} >Add Viva</button></>
+                        }</td>
                       </tr>
                     ))
                   ))}

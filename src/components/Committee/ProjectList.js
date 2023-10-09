@@ -21,16 +21,13 @@ const ProjectList = (props) => {
         alert('Authorization token not found', 'danger');
         return;
       }
-      const response = await axios.get("http://localhost:5000/committee/groups", {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const response = await fetch("http://localhost:5000/committee/groups", {
+        method: "GET",
       });
-      const json = await response.data;
+      const json = await response.json();
       console.log('json is ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
-      NotificationManager.error('Some Error occured Try/Again');
     }
   }
 
@@ -38,7 +35,7 @@ const ProjectList = (props) => {
     try {
       const response = await fetch(`http://localhost:5000/committee/remarks/${id}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             'Content-Type': 'application/json'
           },
@@ -46,10 +43,8 @@ const ProjectList = (props) => {
         });
       const json = await response.json();
       console.log('json is', json)
-      if (json.success) {
-        NotificationManager.sucess('Remarks have been given');
-        setRemarks(json);
-        getProjects();
+      if(json.success){
+      NotificationManager.sucess('Remarks have been given');
       }
 
     } catch (error) {
@@ -62,9 +57,9 @@ const ProjectList = (props) => {
       e.preventDefault()
       await giveRemarks(id);
       setRemarks('')
+      getProjects();
     } catch (error) {
       console.log(' useerror is ', error)
-      NotificationManager.error('Some error occured Try Again');
     }
   }
 
