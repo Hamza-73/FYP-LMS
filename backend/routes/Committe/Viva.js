@@ -167,12 +167,23 @@ router.put('/edit', async (req, res) => {
       'projects.projectTitle': projectTitle
     }).populate('supervisor projects.students');
 
-    if (external && !group.internal === external) {
-      const externalMember = await External.findOne({ username: external });
-      if (!externalMember) {
-        return res.status(404).json({ success: false, message: 'External Member not found' });
-      }
+    const internalMember = await Supervisor.findOne({ username: internal })
+    if (!internalMember) {
+      return res.status(404).json({ success: false, message: 'Internal Member not found' });
+    }
 
+    console.log('checking', group.supervisorId.equals(internalMember._id))
+    if (group.supervisorId.equals(internalMember._id)) {
+      return res.json({ success: false, message: `${internal} is the supervisor of this group so select another internal member for this group` });
+    }
+
+    const externalMember = await External.findOne({ username: external });
+    if (!externalMember) {
+      return res.status(404).json({ success: false, message: 'External Member not found' });
+    }
+
+    if (external && !group.external === external) {
+      console.log('external exist', external);
       externalMember.groups.push({
         id: group._id,
         name: projectTitle, date: parsedDate
@@ -191,14 +202,8 @@ router.put('/edit', async (req, res) => {
 
     const parsedDate = moment(vivaDate, 'DD-MM-YYYY').toDate();
     if (internal && !group.internal === internal) {
-      const internalMember = await Supervisor.findOne({ username: internal })
-      if (!internalMember) {
-        return res.status(404).json({ success: false, message: 'Internal Member not found' });
-      }
+      console.log('internal exist', exist);
 
-      if (group.supervisorId.equals(internalMember._id)) {
-        return res.json({ success: false, message: `${internal} is the supervisor of this group so select another internal member for this group` });
-      }
 
       internalMember.groups.forEach(grp => {
         let count = 0;

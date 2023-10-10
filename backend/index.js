@@ -50,6 +50,7 @@ const meetingRoute = require('./routes/Meeting');
 const projectRoute = require('./routes/ProjectRequest');
 const adminRoute = require('./routes/Admin');
 const externalRoute = require('./routes/External');
+const allocateRoute = require('./routes/Allocation');
 
 app.use('/student', loginRoute);
 app.use('/supervisor', superRoute);
@@ -59,6 +60,7 @@ app.use('/meeting', meetingRoute);
 app.use('/projects', projectRoute);
 app.use('/admin', adminRoute);
 app.use('/external', externalRoute);
+app.use('/allocation', allocateRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

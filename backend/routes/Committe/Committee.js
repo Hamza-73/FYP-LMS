@@ -15,6 +15,7 @@ const SharedRules = require('../../models/SharedRules');
 const Admin = require('../../models/Admin');
 const nodemailer = require('nodemailer');
 const ProjectRequest = require('../../models/ProjectRequest');
+const Allocation = require('../../models/Allocation');
 
 
 // Registration route
@@ -573,6 +574,11 @@ router.put('/allocate-group', async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'New supervisor not found' });
     }
+
+    if (previousSupervisor._id.equals(supervisor._id)) {
+      return res.json({ success: false, message: "The group Already Belong to this Supervisor select another one" })
+    }
+
     if (supervisor.slots.length == 0) {
       return res.status(400).json({ success: false, message: 'New supervisor does not have available slots' });
     }
@@ -595,7 +601,28 @@ router.put('/allocate-group', async (req, res) => {
     // Add the group ID to the new supervisor's groups
     supervisor.groups.push(group._id);
     supervisor.slots -= 1;
+    // Create an allocation object
+    const currentDateTime = new Date();
 
+    // Extract date and time from the current date and time object
+    const currentDate = currentDateTime.toISOString().split('T')[0];
+    const currentTime = currentDateTime.toISOString().split('T')[1].split('.')[0];
+    const allocation = new Allocation({
+      previousSupervisor: [{
+        id: previousSupervisor._id,
+        name: previousSupervisor.name
+      }],
+      newSupervisor: [{
+        id: supervisor._id,
+        name: supervisor.name
+      }],
+      groupName: projectRequest.projectTitle,
+      date: currentDate,
+      time: currentTime
+    });
+
+    // Save the allocation object to the database
+    await allocation.save();
     // Push filtered request to new supervisor's projectRequest
     if (!supervisor.projectRequest) {
       supervisor.projectRequest = []; // Initialize as an empty array if it's undefined

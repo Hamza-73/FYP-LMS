@@ -309,12 +309,6 @@ const Progress = (props) => {
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Project Title</td>
-                                            <td>{groupDetails.group.proposal ? 'Submitted' : 'Pending'}</td>
-                                            <td>{groupDetails.group.propDate ? new Date(groupDetails.group.propDate).toLocaleDateString('en-US') : '---'}</td>
-                                            <td>{groupDetails.group.propSub ? new Date(groupDetails.group.propSub).toLocaleDateString('en-US') : '---'}</td>
-                                        </tr>
-                                        <tr>
                                             <td>Proposal</td>
                                             <td>{groupDetails.group.proposal ? 'Submitted' : 'Pending'}</td>
                                             <td>{groupDetails.group.propDate ? new Date(groupDetails.group.propDate).toLocaleDateString('en-US') : '---'}</td>
@@ -329,7 +323,7 @@ const Progress = (props) => {
                                         <tr>
                                             <td>Viva</td>
                                             <td>
-                                                {groupDetails.group.vivaDate ? (new Date(groupDetails.group.vivaDate) > new Date() ? 'Pending' : 'Taken') : '----'}
+                                                {groupDetails.group.viva.vivaDate ? (new Date(groupDetails.group.viva.vivaDate) > new Date() ? 'Pending' : 'Taken') : '----'}
                                             </td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>

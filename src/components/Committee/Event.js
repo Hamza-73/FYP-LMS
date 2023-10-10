@@ -13,6 +13,8 @@ import 'react-notifications/lib/notifications.css';
 const Event = (props) => {
   const history = useNavigate();
   const [data, setData] = useState({ vivas: [] });
+  const [committee, setCommittee] = useState({ members: [] });
+  const [external, setExternal] = useState({ members: [] });
 
   const [viva, setViva] = useState({
     projectTitle: '', vivaDate: new Date(), vivaTime: '',
@@ -23,7 +25,26 @@ const Event = (props) => {
 
   const [isInvalidDate, setIsInvalidDate] = useState(false);
 
-
+  const getExternal = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found', 'danger');
+        return;
+      }
+      const response = await fetch("http://localhost:5000/external/get-externals", {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await response.json();
+      console.log('supervisors are ', json); // Log the response data to see its structure
+      setExternal(json);
+    } catch (error) {
+      console.log('error in fetching supervisor ', error);
+    }
+  }
   const editViva = async (e) => {
     try {
       e.preventDefault();
@@ -55,6 +76,22 @@ const Event = (props) => {
     }
   }
 
+  // Function to get members
+  const getCommittee = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/supervisor/get-supervisors", {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await response.json();
+      console.log('students are ', json); // Log the response data to see its structure
+      setCommittee(json);
+    } catch (error) {
+    }
+  }
+
   const getVivas = async () => {
     try {
       setLoading(true);
@@ -81,6 +118,8 @@ const Event = (props) => {
     if (localStorage.getItem('token')) {
       setTimeout(() => {
         getVivas();
+        getCommittee();
+        getExternal();
       }, 1500);
     }
   }, []);
@@ -144,21 +183,28 @@ const Event = (props) => {
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
-                      Internal
-                    </label>
-                    <div>
-                      <input className='input-form' name='internal' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.internal} />
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
+                    <label htmlFor="external" className="form-label">
                       External
                     </label>
-                    <div>
-                      <input className='input-form' name='external' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.external} />
-                    </div>
+                    <select className='form-select' name='external' onChange={handleChange1} value={viva.external}>
+                      <option value="">Select External Member</option>
+                      {external.members&&external.members.map((member, index) => (
+                        <option key={index} value={member.username}>{member.username}</option>
+                      ))}
+                    </select>
                   </div>
+                  <div className="mb-3">
+                    <label htmlFor="internal" className="form-label">
+                      Internal
+                    </label>
+                    <select className='form-select' name='internal' onChange={handleChange1} value={viva.internal}>
+                      <option value="">Select Internal</option>
+                      {committee.members&&committee.members.map((member, index) => (
+                        <option key={index} value={member.username}>{member.username}</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">
                       Close

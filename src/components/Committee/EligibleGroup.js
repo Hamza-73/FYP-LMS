@@ -225,7 +225,7 @@ const EligibleGroup = (props) => {
                   .filter((group) =>
 
                     group.proposal && group.documentation
-                    && !group.vivaDate
+                    && !group.viva
 
                   ).map((group, groupIndex) => (
                     group.projects.map((project, projectKey) => (

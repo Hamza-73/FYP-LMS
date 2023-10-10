@@ -312,7 +312,7 @@ const MyGroup = (props) => {
         {
           group.group ? <>
             {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
-              <div className="notify" style={{ position: "absolute", right: "30px", top: "140px" }}>
+              <div className="notify" style={{ position: "absolute", right: "50%", bottom:"3px" }}>
                 <style>{myStyle}</style>
                 <div>
                   <div>
@@ -356,6 +356,27 @@ const MyGroup = (props) => {
                 </div>
               </div>
             </div>}
+
+            { group.group.viva.vivaDate &&
+              <div className="notify" style={{ position: "absolute", right: "50%", bottom:"3px"}}>
+                <style>{myStyle}</style>
+                <div>
+                  <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
+                    <div className="contaner">
+                      <h4 className='text-center'>Meeting</h4>
+                      <div className="items">
+                        <h5>Date</h5>
+                        <h6>{new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
+                      </div>
+                      <div className="items">
+                        <h5>Time</h5>
+                        <h6>{group.group.viva.vivaDate} </h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
 
 
             <div className="upperpart">
