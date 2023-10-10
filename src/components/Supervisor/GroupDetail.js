@@ -207,10 +207,6 @@ const GroupDetail = () => {
                           <div className="container">
                             <h4 className='text-center'>Requests</h4>
                             <div className="items d-flex justify-content-between">
-                              <h5 style={{ marginRight: "5px" }}>Type</h5>
-                              <h6>{item.type}</h6>
-                            </div>
-                            <div className="items d-flex justify-content-between">
                               <h5 style={{ marginRight: "5px" }}>Date</h5>
                               <h6>{new Date(item.date).toLocaleDateString('en-GB')}
                               </h6>

@@ -231,7 +231,7 @@ router.put('/edit', async (req, res) => {
     updatedViva.external = external;
     updatedViva.internal = internal;
     await updatedViva.save();
-    group.vivaDate = vivaDate; group.vivaTime = vivaTime;
+    group.vivaDate = vivaDate? vivaDate : group.vivaDate; group.vivaTime = vivaTime;
     group.external = external; group.internal = internal;
     await group.save();
 
