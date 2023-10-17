@@ -19,7 +19,7 @@ const CommitteeMember = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
   const [register, setRegister] = useState({
-    fname: "", lname: "", username: "", email:"", password: ""
+    fname: "", lname: "", username: "", email: "", password: ""
   });
 
   // Function to open the modal
@@ -94,7 +94,7 @@ const CommitteeMember = (props) => {
       }
 
       // Check if any required field is empty
-      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.email.trim() ) {
+      if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.email.trim()) {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
@@ -188,7 +188,7 @@ const CommitteeMember = (props) => {
       console.log('students are ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
-        
+
     }
   }
 
@@ -277,7 +277,7 @@ const CommitteeMember = (props) => {
 
   // Function to reset input fields
   const handleClose = () => {
-    setRegister({ fname: "", lname: "", username: "", email: "",  password: "" });
+    setRegister({ fname: "", lname: "", username: "", email: "", password: "" });
   }
 
   const handleSearch = (event) => {
@@ -292,7 +292,7 @@ const CommitteeMember = (props) => {
   const filteredData = data.members.filter((member) => {
     const searchTerm = searchQuery.trim().toLowerCase(); // Remove leading/trailing spaces and convert to lowercase
     const searchWords = searchTerm.split(' ');
-  
+
     // Check if any word in the search query matches either first name or last name
     const matchesFirstName = member.fname && searchWords.some((word) =>
       member.fname.toLowerCase().includes(word)
@@ -300,13 +300,13 @@ const CommitteeMember = (props) => {
     const matchesLastName = member.lname && searchWords.some((word) =>
       member.lname.toLowerCase().includes(word)
     );
-  
+
     return (
       matchesFirstName ||
       matchesLastName
     );
   });
-  
+
 
   const filteredDataPaginated = paginate(filteredData, recordsPerPage, currentPage);
 
@@ -462,16 +462,22 @@ const CommitteeMember = (props) => {
                   )}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className='text-center'>
                 {filteredDataPaginated.map((val, key) => (
                   <tr key={key}>
-                    <td>{ !val.isAdmin? val.fname + ' ' + val.lname : <>{val.fname + ' ' + val.lname } <small>(committee)</small></>}</td>
+                    <td>{!val.isAdmin ? val.fname + ' ' + val.lname : <>{val.fname + ' ' + val.lname} <small>(committee)</small></>}</td>
                     <td>{val.username}</td>
                     <td>{val.email}</td>
                     <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                      <i className="fa-solid fa-pen-to-square"></i>
+                      <button className="btn" style={{ background: "maroon", color: "white" }}>
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </button>
                     </td>
-                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>}
+                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}>
+                      <button className="btn" style={{ background: "maroon", color: "white" }}>
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </td>}
                   </tr>
                 ))}
               </tbody>

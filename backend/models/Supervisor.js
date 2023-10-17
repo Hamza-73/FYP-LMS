@@ -30,14 +30,11 @@ const supervisorSchema = new Schema({
   isAdmin: { type: Boolean, default: false },
   isCommittee: { type: Boolean, default: false },
   extensionRequest: [{
-    date: { type: Date },
     group: { type: String },
     student: { type: String },
     requestId: { type: Schema.Types.ObjectId }
   }],
   requests: [{
-    type: { type: String },
-    date: { type: Date },
     group: { type: String },
     supervisor: { type: String }
   }],

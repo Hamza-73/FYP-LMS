@@ -140,12 +140,12 @@ const GroupDetail = () => {
     setGroupId('');
   }
 
-  const handleRequest = async (id,action) => {
+  const handleRequest = async (id, action) => {
     try {
-      const response = await fetch(`http://localhost:5000/supervisor/extension/${id}/${action}`,{
-        method:"POST",
-        headers:{
-          "Authorization" : localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/supervisor/extension/${id}/${action}`, {
+        method: "POST",
+        headers: {
+          "Authorization": localStorage.getItem('token')
         }
       });
       const json = await response.json();
@@ -205,22 +205,17 @@ const GroupDetail = () => {
                       <div>
                         <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
                           <div className="container">
-                            <h4 className='text-center'>Requests</h4>
-                            <div className="items d-flex justify-content-between">
-                              <h5 style={{ marginRight: "5px" }}>Date</h5>
-                              <h6>{new Date(item.date).toLocaleDateString('en-GB')}
-                              </h6>
-                            </div>
+                            <h4 className='text-center'>Request For Extension</h4>
                             <div>
                               <button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                              onClick={()=>{
-                                handleRequest(item._id,'accept')
-                              }}
+                                onClick={() => {
+                                  handleRequest(item._id, 'accept')
+                                }}
                               >Accept</button>
                               <button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                              onClick={()=>{
-                                handleRequest(item._id,'rejected')
-                              }}
+                                onClick={() => {
+                                  handleRequest(item._id, 'rejected')
+                                }}
                               >Reject</button>
                             </div>
                           </div>

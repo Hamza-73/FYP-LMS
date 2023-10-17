@@ -88,34 +88,25 @@ const MyGroup = (props) => {
     }
   }
 
-  const [date, setDate] = useState('');
-  const [type, setType] = useState('');
-  const handleClose = () => {
-    setDate('')
-  }
-
-  const requestextension = async (e) => {
+  const requestextension = async () => {
     try {
-      e.preventDefault();
       const response = await fetch('http://localhost:5000/student/extension', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem('token'),
         },
-        body: JSON.stringify({
-          date: date
-        }),
       });
       const json = await response.json();
       console.log('json in sending extension is ', json);
       alert(json.message);
-      handleClose();
     } catch (error) {
       console.log('error in extension', error);
     }
   }
 
+  const allowedFileTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'video/mp4'];
+  const maxFileSize = 20 * 1024 * 1024; // 5 MB in bytes
 
   const upload = async (e) => {
     e.preventDefault();
@@ -128,6 +119,18 @@ const MyGroup = (props) => {
       formData.append('doc', file); // Make sure to match the field name with your backend route
 
       console.log('form data is ', formData);
+
+      // Check if the selected file type is allowed
+      if (!allowedFileTypes.includes(file.type)) {
+        console.log('Invalid file type. Allowed file types are PDF, DOCX, images, and videos.');
+        return;
+      }
+
+      // Check if the file size is within the allowed limit
+      if (file.size > maxFileSize) {
+        console.log('File size exceeds the limit of 5 MB.');
+        return;
+      }
 
       const response = await fetch('http://localhost:5000/student/doc', {
         method: 'POST',
@@ -157,7 +160,6 @@ const MyGroup = (props) => {
             docs: [...(prevGroup.group.docs || []), newDocument],
           },
         }));
-        setType('');
         setFile();
       }
     } catch (error) {
@@ -261,33 +263,7 @@ const MyGroup = (props) => {
         </div>
       </div>
 
-      <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="extensionModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="extensionModalLabel">Extension Request</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div className="modal-body">
-              <>
-                <form onSubmit={requestextension}>
-                  <div className="mb-3">
-                    <label htmlFor="date" className="form-label">Date</label>
-                    <input type="date" className="form-control" id="date" name='date' value={date} onChange={(e) => setDate(e.target.value)} />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={handleClose}>Close</button>
-                    <button type="submit" className="btn btn-danger">Request</button>
-                  </div>
-                </form>
-              </>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
@@ -312,7 +288,7 @@ const MyGroup = (props) => {
         {
           group.group ? <>
             {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
-              <div className="notify" style={{ position: "absolute", right: "30%", bottom:"3px" }}>
+              <div className="notify" style={{ position: "absolute", right: "30%", bottom: "3px" }}>
                 <style>{myStyle}</style>
                 <div>
                   <div>
@@ -357,21 +333,26 @@ const MyGroup = (props) => {
               </div>
             </div>}
 
-            { group.group.viva &&
-              <div className="notify" style={{ position: "absolute", right: "50%", bottom:"3px"}}>
+            {group.group.viva && group.group.viva.vivaDate &&
+              <div className="notify" style={{ position: "absolute", right: "50%", bottom: "3px" }}>
                 <style>{myStyle}</style>
                 <div>
                   <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
                     <div className="contaner">
-                      <h4 className='text-center'>Group</h4>
-                      <h6>{group.group.viva.vivaDate}</h6>
+                      <h4 className='text-center'>Viva</h4>
                       <div className="items">
                         <h5>Date</h5>
-                        <h6>{new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
+                        <h6>{ group.group.viva.vivaDate &&   new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
                       </div>
                       <div className="items">
                         <h5>Time</h5>
-                        <h6>{group.group.viva.vivaDate} </h6>
+                        <h6>{ group.group.viva.vivaTime && group.group.viva.vivaTime} </h6>
+                      </div><div className="items">
+                        <h5>Internal</h5>
+                        <h6>{group.group.viva.internal} </h6>
+                      </div><div className="items">
+                        <h5>External</h5>
+                        <h6>{group.group.viva.external} </h6>
                       </div>
                     </div>
                   </div>
@@ -457,9 +438,11 @@ const MyGroup = (props) => {
             </div>
 
             <div className="d-flex justify-content-between">
-              <button className="btn btn-danger" onClick={requestMeeting}>Request Meeting</button>
-              <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal2">Extension Request</button>
-              <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">Upload Document</button>
+              <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} onClick={requestMeeting}>Request Meeting</button>
+              <button className="btn btn-danger" disabled={group.group.documentation} onClick={() => {
+                requestextension()
+              }}>Extension Request</button>
+              <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} data-bs-toggle="modal" data-bs-target="#exampleModal">Upload Document</button>
             </div>
           </> : <h1 className='text-center my-4' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You're currently not enrolled in any Group.</h1>
         }

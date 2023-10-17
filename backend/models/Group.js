@@ -44,7 +44,7 @@ const groupSchema = new Schema({
   instructions: { type: String },
   meeting: { type: Number, default: 0 },
   extensionRequest: [{
-    date: { type: Date }
+    student : {type : String}
   }],
   external: { type: String },
   internal: { type: String }

@@ -64,37 +64,29 @@ router.post('/upload', authenticateUser, async (req, res) => {
     console.log('file is ', file);
 
     cloudinary.uploader.upload(file.tempFilePath, async (error, result) => {
-      console.log('result is ', result);
+      if (error) {
+        console.error('Error uploading PDF:', error);
+        return res.status(500).json({ success: false, message: 'Error uploading PDF' });
+      }
 
-      const promises = groupUpdate.projects.map(async project => {
-        return Promise.all(project.students.map(async student => {
-          const studentObj = await User.findById(student.userId);
-          if (!studentObj) {
-            return res.status(404).json({ success: false, message: 'Student Not Found' });
-          }
+      // Update the group with the uploaded file URL
+      if (type === 'proposal') {
+        groupUpdate.proposal = result.url;
+        groupUpdate.propSub = moment(new Date(), 'DD-MM-YYYY').toDate();
+      } else if (type === 'documentation') {
+        groupUpdate.documentation = result.url;
+        groupUpdate.docSub = moment(new Date(), 'DD-MM-YYYY').toDate();
+      } else {
+        return res.status(400).json({ success: false, message: 'Invalid file type' });
+      }
 
-          studentObj.unseenNotifications.push({
-            type: "Important",
-            message: `${type[0].toUpperCase() + type.slice(1, type.length)} For Your Group is Uploaded`
-          });
+      // Save groupUpdate object after the update
+      await groupUpdate.save();
 
-          if (type === 'proposal') {
-            groupUpdate.proposal = result.url;
-            groupUpdate.propSub = moment(new Date(), 'DD-MM-YYYY').toDate();
-          } else if (type === 'documentation') {
-            groupUpdate.documentation = result.url;
-            groupUpdate.docSub = moment(new Date(), 'DD-MM-YYYY').toDate();
-          } else {
-            return res.status(404).json({ success: false, message: "The Type Is Not Correct" })
-          }
-        }));
-      });
-      await Promise.all(promises);
-      // Save groupUpdate and user objects after all updates are done
-      await Promise.all([...promises, groupUpdate.save()]);
+      // Respond with the uploaded file URL
+      return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
     });
 
-    res.status(201).json({ success: true, message: 'PDF uploaded successfully' });
   } catch (error) {
     console.error('Error uploading PDF:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -1035,22 +1027,6 @@ router.post('/request-meeting', authenticateUser, async (req, res) => {
 //Request Supervisor for date Extension
 router.post('/extension', authenticateUser, async (req, res) => {
   try {
-    const { date } = req.body;
-    console.log('request body is ', req.body)
-    console.log('date ios ', date)
-
-    const [year, month, day] = date.split('-');
-    const formattedDate = `${month}-${day}-${year}`;
-    const newDate = new Date(formattedDate);
-
-    // Check if the date is a valid date
-    if (isNaN(newDate.getTime())) {
-      return res.json({ success: false, message: "Invalid date format" });
-    }
-
-    if (newDate < new Date()) {
-      return res.json({ success: false, message: "Enter a future date" });
-    }
 
     const student = await User.findById(req.user.id);
     if (!student) {
@@ -1062,12 +1038,16 @@ router.post('/extension', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group Not found' });
     }
 
-    if (!group.docDate) {
-      return res.json({ success: false, message: "Doc Date has not been announced Yet" });
+    if (!group.propDate) {
+      return res.status(500).json({ success: false, message: 'The Date for proposal has not been announced so you cannot send extension request' });
     }
-    const newDocdate = new Date(group.docDate)
-    if (newDocdate < newDate) {
-      return res.json({ success: false, message: "Extended Date cannot be before Documentation Date" })
+
+    if (!group.docDate) {
+      return res.status(500).json({ success: false, message: `You'vealready submitted documentation` });
+    }
+
+    if (group.documentation) {
+      return res.status(500).json({ success: false, message: 'The Date for Documentation has not been announced so you cannot send extension request' });
     }
 
     if (group.extensionRequest.length > 0) {
@@ -1089,14 +1069,14 @@ router.post('/extension', authenticateUser, async (req, res) => {
     }
 
     group.extensionRequest.push({
-      date: newDate
+      student: student.name
     });
+    console.log('group', group.extensionRequest)
 
     await group.save();
     const requestId = group.extensionRequest[group.extensionRequest.length - 1]._id;
     const mongooseId = new mongoose.Types.ObjectId(requestId);
     supervisor.extensionRequest.push({
-      date: newDate,  // Store the newDate object instead of the original date string
       student: student.name,
       group: group.projects[0].projectTitle,
       requestId: mongooseId

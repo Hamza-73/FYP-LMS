@@ -12,8 +12,6 @@ const committeeSchema = new Schema({
   isAdmin: { type: Boolean, default: false },
   isLogin: { type: Boolean, default: false },
   requests: [{
-    type: { type: String },
-    date: { type: Date },
     group: { type: String },
     supervisor: { type: String }
   }]

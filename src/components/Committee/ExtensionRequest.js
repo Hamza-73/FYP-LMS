@@ -200,7 +200,7 @@ const ExtensionRequest = (props) => {
                                     <div className="modal-footer">
                                         <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={()=>setDate('')}>Close</button>
                                             <button type="submit" className="btn btn-success">
-                                                Register
+                                                Extend
                                             </button>
                                     </div>
                                 </form>
@@ -243,8 +243,6 @@ const ExtensionRequest = (props) => {
                                     <tr style={{textAlign:"center"}}>
                                         <th scope="col">Supervisor</th>
                                         <th scope="col">Group</th>
-                                        <th scope="col">Type</th>
-                                        <th scope="col">Date</th>
                                         {(!showSidebar || userData.member.isAdmin) && <>
                                             <th scope="col">Extend</th>
                                         </>}
@@ -255,8 +253,6 @@ const ExtensionRequest = (props) => {
                                         <tr key={key}>
                                             <td>{val.supervisor}</td>
                                             <td>{val.group}</td>
-                                            <td>{val.type}</td>
-                                            <td>{new Date(val.date).toLocaleDateString('en-GB')}</td>
                                             {(userData.member.isAdmin) &&
                                             <td><button className="btn btn-sm" style={{
                                                 color:"white", background:"maroon", cursor:"pointer"

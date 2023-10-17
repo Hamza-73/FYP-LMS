@@ -18,24 +18,6 @@ const ProjectIdeas = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const getIdeas = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/supervisor/myIdeas', {
-          method: 'GET',
-          headers: {
-            'Authorization': token
-          }
-        });
-        const json = await response.json();
-        console.log('idea json is ', json);
-        setIdea(json)
-        setLoading(false)
-      } catch (error) {
-        console.log('error in ideas', error);
-      }
-    }
     if (localStorage.getItem('token')) {
       setTimeout(() => {
         getIdeas();
@@ -43,6 +25,25 @@ const ProjectIdeas = () => {
       console.log('inside effect ', idea)
     }
   }, []);
+
+  const getIdeas = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/supervisor/myIdeas', {
+        method: 'GET',
+        headers: {
+          'Authorization': token
+        }
+      });
+      const json = await response.json();
+      console.log('idea json is ', json);
+      setIdea(json)
+      setLoading(false)
+    } catch (error) {
+      console.log('error in ideas', error);
+    }
+  }
 
   const [addStudent, setAddStudent] = useState({ rollNo: '', projectTitle: '', });
   const [isAddStudentButtonEnabled, setIsAddStudentButtonEnabled] = useState(false);
@@ -84,10 +85,7 @@ const ProjectIdeas = () => {
         };
         NotificationManager.success(json.message);
         // Update the state with the new idea
-        setIdea((prevState) => ({
-          ...prevState,
-          ideas: [...prevState.ideas, newIdea], // Add the new idea object to the existing list
-        }));
+        getIdeas()
         setFypIdea({ projectTitle: "", scope: "", description: "" });
       }
       // Close the modal
@@ -168,12 +166,11 @@ const ProjectIdeas = () => {
   const handleEdit = async (e) => {
     try {
       e.preventDefault();
-      console.log('fypIdea is ', fypIdea)
-      console.log('projectId is ', projectId)
+      console.log('fypIdea is ', fypIdea.active)
       const token = localStorage.getItem('token');
       const response = await axios.put(`http://localhost:5000/supervisor/editProposal/${projectId}`, {
         projectTitle: fypIdea.projectTitle, description: fypIdea.description,
-        scope: fypIdea.scope
+        scope: fypIdea.scope, active: fypIdea.active
       }, {
         headers: {
           Authorization: token,
@@ -185,25 +182,7 @@ const ProjectIdeas = () => {
 
       if (json.success) {
         NotificationManager.success(json.message);
-        setIdea((prevState) => {
-          const updatedIdeas = prevState.ideas.map((ideaItem) => {
-            if (ideaItem.projectId === projectId) {
-              // Update the idea with the new information
-              return {
-                ...ideaItem,
-                projectTitle: fypIdea.projectTitle,
-                description: fypIdea.description,
-                scope: fypIdea.scope,
-                active : fypIdea.active
-              };
-            }
-            return ideaItem;
-          });
-          return {
-            ...prevState,
-            ideas: updatedIdeas,
-          };
-        });
+        getIdeas()
       }
       else {
         NotificationManager.error(json.message);
@@ -344,7 +323,7 @@ const ProjectIdeas = () => {
               <h3 className='text-center'>My FYP Ideas</h3>
               <div>
                 <div>
-                  <table className='table table-hover'>
+                  <table className='table table-hover text-center'>
                     <thead style={{ textAlign: "center" }}>
                       <tr>
                         <th scope="col">Sr No.</th>
@@ -354,9 +333,9 @@ const ProjectIdeas = () => {
                         <th scope="col">Description</th>
                         <th scope="col">Time</th>
                         <th scope="col">Date</th>
+                        <th scope="col">Add Student</th>
                         <th scope="col">Edit</th>
                         <th scope="col">Delete</th>
-                        <th scope="col">Add Student</th>
                       </tr>
                     </thead>
                     <tbody className='text-center'>
@@ -396,30 +375,44 @@ const ProjectIdeas = () => {
                           <td>{group.time}</td>
                           <td>{group.date ? group.date.split('T')[0] : ""}</td>
                           <td>
-                            <button className="btn btn-sm" data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} type="button" onClick={() => {
-                              setAddStudent({ projectTitle: group.projectTitle })
-                            }}>
+                            <button className="btn btn-sm" data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} type="button"
+                              onClick={() => {
+                                setAddStudent({ projectTitle: group.projectTitle });
+                                setFypIdea({
+                                  projectTitle: group.projectTitle,
+                                  description: group.description,
+                                  scope: group.scope,
+                                  active: group.active // Set active property from the group to fypIdea
+                                });
+                              }} disabled={!group.active}>
                               Add Student
                             </button>
                           </td>
                           <td>
-                            <button className="btn" data-toggle="modal" data-target="#exampleModal" onClick={() => {
-                              setEditMode(true);
-                              setProjectId(group.projectId);
-                              setFypIdea({
-                                projectTitle: group.projectTitle,
-                                description: group.description,
-                                scope: group.scope
-                              })
-                            }}>
-                              Edit
+                            <button style={{ background: "maroon", color: "white" }}
+                              className="btn"
+                              data-toggle="modal"
+                              data-target="#exampleModal"
+                              onClick={() => {
+                                setEditMode(true);
+                                setProjectId(group.projectId);
+                                setFypIdea({
+                                  projectTitle: group.projectTitle,
+                                  description: group.description,
+                                  scope: group.scope,
+                                  active: group.active // Set active property from the group to fypIdea
+                                });
+                              }} // Disable the button if group or fypIdea is not active
+                            >
+                              <i className="fa-solid fa-pen-to-square"></i>
                             </button>
                           </td>
+
                           <td onClick={() => {
                             handleDelete(group.projectId);
                           }}>
                             <button className="btn" style={{ background: "maroon", color: "white" }}>
-                              Delete
+                              <i class="fa-solid fa-trash"></i>
                             </button>
                           </td>
                         </tr>

@@ -642,9 +642,14 @@ const StudentList = (props) => {
                     {(!showSidebar && !userData.member.isAdmin) &&
                       <>
                         <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                          <i class="fa-solid fa-pen-to-square"></i>
+                          <button className="btn" style={{ background: "maroon", color: "white" }}>
+                            <i class="fa-solid fa-pen-to-square"></i>
+                          </button>
                         </td>
-                        <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i class="fa-solid fa-trash"></i></td>
+                        <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} >
+                          <button className="btn"
+                            onClick={() => handleDelete(val._id)} style={{ background: "maroon", color: "white" }}>
+                            <i class="fa-solid fa-trash"></i> </button></td>
                       </>
                     }
 

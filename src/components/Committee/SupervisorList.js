@@ -543,7 +543,7 @@ const SupervisorList = (props) => {
                     </>}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className='text-center'>
                   {filteredDataPaginated.map((val, key) => (
                     <tr key={key}>
                       <td>{val.name}</td>
@@ -553,9 +553,13 @@ const SupervisorList = (props) => {
                       {(!showSidebar && !userData.member.isAdmin) &&
                         <>
                           <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                            <i className="fa-solid fa-pen-to-square"></i>
+                            <button className="btn" style={{ background: "maroon", color: "white" }}>
+                              <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
                           </td>
-                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><button className="btn"
+                            style={{ background: "maroon", color: "white" }}>
+                            <i class="fa-solid fa-trash"></i> </button></td>
                           <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
                             disabled={val.isCommittee}
                             onClick={() => {

@@ -235,8 +235,8 @@ const Event = (props) => {
                     <tr>
                       <th scope="col">Student Name</th>
                       <th scope="col">Project Title</th>
-                      <th scope="col">Project Proposal</th>
-                      <th scope="col">Documentation</th>
+                      <th scope="col">Internal</th>
+                      <th scope="col">External</th>
                       <th scope="col">Viva Date</th>
                       <th scope="col">Viva Time</th>
                       <th scope="col">Edit</th>
@@ -253,8 +253,8 @@ const Event = (props) => {
                           </div>
                         </td>
                         <td>{val.projectTitle}</td>
-                        <td> <a target='_blank' href={val.documentation.proposal}>Proposal</a></td>
-                        <td> <a target='_blank' href={val.documentation.documentation}>Documentation</a></td>
+                        <td>{val.internal}</td>
+                        <td>{val.external}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
                         <td data-toggle="modal" data-target="#exampleModal1" onClick={() => {

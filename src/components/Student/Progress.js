@@ -323,7 +323,7 @@ const Progress = (props) => {
                                         <tr>
                                             <td>Viva</td>
                                             <td>
-                                                {groupDetails.group.viva.vivaDate ? (new Date(groupDetails.group.viva.vivaDate) > new Date() ? 'Pending' : 'Taken') : '----'}
+                                                {groupDetails.group.viva && groupDetails.group.viva.vivaDate ? (new Date(groupDetails.group.viva.vivaDate) > new Date() ? 'Pending' : 'Taken') : '----'}
                                             </td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>

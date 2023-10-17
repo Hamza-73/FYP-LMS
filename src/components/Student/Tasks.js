@@ -20,7 +20,10 @@ const Tasks = (props) => {
   });
   const [loading, setLoading] = useState(false);
 
-  const upload = async () => {
+  const allowedFileTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'video/mp4'];
+  const maxFileSize = 20 * 1024 * 1024;
+
+  const upload = async (type) => {
     try {
       if (!file) {
         console.log('No file selected.');
@@ -29,7 +32,19 @@ const Tasks = (props) => {
 
       const formData = new FormData();
       formData.append('type', type); // Add the 'type' field to the FormData object
-      formData.append(type, file); // Make sure to match the field name with your backend route
+      formData.append(type, file);
+
+      // Check if the selected file type is allowed
+      if (!allowedFileTypes.includes(file.type)) {
+        console.log('Invalid file type. Allowed file types are PDF, DOCX, images, and videos.');
+        return;
+      }
+
+      // Check if the file size is within the allowed limit
+      if (file.size > maxFileSize) {
+        console.log('File size exceeds the limit of 5 MB.');
+        return;
+      }
 
       console.log('form data is ', formData);
 
@@ -44,6 +59,13 @@ const Tasks = (props) => {
       console.log('response in uploading proposal is', json);
       if (json.success) {
         NotificationManager.success('file Uploaded Successfully');
+        setGroupDetails(prevGroup => ({
+          ...prevGroup,
+          group: {
+            ...prevGroup.group,
+            [type === 'proposal' ? 'proposal' : 'documentation']: json.url,
+          },
+        }));
       }
     } catch (error) {
       console.log('error in uploading file', error);
@@ -75,36 +97,39 @@ const Tasks = (props) => {
     }
   }
 
-  useEffect(() => {
-    const groupDetail = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) {
-          alert('Authorization token not found', 'danger');
-          return;
-        }
-        console.log('before fetch');
-        const response = await fetch('http://localhost:5000/student/my-group', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token,
-          },
-        });
-        console.log('after fetch');
-        const json = await response.json();
-        console.log('group detail is ', json);
-        if (!json.success) {
-          console.log('group response is ', response);
-          console.log('json in not success is ', json.message);
-        } else {
-          setGroupDetails(json);
-        }
-      } catch (error) {
-        console.log('error fetching group ', error);
+
+  const groupDetail = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found', 'danger');
+        return;
       }
-    };
+      console.log('before fetch');
+      const response = await fetch('http://localhost:5000/student/my-group', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+      });
+      console.log('after fetch');
+      const json = await response.json();
+      console.log('group detail is ', json);
+      if (!json.success) {
+        console.log('group response is ', response);
+        console.log('json in not success is ', json.message);
+      } else {
+        setGroupDetails(json);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log('error fetching group ', error);
+    }
+  };
+
+  useEffect(() => {
     if (localStorage.getItem('token')) {
       setLoading(true);
       setTimeout(() => {
@@ -197,7 +222,19 @@ const Tasks = (props) => {
     new Date(group.group.docDate) > new Date()
   ) {
     currentTaskType = 'documentation';
-  } 
+  }
+
+  // useEffect hook to re-render component when the group state changes
+  useEffect(() => {
+    // Do nothing if group or group.group is not defined
+    if (!group || !group.group) return;
+
+    // Check if proposal or documentation URLs are available and set the type accordingly
+    const uploadedType = group.group.proposal ? 'proposal' : group.group.documentation ? 'documentation' : '';
+
+    // Update the type state to trigger re-render
+    setType(uploadedType);
+  }, [group]);
 
   return (
     <div>
@@ -246,10 +283,10 @@ const Tasks = (props) => {
                       <button
                         className="btn"
                         type="button"
-                        style={{ color: 'white', fontWeight: '600' }}
+                        style={{ color: 'maroon', background: "white", fontWeight: '600' }}
                         onClick={() => {
                           setType('proposal');
-                          upload();
+                          upload('proposal');
                         }}
                       >
                         Add Proposal
@@ -312,10 +349,10 @@ const Tasks = (props) => {
                       <button
                         className="btn"
                         type="button"
-                        style={{ color: 'white', fontWeight: '600' }}
+                        style={{ color: 'maroon', background: "white", fontWeight: '600' }}
                         onClick={() => {
                           setType('documentation');
-                          upload();
+                          upload('documentation');
                         }}
                       >
                         Add Document
@@ -340,7 +377,7 @@ const Tasks = (props) => {
               )}
             </>
           ) : (
-            <h1 className="text-center my-5" style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You're not enrolled in any group yet</h1>
+            <h1 className="text-center my-5" style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You're not enrolled in any group yet</h1>
           )}
         </div>
       ) : (

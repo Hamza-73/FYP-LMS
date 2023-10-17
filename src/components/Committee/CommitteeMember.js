@@ -286,13 +286,6 @@ const CommitteeMember = (props) => {
       } else {
         setFirstNameLastNameEqual(false);
       }
-    } else if (name === 'department') {
-      // Allow only alphabetic characters
-      const alphabeticValue = value.replace(/[^A-Za-z]+/g, '');
-      setRegister({ ...register, [name]: alphabeticValue });
-
-      // First name and last name are not equal when editing department
-      setFirstNameLastNameEqual(false);
     } else {
       setRegister({ ...register, [name]: value });
     }
@@ -551,7 +544,6 @@ const CommitteeMember = (props) => {
                           Assistant Professor
                         </option>
                         <option value="Lecturer">Lecturer</option>
-                        <option value="External">External</option>
                       </select>
                     </div>
                   </div>
@@ -683,9 +675,15 @@ const CommitteeMember = (props) => {
                             data-target="#exampleModal"
                             onClick={() => openEditModal(val)}
                           >
+                            <button className="btn" style={{ background: "maroon", color: "white" }}>
                             <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
                           </td>
-                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}>
+                            <button className="btn" style={{background:"maroon", color:"white"}}>
+                            <i className="fa-solid fa-trash"></i>
+                            </button>
+                            </td>
                           <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
                             disabled={val.isAdmin}
                             onClick={() => {

@@ -830,13 +830,9 @@ router.put('/editProposal/:projectId', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Project Idea not found' });
     }
 
+    console.log('active us ', updatedDetails)
 
-    supervisor.unseenNotifications.push({
-      type: "Important",
-      message: `FYP Idea edited Successfully`
-    });
-
-    await Promise.all([supervisor.save(), idea.save()]);
+    await idea.save()
 
     res.json({ success: true, message: "Idea Edited Successfully", idea });
 
@@ -958,6 +954,7 @@ router.get('/myIdeas', authenticateUser, async (req, res) => {
         projectTitle: project.projectTitle,
         description: project.description,
         scope: project.scope,
+        active: project.active,
         time: idea.time,
         date: idea.date
       }); // Return the project if found
@@ -1076,11 +1073,11 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
     if (!group) {
       return res.json({ success: false, message: 'Group Not Found' });
     }
-    
-    supervisor.extensionRequest = supervisor.extensionRequest.filter( request => {
+
+    supervisor.extensionRequest = supervisor.extensionRequest.filter(request => {
       return !request.requestId.equals(requestId)
     })
-    
+
     await Promise.all([supervisor.save(), group.save()]);
 
     if (action === 'accept') {
@@ -1088,7 +1085,6 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
       const committeeMembers = await Committee.find({ isAdmin: true });
       supervisors.forEach(async sup => {
         sup.requests.push({
-          date: request[0].date,
           group: request[0].group,
           supervisor: supervisor.name,
         });
@@ -1096,7 +1092,6 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
       });
       committeeMembers.forEach(async sup => {
         sup.requests.push({
-          date: request[0].date,
           group: request[0].group,
           supervisor: supervisor.name,
         });
