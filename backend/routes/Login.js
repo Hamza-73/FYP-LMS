@@ -664,6 +664,8 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       viva: viva, meetingReport: group.meetingReport,
       instructions: group.instructions,
       docs: group.docs,
+      internalMarks: group.internalMarks, externalMarks: group.externalMarks,
+      marks: group.marks, hodMarks: group.hodMarks,
       meetingDate: group.meetingDate,
       meetingLink: group.meetingLink ? group.meetingLink : "",
       meetingTime: group.meetingTime,
@@ -1027,7 +1029,7 @@ router.post('/request-meeting', authenticateUser, async (req, res) => {
 //Request Supervisor for date Extension
 router.post('/extension', authenticateUser, async (req, res) => {
   try {
-
+    const { reason } = req.body ;
     const student = await User.findById(req.user.id);
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student Not found' });
@@ -1043,11 +1045,11 @@ router.post('/extension', authenticateUser, async (req, res) => {
     }
 
     if (!group.docDate) {
-      return res.status(500).json({ success: false, message: `You'vealready submitted documentation` });
+      return res.status(500).json({ success: false, message: 'The Date for Documentation has not been announced so you cannot send extension request' });
     }
 
     if (group.documentation) {
-      return res.status(500).json({ success: false, message: 'The Date for Documentation has not been announced so you cannot send extension request' });
+      return res.status(500).json({ success: false, message: `You've already submitted documentation` });
     }
 
     if (group.extensionRequest.length > 0) {
@@ -1069,7 +1071,8 @@ router.post('/extension', authenticateUser, async (req, res) => {
     }
 
     group.extensionRequest.push({
-      student: student.name
+      student: student.name,
+      reason : reason
     });
     console.log('group', group.extensionRequest)
 
@@ -1079,7 +1082,8 @@ router.post('/extension', authenticateUser, async (req, res) => {
     supervisor.extensionRequest.push({
       student: student.name,
       group: group.projects[0].projectTitle,
-      requestId: mongooseId
+      requestId: mongooseId,
+      reason : reason
     });
 
     supervisor.unseenNotifications.push({

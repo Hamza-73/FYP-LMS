@@ -775,7 +775,7 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
 // Give marks
 router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
   try {
-    const { marks, external } = req.body;
+    const { marks, external , internal , hod } = req.body;
     const { groupId } = req.params;
 
     const group = await Group.findById(groupId);
@@ -790,7 +790,7 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
       return res.status(201).json({ success: false, message: 'VIVA has not been taken yet' });
     }
 
-    group.marks = marks; group.external = external;
+    group.marks = marks; group.externalMarks = external; group.hodMarks = hod , group.internalMarks = internal;
     group.projects.map(project => {
       console.log(' project is ', project);
       project.students.map(async student => {
@@ -801,13 +801,15 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
         }
         console.log('student obj sis ', studentObj)
         studentObj.marks = marks;
-        studentObj.external = external;
+        studentObj.externalMarks = external;
+        studentObj.internalMarks = internal;
+        studentObj.hodMarks = hod;
         await studentObj.save();
       });
     });
 
     await group.save(); // Save the group separately after updating students' marks
-    res.json({ success: true, message: `Marks ${marks} and External ${external}, given to ${group.supervisor}'s group` });
+    res.json({ success: true, message: `Marks uploaded successfully` });
 
   } catch (error) {
     console.error('Error fetching sent proposals:', error);
@@ -1076,7 +1078,9 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
 
     supervisor.extensionRequest = supervisor.extensionRequest.filter(request => {
       return !request.requestId.equals(requestId)
-    })
+    });
+
+    group.extensionRequest[0].isresponded = true ;
 
     await Promise.all([supervisor.save(), group.save()]);
 
@@ -1087,6 +1091,7 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
         sup.requests.push({
           group: request[0].group,
           supervisor: supervisor.name,
+          reason : request[0].reason
         });
         await sup.save();
       });
@@ -1094,6 +1099,7 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
         sup.requests.push({
           group: request[0].group,
           supervisor: supervisor.name,
+          reason : request[0].reason
         });
         await sup.save();
       });
@@ -1114,7 +1120,7 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
         const stuObj = await User.findById(stu.userId);
         stuObj.unseenNotifications.push({
           type: 'Important',
-          message: `Your request for extension of ${request.type} has been rejected`,
+          message: `Your request for extension rejected contact with Chair Person`,
         });
         await stuObj.save();
       });

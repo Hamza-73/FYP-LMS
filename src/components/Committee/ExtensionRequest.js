@@ -243,6 +243,7 @@ const ExtensionRequest = (props) => {
                                     <tr style={{textAlign:"center"}}>
                                         <th scope="col">Supervisor</th>
                                         <th scope="col">Group</th>
+                                        <th scope="col">Reason</th>
                                         {(!showSidebar || userData.member.isAdmin) && <>
                                             <th scope="col">Extend</th>
                                         </>}
@@ -253,6 +254,7 @@ const ExtensionRequest = (props) => {
                                         <tr key={key}>
                                             <td>{val.supervisor}</td>
                                             <td>{val.group}</td>
+                                            <td>{val.reason?val.reason:"---"}</td>
                                             {(userData.member.isAdmin) &&
                                             <td><button className="btn btn-sm" style={{
                                                 color:"white", background:"maroon", cursor:"pointer"

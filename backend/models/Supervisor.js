@@ -30,19 +30,27 @@ const supervisorSchema = new Schema({
   isAdmin: { type: Boolean, default: false },
   isCommittee: { type: Boolean, default: false },
   extensionRequest: [{
-    group: { type: String },
+    isresponded: { type: Boolean, default: false },
     student: { type: String },
-    requestId: { type: Schema.Types.ObjectId }
+    reason: { type: String }
   }],
   requests: [{
     group: { type: String },
-    supervisor: { type: String }
+    supervisor: { type: String },
+    reason: { type: String }
   }],
   vivas: [{
     id: { type: Schema.Types.ObjectId, ref: 'Group' },
     name: { type: String },
     date: { type: Date }
-  }]
+  }],
+  vivaHistory: [{
+    date: { type: Date },
+    type: { type: String },
+    time: { type: String }
+  }],
+  propDate: { type: Date },
+  docDate: { type: Date },
 });
 
 module.exports = mongoose.model('Supervisor', supervisorSchema);

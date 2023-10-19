@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import 'react-calendar/dist/Calendar.css';
-import Calendar from 'react-calendar';
 import Loading from '../Loading';
-import { useNavigate } from 'react-router-dom';
 import 'react-clock/dist/Clock.css';
-import TimePicker from 'react-time-picker';
-import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 
 const Event = (props) => {
-  const history = useNavigate();
   const [data, setData] = useState({ vivas: [] });
   const [committee, setCommittee] = useState({ members: [] });
   const [external, setExternal] = useState({ members: [] });
@@ -169,7 +164,8 @@ const Event = (props) => {
                     <label htmlFor="name" className="form-label">
                       Viva Date
                     </label>
-                    <Calendar onChange={handleCalendarChange} value={viva.vivaDate} />
+                    <br />
+                    <input type="date" name='vivaDate' value={viva.vivaDate} onChange={handleChange1} />
                   </div>
                   {isInvalidDate && (
                     <div className="text-danger">Please enter a valid date (not in the past).</div>
@@ -179,7 +175,7 @@ const Event = (props) => {
                       Viva Time
                     </label>
                     <div>
-                      <TimePicker onChange={handleTimeChange} value={viva.vivaTime} />
+                      <input type="time" name='vivaTime' value={viva.vivaTime} />
                     </div>
                   </div>
                   <div className="mb-3">
@@ -188,7 +184,7 @@ const Event = (props) => {
                     </label>
                     <select className='form-select' name='external' onChange={handleChange1} value={viva.external}>
                       <option value="">Select External Member</option>
-                      {external.members&&external.members.map((member, index) => (
+                      {external.members && external.members.map((member, index) => (
                         <option key={index} value={member.username}>{member.username}</option>
                       ))}
                     </select>
@@ -199,7 +195,7 @@ const Event = (props) => {
                     </label>
                     <select className='form-select' name='internal' onChange={handleChange1} value={viva.internal}>
                       <option value="">Select Internal</option>
-                      {committee.members&&committee.members.map((member, index) => (
+                      {committee.members && committee.members.map((member, index) => (
                         <option key={index} value={member.username}>{member.username}</option>
                       ))}
                     </select>

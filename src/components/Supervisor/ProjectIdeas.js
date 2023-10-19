@@ -61,7 +61,7 @@ const ProjectIdeas = () => {
           "Content-Type": "application/json",
           'Authorization': token
         }, body: JSON.stringify({
-          projectTitle: fypIdea.projectTitle, description: fypIdea.description,
+          projectTitle: fypIdea.projectTitle.toLowerCase().trim(), description: fypIdea.description,
           scope: fypIdea.scope, active: fypIdea.active
         })
       });

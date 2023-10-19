@@ -15,7 +15,9 @@ const groupSchema = new Schema({
   }],
   remarks: { type: String },
   marks: { type: Number },
-  external: { type: Number },
+  externalMarks: { type: Number },
+  internalMarks: { type: Number },
+  hodMarks: { type: Number },
   proposal: { type: String },
   documentation: { type: String },
   isProp: { type: Boolean, default: false },
@@ -34,7 +36,7 @@ const groupSchema = new Schema({
   meetingReport: [{
     id: { type: Schema.Types.ObjectId, ref: 'Meeting' },
     date: { type: Date },
-    review: { type: Boolean, default: false },
+    review: { type: Boolean },
     value: { type: Number }
   }],
   docs: [{
@@ -44,7 +46,9 @@ const groupSchema = new Schema({
   instructions: { type: String },
   meeting: { type: Number, default: 0 },
   extensionRequest: [{
-    student : {type : String}
+    isresponded: { type: Boolean, default: false },
+    student: { type: String },
+    reason: { type: String }
   }],
   external: { type: String },
   internal: { type: String }

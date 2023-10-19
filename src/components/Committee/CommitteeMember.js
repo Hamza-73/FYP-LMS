@@ -613,7 +613,7 @@ const CommitteeMember = (props) => {
         <Loading />
       ) : (
         <>
-          <div className="container" style={{ width: "100%" }}>
+          <div className="container">
             <h3 className="text-center">Committee Members</h3>
             <div className="mb-3">
               <label htmlFor="recordsPerPage" className="form-label">
@@ -646,7 +646,7 @@ const CommitteeMember = (props) => {
               />
             </div>
             {filteredDataPaginated.length > 0 ? (
-              <table className="table table-hover text-center">
+              <table className="table table-hover text-center" style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th scope="col">Name</th>
@@ -667,7 +667,7 @@ const CommitteeMember = (props) => {
                       <td>{val.fname ? val.fname + ' ' + val.lname : <>{val.name} <small>(sup)</small></>}</td>
                       <td>{val.department}</td>
                       <td>{val.designation}</td>
-                      {(!showSidebar && !userData.member.isAdmin) &&
+                      {!showSidebar && !userData.member.isAdmin && ( // Conditionally render Edit and Remove columns
                         <>
                           <td
                             style={{ cursor: "pointer" }}
@@ -676,23 +676,29 @@ const CommitteeMember = (props) => {
                             onClick={() => openEditModal(val)}
                           >
                             <button className="btn" style={{ background: "maroon", color: "white" }}>
-                            <i className="fa-solid fa-pen-to-square"></i>
+                              <i className="fa-solid fa-pen-to-square"></i>
                             </button>
                           </td>
                           <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}>
-                            <button className="btn" style={{background:"maroon", color:"white"}}>
-                            <i className="fa-solid fa-trash"></i>
+                            <button className="btn" style={{ background: "maroon", color: "white" }}>
+                              <i className="fa-solid fa-trash"></i>
                             </button>
-                            </td>
-                          <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                            disabled={val.isAdmin}
-                            onClick={() => {
-                              makeAdmin(val.username)
-                            }}
-                          >Make Admin</button></td>
-                        </>}
+                          </td>
+                          <td>
+                            <button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
+                              disabled={val.isAdmin}
+                              onClick={() => {
+                                makeAdmin(val.username)
+                              }}
+                            >
+                              Make Admin
+                            </button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
+
                 </tbody>
               </table>
             ) : (
@@ -722,7 +728,7 @@ const CommitteeMember = (props) => {
               </button>
             </div>
           </div>
-          <div className="d-grid gap-2 col-6 mx-auto my-4">
+          {(!showSidebar && !userData.member.isAdmin) && <div className="d-grid gap-2 col-6 mx-auto my-4">
             <button
               style={{ background: "maroon" }}
               type="button"
@@ -736,7 +742,7 @@ const CommitteeMember = (props) => {
             >
               Register
             </button>
-          </div>
+          </div>}
           <NotificationContainer />
         </>
       )}

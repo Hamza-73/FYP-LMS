@@ -282,15 +282,20 @@ router.get('/detail', authenticateUser, async (req, res) => {
       if (!member) {
         const member = await Supervisor.findOne({ _id: userId, isAdmin: true });
         if (!member) {
-          return res.status(404).json({ message: 'Member not found' });
+          const member = await Supervisor.findOne({ _id: userId, isCommittee: true });
+          if (!member) {
+            return res.status(404).json({ message: 'Member not found' });
+          } else {
+            return res.json({ success: true, member, user: userId });
+          }
         } else {
-          return res.send({ success: true, member, user: userId });
+          return res.json({ success: true, member, user: userId });
         }
       } else {
-        return res.send({ success: true, member, user: userId });
+        return res.json({ success: true, member, user: userId });
       }
     }
-    return res.send({ success: true, member, user: userId });
+    return res.json({ success: true, member, user: userId });
   } catch (error) {
     console.error('Error fetching membetrs', err);
     return res.status(404).json({ message: 'Internal server error' });
@@ -539,6 +544,24 @@ router.post('/dueDate', async (req, res) => {
 
     // Use Promise.all to execute all promises in parallel
     await Promise.all(promiseArray);
+
+    const committeeMembers = await Committee.find();
+    const supervisors = await Supervisor.find({ isAdmin: true });
+    committeeMembers.forEach(async member => {
+      if (type === 'proposal')
+        member.propDate = vivaDate;
+      else
+        member.docDate = vivaDate;
+      await member.save();
+    });
+
+    supervisors.forEach(async member => {
+      if (type === 'proposal')
+        member.propDate = vivaDate;
+      else
+        member.docDate = vivaDate;
+      await member.save();
+    });
 
     return res.status(200).json({ message: "Due Date Updated Successfully" });
   } catch (error) {

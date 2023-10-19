@@ -197,35 +197,54 @@ const GroupDetail = () => {
           </div>
           {group.groups.length > 0 ? (
             <div className="container" style={{ border: "none", height: "700px", width: "1000px" }}>
-              {currentGroup.extensionRequest && currentGroup.extensionRequest.length > 0 && currentGroup.extensionRequest.map((item, i) => (
-                <div className="notify" style={{ position: "absolute", right: "30px", top: `${140 + i * 200}px` }} key={i}>
-                  <style>{myStyle}</style>
-                  <div>
-                    <div>
+              {currentGroup.extensionRequest &&
+                currentGroup.extensionRequest.length > 0 &&
+                currentGroup.extensionRequest.map((item, i) => (
+                  !item.isresponded && ( // Check if isresponded is false
+                    <div
+                      className="notify"
+                      style={{ position: "absolute", right: "30px", top: `${140 + i * 200}px` }}
+                      key={i}
+                    >
+                      <style>{myStyle}</style>
                       <div>
-                        <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
-                          <div className="container">
-                            <h4 className='text-center'>Request For Extension</h4>
-                            <div>
-                              <button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                                onClick={() => {
-                                  handleRequest(item._id, 'accept')
-                                }}
-                              >Accept</button>
-                              <button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
-                                onClick={() => {
-                                  handleRequest(item._id, 'rejected')
-                                }}
-                              >Reject</button>
+                        <div>
+                          <div>
+                            <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
+                              <div className="container">
+                                <h4 className="text-center">Request For Extension</h4>
+                                {item.reason && <div className="items">
+                                  <h6>Reason</h6>
+                                  <p>{item.reason}</p>
+                                </div>}
+                                <div>
+                                  <button
+                                    className="btn btn-sm"
+                                    style={{ background: "maroon", color: "white" }}
+                                    onClick={() => {
+                                      handleRequest(item._id, "accept");
+                                    }}
+                                  >
+                                    Accept
+                                  </button>
+                                  <button
+                                    className="btn btn-sm"
+                                    style={{ background: "maroon", color: "white" }}
+                                    onClick={() => {
+                                      handleRequest(item._id, "rejected");
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-
+                  )
+                ))}
               <div className="upperpart">
                 <div className="proj-detail d-flex justify-content-between">
                   <h4>
@@ -237,7 +256,6 @@ const GroupDetail = () => {
                   }}>{currentGroup.projects[0].projectTitle || "N/A"}</h5>
                 </div>
               </div>
-
               <div className="">
                 <div>
                   <h4>
@@ -252,7 +270,6 @@ const GroupDetail = () => {
 
                 <div>
                   <br></br>
-
                   <h5
                     style={{
                       fontStyle: "italic",
@@ -302,14 +319,12 @@ const GroupDetail = () => {
                             data-bs-target="#exampleModal"
                             onClick={() => {
                               setGroupId(currentGroup._id);
-                              setReview({ index: docKey });
+                              setReview({ index: docKey, text: doc.review });
                             }}>Reviews</button>
                         </div>
                       </div>
                     ))
-                  ) : (
-                    ""
-                  )}
+                  ) : ("")}
                 </div>
               </div>
               <div className="d-flex justify-content-between">

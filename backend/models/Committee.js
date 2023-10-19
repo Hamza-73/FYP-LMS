@@ -13,8 +13,16 @@ const committeeSchema = new Schema({
   isLogin: { type: Boolean, default: false },
   requests: [{
     group: { type: String },
-    supervisor: { type: String }
-  }]
+    supervisor: { type: String },
+    reason: { type: String }
+  }],
+  vivaHistory: [{
+    date: { type: Date },
+    type: { type: String },
+    time: { type: String }
+  }],
+  propDate: { type: Date },
+  docDate: { type: Date },
 });
 
 module.exports = mongoose.model('Committee', committeeSchema);

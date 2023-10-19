@@ -88,14 +88,16 @@ const MyGroup = (props) => {
     }
   }
 
-  const requestextension = async () => {
+  const requestextension = async (e) => {
     try {
+      e.preventDefault();
       const response = await fetch('http://localhost:5000/student/extension', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem('token'),
         },
+        body: JSON.stringify({ reason: reason })
       });
       const json = await response.json();
       console.log('json in sending extension is ', json);
@@ -235,8 +237,8 @@ const MyGroup = (props) => {
   color: #007bff;
 }
 `
-
   const [review, setReview] = useState('');
+  const [reason, setReason] = useState('');
 
   return (
     <div>
@@ -244,7 +246,7 @@ const MyGroup = (props) => {
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Your Request</h1>
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Upload Documentation</h1>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
@@ -276,6 +278,28 @@ const MyGroup = (props) => {
                   <textarea className='form-control' value={review ? review : "No Reviews Yet"} />
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                  </div>
+                </form>
+              </>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Extension Request</h1>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              <>
+                <form onSubmit={requestextension}>
+                  <textarea className='form-control' value={reason} onChange={(e) => setReason(e.target.value)} />
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                    <button className="btn" style={{ background: "maroon", color: "white" }} disabled={!reason}>Request</button>
                   </div>
                 </form>
               </>
@@ -342,11 +366,11 @@ const MyGroup = (props) => {
                       <h4 className='text-center'>Viva</h4>
                       <div className="items">
                         <h5>Date</h5>
-                        <h6>{ group.group.viva.vivaDate &&   new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
+                        <h6>{group.group.viva.vivaDate && new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
                       </div>
                       <div className="items">
                         <h5>Time</h5>
-                        <h6>{ group.group.viva.vivaTime && group.group.viva.vivaTime} </h6>
+                        <h6>{group.group.viva.vivaTime && group.group.viva.vivaTime} </h6>
                       </div><div className="items">
                         <h5>Internal</h5>
                         <h6>{group.group.viva.internal} </h6>
@@ -408,9 +432,9 @@ const MyGroup = (props) => {
                     style={{ fontSize: "35px", color: "maroon" }}
                   ></i>
                   &ensp;
-                  {group.group.groupMember[1] ? group.group.groupMember[1].name : "No Member Yet"}{" "}
+                  {group.group.groupMember[0] ? group.group.groupMember[0].name : "No Member Yet"}{" "}
                   &nbsp;{" "}
-                  {group.group.groupMember[1] ? group.group.groupMember[1]?.rollNo : ""}{" "}
+                  {group.group.groupMember[0] ? group.group.groupMember[0]?.rollNo : ""}{" "}
                   &ensp;
                 </h5>
               </div>
@@ -439,9 +463,9 @@ const MyGroup = (props) => {
 
             <div className="d-flex justify-content-between">
               <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} onClick={requestMeeting}>Request Meeting</button>
-              <button className="btn btn-danger" disabled={group.group.documentation} onClick={() => {
-                requestextension()
-              }}>Extension Request</button>
+
+              <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal2" disabled={group.group.documentation}>Extension Request</button>
+
               <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} data-bs-toggle="modal" data-bs-target="#exampleModal">Upload Document</button>
             </div>
           </> : <h1 className='text-center my-4' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You're currently not enrolled in any Group.</h1>

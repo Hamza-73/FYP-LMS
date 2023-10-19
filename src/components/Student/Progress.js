@@ -271,7 +271,6 @@ const Progress = (props) => {
                                         {meetingReport.length > 0 ? <BarChart width={350} height={200} data={chartData}>
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis dataKey="monthYear" />
-                                            <YAxis />
                                             <Tooltip />
                                             <Legend />
                                             <Bar dataKey="trueCount" fill="red" name="Successful" />
@@ -328,12 +327,20 @@ const Progress = (props) => {
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>
                                         </tr>
+                                        <tr>
+                                            <td>Marks</td>
+                                            <td>
+                                                {(groupDetails.group.marks && groupDetails.group.externalMarks && groupDetails.group.internalMarks && groupDetails.group.hodMarks) ? (groupDetails.group.marks + groupDetails.group.externalMarks + groupDetails.group.internalMarks + groupDetails.group.hodMarks) / 4 : 0}
+                                            </td>
+                                            <td>{'-----'}</td>
+                                            <td>{'-----'}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </>
                     ) : (
-                        <h1 className="text-center my-3" style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You're not currently enrolled in any Group</h1>
+                        <h1 className="text-center my-3" style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You're not currently enrolled in any Group</h1>
                     )}
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls">
                         <button

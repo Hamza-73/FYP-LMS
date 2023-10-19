@@ -193,7 +193,7 @@ const CumDashboard = (props) => {
             <div className="modal-body">
               <form>
                 <div className="mb-3">
-                  <label htmlFor="role" className="form-label">Role</label>
+                  <label htmlFor="role" className="form-label">Rules for :</label>
                   <select
                     className="form-select"
                     id="role"
@@ -201,7 +201,7 @@ const CumDashboard = (props) => {
                     value={defineRole}
                     onChange={(e) => setDefineRole(e.target.value)}
                   >
-                    <option value="">Select Role</option>
+                    <option value="">Select...</option>
                     <option value="student">Student</option>
                     <option value="supervisor">Supervisor</option>
                     <option value="evaluation criteria">Evaluation Criteria</option>
@@ -233,7 +233,7 @@ const CumDashboard = (props) => {
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => {
                 setLoading(false); resetModalState()
               }}>Close</button>
-              <button type="button" className="btn btn-warning" onClick={() => getRole(defineRole)} disabled={!defineRole}>Get Roles</button>
+              <button type="button" className="btn btn-warning" onClick={() => getRole(defineRole)} disabled={!defineRole}>Get Rules</button>
               <button type="button" className="btn" style={{ background: "maroon", color: "white" }} onClick={(e) => editRule(e)} disabled={!modalRules || !check}>Edit Rules</button>
             </div>
           </div>

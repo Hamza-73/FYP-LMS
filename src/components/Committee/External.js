@@ -401,7 +401,7 @@ const External = (props) => {
 
             {loading ? (<Loading />) : (
                 <>
-                    <div className='container' style={{ width: "90%" }}>
+                    <div className='container'>
                         <h3 className='text-center'>External Members</h3>
                         <div className="mb-3">
                             <label htmlFor="recordsPerPage" className="form-label">Records per page:</label>
@@ -427,7 +427,7 @@ const External = (props) => {
                             />
                         </div>
                         {filteredDataPaginated.length > 0 ? (
-                            <table className="table table-hover text-center">
+                            <table className="table table-hover" style={{ textAlign: "center" }}>
                                 <thead>
                                     <tr>
                                         <th scope="col">Name</th>
@@ -447,10 +447,13 @@ const External = (props) => {
                                             <td>{val.email}</td>
                                             {(userData.member.isAdmin) &&
                                                 <>
-                                                    <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
-                                                        <i className="fa-solid fa-pen-to-square"></i>
+                                                    <td data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                                                        <button className="btn" style={{ color: "white", cursor: "pointer", background: "maroon" }}>
+                                                            <i className="fa-solid fa-pen-to-square"></i>
+                                                        </button>
                                                     </td>
-                                                    <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><i className="fa-solid fa-trash"></i></td>
+                                                    <td onClick={() => handleDelete(val._id)}>
+                                                        <button className="btn" style={{ color: "white", cursor: "pointer", background: "maroon" }} > <i className="fa-solid fa-trash"></i></button></td>
                                                 </>
                                             }
                                         </tr>

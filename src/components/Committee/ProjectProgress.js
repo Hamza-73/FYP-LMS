@@ -54,7 +54,7 @@ const ProjectProgress = (props) => {
     }
   }
 
-  const typeOptions = [ 'proposal', 'documentation']
+  const typeOptions = ['proposal', 'documentation']
 
   useEffect(() => {
     setLoading(true);
@@ -69,39 +69,59 @@ const ProjectProgress = (props) => {
   const [userData, setUserData] = useState({ member: [] });
 
   const getDetail = async () => {
-      try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-              console.log('token not found');
-              return;
-          }
-
-          const response = await fetch(`http://localhost:5000/committee/detail`, {
-              method: 'GET',
-              headers: {
-                  'Authorization': token
-              },
-          });
-
-          if (!response.ok) {
-              console.log('error fetching detail', response);
-              return; // Exit early on error
-          }
-
-          const json = await response.json();
-          console.log('json is in sidebar: ', json);
-          if (json) {
-              //   console.log('User data is: ', json);
-              setUserData(json);
-          }
-      } catch (err) {
-          console.log('error is in sidebar: ', err);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('token not found');
+        return;
       }
+
+      const response = await fetch(`http://localhost:5000/committee/detail`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token
+        },
+      });
+
+      if (!response.ok) {
+        console.log('error fetching detail', response);
+        return; // Exit early on error
+      }
+
+      const json = await response.json();
+      console.log('json is in sidebar: ', json);
+      if (json) {
+        //   console.log('User data is: ', json);
+        setUserData(json);
+      }
+    } catch (err) {
+      console.log('error is in sidebar: ', err);
+    }
   };
 
   const handleChange = (e) => {
     setdeadline({ ...deadline, [e.target.name]: e.target.value });
   }
+
+  const myStyle = `
+  .meeting-box {
+    background-color: #ffffff;
+    border: 1px solid #d1d1d1;
+    border-radius: 6px;
+    width: 200px;
+    padding: 10px;
+    margin: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .items {
+    display: flex;
+    justify-content: space-between;
+  }
+  .meeting-box a {
+    text-decoration: none;
+    color: #007bff;
+  }
+  `
 
   return (
     <div>
@@ -146,6 +166,28 @@ const ProjectProgress = (props) => {
       {loading ? <Loading /> : <>
         {group.groups.length > 0 ? (
           <>
+            {(userData.member.propDate || userData.member.docDate) && <div>
+              <style>{myStyle}</style>
+              <div>
+                <div>
+                  <div className="meeting-box" style={{ width: "200px", position:"absolute", right:"10px", top
+                :"3.7rem" }}>
+                    <div className="container">
+                      <p>Deadlines History</p>
+                      {userData.member.propDate && <div className='items'>
+                        <h6>Proposal :</h6>
+                        <p>{userData.member.propDate}</p>
+                      </div>}
+                      {userData.member.docDate && <div className='items'>
+                        <h6>Documentation :</h6>
+                        <p>{userData.member.docDate}</p>
+                      </div>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>}
+
             <h3 className='text-center my-4'>Pending Project</h3>
             <div className='container' style={{ width: "100%" }}>
               <table className='table table-hover'>
@@ -160,7 +202,7 @@ const ProjectProgress = (props) => {
                 <tbody style={{ textAlign: "center" }}>
                   {group.groups
                     .filter((group) =>
-                      !group.proposal || !group.documentation 
+                      !group.proposal || !group.documentation
 
                     ).map((group, groupIndex) => (
                       group.projects.map((project, projectKey) => (
@@ -194,7 +236,7 @@ const ProjectProgress = (props) => {
                 </tbody>
               </table>
             </div>
-            { userData.member.isAdmin && <div>
+            {userData.member.isAdmin && <div>
               <div className='d-grid gap-2 d-md-flex justify-content-md-end buttonCls' style={{ position: "relative", marginTop: "4%", right: "9%" }}>
                 <button className="btn" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal" >Add Date</button>
               </div>

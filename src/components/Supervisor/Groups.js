@@ -5,7 +5,7 @@ import 'react-notifications/lib/notifications.css';
 
 const Groups = (props) => {
   const [group, setGroup] = useState({ groups: [] });
-  const [grades, setGrades] = useState({ marks: 0, external: 0 });
+  const [grades, setGrades] = useState({ marks: 0, external: 0, internal: 0, hod: 0 });
   const [groupId, setGrouppId] = useState('');
 
   const [addStudent, setAddStudent] = useState({
@@ -52,7 +52,7 @@ const Groups = (props) => {
           'Content-Type': 'application/json',
           Authorization: token,
         },
-        body: JSON.stringify({ marks: grades.marks, external: grades.external })
+        body: JSON.stringify({ marks: grades.marks, external: grades.external, internal: grades.internal, hod: grades.hod })
       });
 
       const json = await response.json();
@@ -60,6 +60,7 @@ const Groups = (props) => {
 
       if (json.success) {
         NotificationManager.success(json.message);
+        getGroup()
         handleClose();
       }
       else {
@@ -67,7 +68,6 @@ const Groups = (props) => {
       }
     } catch (error) {
       console.log('error in adding student', error);
-      NotificationManager.error('Some error occured Try Again');
     }
   };
 
@@ -119,15 +119,23 @@ const Groups = (props) => {
                 <form onSubmit={(e) => { handleMarks(e) }}>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Marks</label>
-                    <input type="text" className="form-control" id="marks" name="marks" value={grades.marks} onChange={handleChange1} />
+                    <input type="number" className="form-control" id="marks" min='0' max='100' name="marks" value={grades.marks} onChange={handleChange1} />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Chair Person</label>
-                    <input type="text" className="form-control" id="external" name="external" value={grades.external} onChange={handleChange1} />
+                    <label htmlFor="name" className="form-label">Chair Person</label>
+                    <input type="number" className="form-control" id="marks" min='0' max='100' name="hod" value={grades.hod} onChange={handleChange1} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">External</label>
+                    <input type="number" className="form-control" id="marks" min='0' max='100' name="external" value={grades.external} onChange={handleChange1} />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="exampleInputPassword1" className="form-label">Internal</label>
+                    <input type="number" className="form-control" id="internal" min='0' max='100' name="internal" value={grades.internal} onChange={handleChange1} />
                   </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={handleClose}>Close</button>
-                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external}>
+                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external || !grades.internal || !grades.hod}>
                       Give Grades
                     </button>
                   </div>
@@ -205,10 +213,14 @@ const Groups = (props) => {
                           <td>{group.proposal ? 'Submitted' : 'Pending'}</td>
                           <td>{group.documentation ? 'Submitted' : 'Pending'}</td>
                           <td><button disabled={project.students.length === 2} onClick={() => setAddStudent({ projectTitle: project.projectTitle })} className="btn btn-sm" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
-                          <td>{(group.vivaDate ? (new Date() > group.vivaDate ? new Date(group.vivaDate).toLocaleDateString('en-US') : "Taken") : "---")}</td>
+                          <td>{(group.vivaDate ? (new Date() > group.vivaDate ? new Date(group.vivaDate).toLocaleDateString('en-US') : "Taken") : "Pending")}</td>
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                              {(group.marks && group.external) ? (group.marks + group.external) : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={() => setGrouppId(group._id)}></i>
+                              {(group.marks && group.externalMarks && group.internalMarks && group.hodMarks) ? (group.marks + group.externalMarks + group.internalMarks + group.hodMarks) / 4 : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={() => {
+                                setGrouppId(group._id); setGrades({
+                                  external: group.externalMarks, internal: group.internalMarks, hod: group.hodMarks, marks: group.marks
+                                })
+                              }}></i>
                             </div>
                           </td>
                         </tr>
@@ -221,7 +233,7 @@ const Groups = (props) => {
           </div>
         </>
       ) : (
-        <h2 className='text-center' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You currently have no group in supervision.</h2>
+        <h2 className='text-center' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You currently have no group in supervision.</h2>
       )}
       <NotificationContainer />
     </div>
