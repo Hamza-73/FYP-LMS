@@ -26,10 +26,10 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 app.use(fileUpload({
-  useTempFiles:true
+  useTempFiles: true
 }));
 
-app.use (bodyParser.urlencoded ({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Paste your mongodb link
 const mongoURI = 'mongodb://127.0.0.1:27017/lms';
@@ -42,7 +42,7 @@ connection.once('open', () => {
   console.log('MongoDB database connection established successfully');
 });
 
-const loginRoute = require('./routes/Login'); 
+const loginRoute = require('./routes/Login');
 const superRoute = require('./routes/Supervisor');
 const committeeRoute = require('./routes/Committe/Committee');
 const vivaRoute = require('./routes/Committe/Viva');
@@ -51,6 +51,7 @@ const projectRoute = require('./routes/ProjectRequest');
 const adminRoute = require('./routes/Admin');
 const externalRoute = require('./routes/External');
 const allocateRoute = require('./routes/Allocation');
+const rules = require('./routes/Rules');
 
 app.use('/student', loginRoute);
 app.use('/supervisor', superRoute);
@@ -61,6 +62,7 @@ app.use('/projects', projectRoute);
 app.use('/admin', adminRoute);
 app.use('/external', externalRoute);
 app.use('/allocation', allocateRoute);
+app.use('/rules', rules);
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

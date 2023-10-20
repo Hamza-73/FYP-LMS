@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
@@ -7,15 +7,16 @@ import 'react-notifications/lib/notifications.css';
 
 const CumDashboard = (props) => {
   const history = useNavigate();
+  const ref = useRef(null);
 
-  const [rules, setRules] = useState({ rule: [] });
+  const [rules, setRules] = useState({ roles: [] });
   const [role, setRole] = useState({ role: '', rules: [] });
   const [defineRole, setDefineRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [modalRules, setModalRules] = useState([]);
   const [editRuleIndex, setEditRuleIndex] = useState(-1);
   const [check, setCheck] = useState(false);
-
+  const [roles, setRoles] = useState({ roles: [] })
   const getRules = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -24,14 +25,38 @@ const CumDashboard = (props) => {
         return;
       }
       setLoading(true);
-      const response = await axios.get("http://localhost:5000/committee/getrules", {
+      const response = await fetch("http://localhost:5000/rules/get-all-roles", {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
         },
       });
-      const json = await response.data;
+      const json = await response.json();
+      console.log('rules are ', json)
       setRules(json);
+      setLoading(false);
+    } catch (error) {
+      NotificationManager.error('Some Error occurred reload page/ try again');
+      console.log('error', error);
+    }
+  }
+  const getRoles = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found', 'danger');
+        return;
+      }
+      setLoading(true);
+      const response = await fetch("http://localhost:5000/rules/get-roles", {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+      });
+      const json = await response.json();
+      console.log('roles are ', json)
+      setRoles(json);
       setLoading(false);
     } catch (error) {
       NotificationManager.error('Some Error occurred reload page/ try again');
@@ -42,7 +67,7 @@ const CumDashboard = (props) => {
   const getRole = async (roleName) => {
     try {
       setCheck(true);
-      const response = await axios.get(`http://localhost:5000/committee/getrules/${roleName}`, {
+      const response = await axios.get(`http://localhost:5000/rules/get-rules/${roleName}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -71,7 +96,7 @@ const CumDashboard = (props) => {
     try {
       e.preventDefault();
       setCheck(true);
-      const response = await axios.put(`http://localhost:5000/committee/editrules/${defineRole}`, {
+      const response = await axios.put(`http://localhost:5000/rules/edit-rules/${defineRole}`, {
         rules: modalRules,
       }, {
         headers: {
@@ -82,24 +107,12 @@ const CumDashboard = (props) => {
       if (json) {
         NotificationManager.success('Rules Edited Sucessfully');
 
+        ref.current.click();
         // Reset state variables to their initial values
         setDefineRole('');
         setModalRules([]);
         setEditRuleIndex(-1);
-
-        // Update the rules in the setRules state immediately
-        setRules((prevRules) => ({
-          ...prevRules,
-          rule: prevRules.rule.map((item) => {
-            if (item.role === defineRole) {
-              return {
-                ...item,
-                rules: modalRules,
-              };
-            }
-            return item;
-          }),
-        }));
+        getRules();
       }
     } catch (error) {
       console.log('error', error);
@@ -132,13 +145,18 @@ const CumDashboard = (props) => {
     if (localStorage.getItem('token')) {
       getDetail();
       getRules();
+      getRoles();
     } else {
       history('/');
     }
   }, []);
 
-  const capitilize = (word) => {
-    return word[0].toUpperCase() + word.slice(1, word.length)
+  const capitilize = (sentence) => {
+    const words = sentence.split(' ');
+    const capitalizedWords = words.map((word) => {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    });
+    return capitalizedWords.join(' ');
   }
 
   // Function to reset the modal state
@@ -181,9 +199,95 @@ const CumDashboard = (props) => {
     }
   };
 
+  const [newRole, setNewRole] = useState('');
+  const [newRules, setNewRules] = useState(['']);
+  const [showDefineRoleModal, setShowDefineRoleModal] = useState(false);
+
+  const defineNewRole = async () => {
+    try {
+      if (!newRole || !newRules) {
+        NotificationManager.error('Please provide both role and rules.');
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found', 'danger');
+        return;
+      }
+
+      const response = await fetch(
+        'http://localhost:5000/rules/add-role',
+        {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token,
+          },
+          body: JSON.stringify(
+            {
+              role: newRole,
+              rules: newRules,
+            },)
+        },
+      );
+
+      const json = await response.json();
+      console.log('json is ', json)
+      if (json.success) {
+        NotificationManager.success('New role and rules defined successfully');
+        setShowDefineRoleModal(false);
+        setNewRole('');
+        setNewRules('');
+        // Refresh the existing roles and rules after defining a new role
+        getRules();
+        getRoles();
+      } else {
+        NotificationManager.error('Error defining new role and rules');
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
+
+  const addNewRuleInput = () => {
+    // Add an empty rule to newRules when the user clicks "Add Rule"
+    setNewRules([...newRules, '']);
+  };
+
+  const handleNewRuleChange = (index, newValue) => {
+    // Update the rule at the specified index when the user types in the input
+    const updatedRules = [...newRules];
+    updatedRules[index] = newValue;
+    setNewRules(updatedRules);
+  }; const deleteNewRuleInput = (index) => {
+    // Remove the new rule at the specified index when the user clicks "Delete"
+    const updatedNewRules = newRules.filter((_, i) => i !== index);
+    setNewRules(updatedNewRules);
+  };
+
+  const deleteRules = async (e) => {
+    try {
+      const response = await fetch(`http://localhost:5000/rules/delete-rule/${defineRole}`,{
+        method:"DELETE",
+      });
+      const json = await response.json();
+      if(json.success){
+        NotificationManager.success(json.message);
+        getRules();
+        getRoles();
+      }else{
+        NotificationManager.error(json.message);
+      }
+    } catch (error) {
+      console.log('error in deletung rules', error);
+    }
+  }
+
   return (
     <div>
-      <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div ref={ref} className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
@@ -202,10 +306,9 @@ const CumDashboard = (props) => {
                     onChange={(e) => setDefineRole(e.target.value)}
                   >
                     <option value="">Select...</option>
-                    <option value="student">Student</option>
-                    <option value="supervisor">Supervisor</option>
-                    <option value="evaluation criteria">Evaluation Criteria</option>
-                    <option value="extension rule">Extension Rule</option>
+                    {roles.roles.map((role, roleKey) => {
+                      return <option key={roleKey}>{role}</option>;
+                    })}
                   </select>
                 </div>
                 {modalRules.map((val, key) => (
@@ -240,24 +343,144 @@ const CumDashboard = (props) => {
         </div>
       </div>
 
-      <div className='my-2 mx-4' style={{ border: "none" }}>
-        {!loading ? rules.rule.map((elm, index) => {
-          return (
-            <div className="rules" key={index}>
-              <h3 style={{ fontWeight: "600", fontFamily: " 'Libre Baskerville', sans-serif" }}>{capitilize(elm.role)}</h3>
-              <ol style={{ paddingRight: "300px" }}>
-                {elm.rules.map((rule, ruleIndex) => (
-                  <li key={ruleIndex}>{rule}</li>
-                ))}
-              </ol>
+
+      <div className="modal fade" id="deleteRule" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Deelete Rules</h1>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-          );
-        }) : <Loading />}
+            <div className="modal-body">
+              <form>
+                <div className="mb-3">
+                  <label htmlFor="role" className="form-label">Delete Rules for :</label>
+                  <select
+                    className="form-select"
+                    id="role"
+                    name='role'
+                    value={defineRole}
+                    onChange={(e) => setDefineRole(e.target.value)}
+                  >
+                    <option value="">Select...</option>
+                    {roles.roles.map((role, roleKey) => {
+                      return <option key={roleKey}>{role}</option>;
+                    })}
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => {
+                setLoading(false); resetModalState()
+              }}>Close</button>
+              <button type="button" className="btn" style={{ background: "maroon", color: "white" }} onClick={(e) => deleteRules(e)} disabled={!defineRole}>Delete Rules</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal fade" id="defineRoleModal" tabIndex="-1" aria-labelledby="defineRoleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="defineRoleModalLabel">Define New Role</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label htmlFor="newRole" className="form-label">Rules For ....</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="newRole"
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                />
+              </div>
+              {Array.from(newRules).map((rule, index) => (
+                <div className="mb-3" key={index}>
+                  <label htmlFor={`newRule-${index}`} className="form-label">Rule {index + 1}</label>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control"
+                      id={`newRule-${index}`}
+                      value={rule}
+                      onChange={(e) => handleNewRuleChange(index, e.target.value)}
+                    />
+                    <button className="btn btn-danger" type="button" onClick={() => deleteNewRuleInput(index)}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <button type="button" className="btn btn-success" onClick={addNewRuleInput}>
+                Add Rule
+              </button>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+                onClick={() => {
+                  setNewRole('');
+                  setNewRules(['']);
+                  setShowDefineRoleModal(false);
+                }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="btn" style={{ background: "maroon", color: "white" }}
+                onClick={defineNewRole}
+                disabled={!newRules[0] || !newRole}
+              >
+                Define Role
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div className='my-2 mx-4' style={{ border: "none" }}>
+        {loading ? (
+          <Loading />
+        ) : (
+          rules.roles.length > 0 ? (
+            rules.roles.map((roleData, index) => {
+              return (
+                <div className="rules" key={index}>
+                  <h3 style={{ fontWeight: "600", fontFamily: "'Libre Baskerville', sans-serif" }}>
+                    {capitilize(roleData.role)}
+                  </h3>
+                  <ol style={{ paddingRight: "300px" }}>
+                    {roleData.rules.map((rule, ruleIndex) => (
+                      <li key={ruleIndex}>{rule}</li>
+                    ))}
+                  </ol>
+                </div>
+              );
+            })
+          ) : (
+            <div>No rules defined yet.</div>
+          )
+        )}
+
       </div>
 
       {userData.member.isAdmin && <div className='d-grid gap-2 d-md-flex justify-content-md-end' style={{ position: "relative", right: "5.5rem", bottom: "2rem" }}>
         <button style={{ background: "maroon" }} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#exampleModal">
           Edit Rules
+        </button>
+        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#defineRoleModal">
+          Define Rules
+        </button>
+        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#deleteRule">
+          Delete Rules
         </button>
       </div>}
       <NotificationContainer />

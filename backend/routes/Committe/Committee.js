@@ -215,61 +215,8 @@ router.delete('/delete/:id', async (req, res) => {
 });
 
 
-// Define a route to get shared rules for committee members
-router.get('/getrules', async (req, res) => {
-  try {
-    const sharedRules = await SharedRules.findOne();
-    if (!sharedRules) {
-      return res.status(404).json({ message: 'Shared rules not found' });
-    }
-
-    res.json({ rule: sharedRules.rule });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
 
-// Define a route to update shared rules
-router.post('/addrules', async (req, res) => {
-  try {
-    const sharedRules = await SharedRules.findOne();
-    if (!sharedRules) {
-      return res.status(404).json({ message: 'Shared rules not found' });
-    }
-
-    sharedRules.rule = req.body.rule;
-    await sharedRules.save();
-
-    res.json({ message: 'Shared rules updated successfully', sharedRules });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// Define a route to fetch rules for a specific role
-router.get('/getrules/:role', async (req, res) => {
-  try {
-    const { role } = req.params;
-
-    // Find the shared rules document
-    const sharedRules = await SharedRules.findOne();
-    if (!sharedRules) {
-      return res.status(404).json({ message: 'Shared rules not found' });
-    }
-
-    // Find the specific role's rules in the shared rules
-    const targetRule = sharedRules.rule.find(r => r.role === role);
-    if (!targetRule) {
-      return res.status(404).json({ message: 'Rules for the specified role not found' });
-    }
-
-    res.json({ role, rules: targetRule.rules });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
 // get committee member detail
 router.get('/detail', authenticateUser, async (req, res) => {
@@ -302,61 +249,6 @@ router.get('/detail', authenticateUser, async (req, res) => {
   }
 });
 
-// Define a route to  rules for a specific role
-router.put('/editrules/:role', async (req, res) => {
-  try {
-    const { role } = req.params;
-    const { rules } = req.body;
-
-    // Find the shared rules document
-    const sharedRules = await SharedRules.findOne();
-    if (!sharedRules) {
-      return res.status(404).json({ message: 'Shared rules not found' });
-    }
-
-    // Find the specific role's rules in the shared rules
-    const targetRule = sharedRules.rule.find(r => r.role === role);
-    if (!targetRule) {
-      return res.status(404).json({ message: 'Rules for the specified role not found' });
-    }
-
-    // Update the rules for the specified role
-    targetRule.rules = rules;
-
-    // Save the updated shared rules
-    await sharedRules.save();
-
-    const students = await User.find();
-    if (!students) {
-      return res.status(404).json({ message: 'No Students Found' });
-    }
-
-    const superviors = await Supervisor.find();
-    if (!superviors) {
-      return res.status(404).json({ message: "No Supervisor Found" });
-    }
-
-    const notification = {
-      type: "Important",
-      message: "New Rules added by Committee Members"
-    }
-
-    students.map(student => {
-      student.unseenNotifications.push(notification);
-      student.save();
-    })
-
-    superviors.map(student => {
-      student.unseenNotifications.push(notification);
-      student.save();
-    })
-
-    return res.json({ message: 'Rules for the specified role updated successfully', sharedRules });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
 
 // Route to update student details

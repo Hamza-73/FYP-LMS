@@ -9,7 +9,7 @@ import image from '../images/home.jpg'
 const Dashboard = (props) => {
   const history = useNavigate();
 
-  const [rules, setRules] = useState({ rule: [] });
+  const [rules, setRules] = useState({ roles: [] });
   const [loading, setLoading] = useState(false);
   const getRules = async () => {
     try {
@@ -19,7 +19,7 @@ const Dashboard = (props) => {
         return;
       }
       setLoading(true);
-      const response = await axios.get("http://localhost:5000/committee/getrules", {
+      const response = await axios.get("http://localhost:5000/rules/get-all-roles", {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -29,7 +29,6 @@ const Dashboard = (props) => {
       setRules(json);
       setLoading(false);
     } catch (error) {
-      NotificationManager.error('Some Error occurred reload page/ try again');
       console.log('error', error);
     }
   };
@@ -66,7 +65,7 @@ const Dashboard = (props) => {
           <p style={{ padding: "20px", lineHeight: "2", color:"white" }} className='text-center'>FYP proctoring is a centralized platform that provides students with complete guideline regarding the FYP process, its rules and regulation. Students can communicate with their supervisor throughout the process and can request for meeting. Supervisors have authority to assign task, manage project progress, keep track of ongoing progress, provide feedback and can schedule meeting with their students. Additionally, the administration is responsible for student registration, verification and keep track of progress of all final year projects.</p>
         </div>
         <div className='my-2' style={{ border: "none", width: "37%", maxHeight: "60vh", overflowY: "auto" }}>
-          {rules.rule.map((elm, index) => {
+          {rules.roles.map((elm, index) => {
             return (
               <div className="rules" key={index}> 
                 <h2 style={{ fontFamily: "Georgia, serif", color:"white" }}>{capitalize(elm.role)}</h2>
