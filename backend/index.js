@@ -68,19 +68,56 @@ const Committee = require('./models/Committee')
 const Admin = require('./models/Admin')
 const External = require('./models/External')
 
+const bcrypt = require('bcrypt');
+
 app.post('/upload/:userType', async (req, res) => {
   const { userType } = req.params;
   if (!req.files || !req.files.excelFile) {
-    return res.status(400).send('No files were uploaded.');
+    return res.status(400).json({ success: false, message: 'No files were uploaded.' });
   }
 
+  console.log('file is ', req.files.excelFile)
   const excelFile = req.files.excelFile;
-  console.log('excel file is ', excelFile)
-
   const workbook = XLSX.readFile(excelFile.tempFilePath, { cellDates: true });
   const sheetName = workbook.SheetNames[0];
-  const excelData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-  console.log('excel data is ', excelData)
+  let excelData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+  console.log('data is ', excelData)
+
+  // Hash passwords before storing
+  if (userType === 'committee' || userType === 'supervisor' || userType === 'admin') {
+    excelData = excelData.map((user) => {
+      
+      const password = user.password.toString();
+
+      // Hash the password using bcrypt
+      const saltRounds = 10;
+      const hashedPassword = bcrypt.hashSync(password, saltRounds);
+
+      return {
+        ...user,
+        password: hashedPassword,
+      };
+    });
+  } else if (userType === 'user') {
+    // For users, hash 'cnic' and add it to 'password'
+    excelData = excelData.map((user) => {
+      if (user.cnic) {
+        // Hash the 'cnic' using bcrypt and add it to 'password'
+        const saltRounds = 10;
+        const cnic = user.cnic.toString()
+        const hashedCnic = bcrypt.hashSync(cnic, saltRounds);
+
+        return {
+          ...user,
+          password: hashedCnic,
+        };
+      }
+      return user;
+    });
+  } else {
+    return res.status(400).json({ success: false, message: 'Invalid schema type.' });
+  }
+
   try {
     switch (userType) {
       case 'user':
@@ -95,9 +132,6 @@ app.post('/upload/:userType', async (req, res) => {
       case 'admin':
         await Admin.insertMany(excelData);
         break;
-      case 'external':
-        await External.insertMany(excelData);
-        break;
       default:
         return res.status(400).json({ success: false, message: 'Invalid schema type.' });
     }
@@ -105,7 +139,7 @@ app.post('/upload/:userType', async (req, res) => {
     return res.json({ success: true, message: 'File uploaded and data imported to MongoDB.' });
   } catch (err) {
     console.error('Error occurred while inserting data:', err);
-    return res.status(500).json({ success: false, message: 'Some Error occured check if your excel file has data that should be according to the User' });
+    return res.status(500).json({ success: false, message: 'Some Error occurred. Check if your excel file data is valid.' });
   }
 });
 
