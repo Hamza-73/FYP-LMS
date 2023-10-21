@@ -211,7 +211,7 @@ const CommitteeMember = (props) => {
       console.log('students are ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
-      alert(`Some error occurred: ${error.message}`, 'danger');
+      console.log('some rror occured in fetching members', error)
     }
   }
 
@@ -391,6 +391,40 @@ const CommitteeMember = (props) => {
 `;
 
 
+  const [file, setFile] = useState(null);
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleSubmit = async (event, userType) => {
+    event.preventDefault();
+
+    if (!file) {
+      alert('Please select an Excel file.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('excelFile', file);
+
+    try {
+      const response = await fetch(`http://localhost:5000/upload/${userType}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const json = await response.json();
+      if (json.success) {
+        NotificationManager.success(json.message, '', 3000);
+        getMembers()
+      } else {
+        NotificationManager.error(json.message, '', 3000);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const location = useLocation();
   const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members'];
 
@@ -399,6 +433,33 @@ const CommitteeMember = (props) => {
 
   return (
     <>
+
+      <div className="UploadFile"  >
+        <div className="modal fade" id="uploadFile" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" >Export Data From File</h5>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={(e) => handleSubmit(e, 'committee')}>
+
+                  <div className="mb-3">
+                    <label htmlFor="remrks" className="form-label">File</label>
+                    <small>File Type should be : .xls/.xlsx</small>
+                    <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setFile(null)}>Close</button>
+                    <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* REGISTER */}
       <div className="register">
         <style>{style}</style>
@@ -741,6 +802,18 @@ const CommitteeMember = (props) => {
               }}
             >
               Register
+            </button>
+             <button
+              style={{ background: "maroon" }}
+              type="button"
+              className="btn btn-danger mx-5"
+              data-toggle="modal"
+              data-target="#uploadFile"
+              onClick={() => {
+                setFile(null);
+              }}
+            >
+              Register From File
             </button>
           </div>}
           <NotificationContainer />

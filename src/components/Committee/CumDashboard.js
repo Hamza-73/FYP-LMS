@@ -106,8 +106,6 @@ const CumDashboard = (props) => {
       const json = await response.data;
       if (json) {
         NotificationManager.success('Rules Edited Sucessfully');
-
-        ref.current.click();
         // Reset state variables to their initial values
         setDefineRole('');
         setModalRules([]);
