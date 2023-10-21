@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
-import Calendar from 'react-calendar';
-import TimePicker from 'react-time-picker';
 
 const EligibleGroup = (props) => {
   const [group, setGroup] = useState({ groups: [] });
@@ -14,11 +12,7 @@ const EligibleGroup = (props) => {
     projectTitle: '', vivaDate: new Date(), vivaTime: '',
     external: "", internal: ""
   });
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({ vivas: [] });
   const [isFieldsModified, setIsFieldsModified] = useState(false);
-  const [editMode, selectEditMode] = useState(false);
-
   const [isInvalidDate, setIsInvalidDate] = useState(false);
 
   const getProjects = async () => {
@@ -161,7 +155,7 @@ const EligibleGroup = (props) => {
                     <label htmlFor="name" className="form-label">
                       Viva Date
                     </label>
-                    <Calendar onChange={handleCalendarChange} value={viva.vivaDate} />
+                      <input className='input-form' name='vivaDate' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaDate} />
                   </div>
                   {isInvalidDate && (
                     <div className="text-danger">Please enter a valid date (not in the past).</div>
@@ -171,7 +165,7 @@ const EligibleGroup = (props) => {
                       Viva Time
                     </label>
                     <div>
-                      <TimePicker onChange={handleTimeChange} value={viva.vivaTime} />
+                      <input className='input-form' name='vivaTime' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaTime} />
                     </div>
                   </div>
                   <div className="mb-3">

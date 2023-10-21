@@ -36,7 +36,6 @@ const CumDashboard = (props) => {
       setRules(json);
       setLoading(false);
     } catch (error) {
-      NotificationManager.error('Some Error occurred reload page/ try again');
       console.log('error', error);
     }
   }
@@ -59,7 +58,6 @@ const CumDashboard = (props) => {
       setRoles(json);
       setLoading(false);
     } catch (error) {
-      NotificationManager.error('Some Error occurred reload page/ try again');
       console.log('error', error);
     }
   }
@@ -224,7 +222,7 @@ const CumDashboard = (props) => {
           },
           body: JSON.stringify(
             {
-              role: newRole,
+              role: newRole.toLowerCase(),
               rules: newRules,
             },)
         },
@@ -241,13 +239,12 @@ const CumDashboard = (props) => {
         getRules();
         getRoles();
       } else {
-        NotificationManager.error('Error defining new role and rules');
+        NotificationManager.error(json.message);
       }
     } catch (error) {
       console.log('error', error);
     }
   };
-
 
   const addNewRuleInput = () => {
     // Add an empty rule to newRules when the user clicks "Add Rule"
@@ -267,15 +264,15 @@ const CumDashboard = (props) => {
 
   const deleteRules = async (e) => {
     try {
-      const response = await fetch(`http://localhost:5000/rules/delete-rule/${defineRole}`,{
-        method:"DELETE",
+      const response = await fetch(`http://localhost:5000/rules/delete-rule/${defineRole}`, {
+        method: "DELETE",
       });
       const json = await response.json();
-      if(json.success){
+      if (json.success) {
         NotificationManager.success(json.message);
         getRules();
         getRoles();
-      }else{
+      } else {
         NotificationManager.error(json.message);
       }
     } catch (error) {
@@ -290,7 +287,6 @@ const CumDashboard = (props) => {
           <div className="modal-content">
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel">Edit Rules</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
               <form>
@@ -320,14 +316,11 @@ const CumDashboard = (props) => {
                         value={val}
                         onChange={(e) => handleRuleChange(key, e.target.value)}
                       />
-                      <button type="button" className="btn btn-secondary" onClick={() => handleEditRule(key)}>
-                        {key === editRuleIndex ? 'Save' : 'Edit'}
-                      </button>
                       <button type="button" className="btn btn-danger" onClick={() => deleteRuleInput(key)}>Delete</button>
                     </div>
                   </div>
                 ))}
-                <button type="button" className="btn btn-success" onClick={addRuleInput}>Add Rule</button>
+                <button type="button" className="btn btn-success" onClick={addRuleInput} disabled={!modalRules[0]}>Add Rule</button>
               </form>
             </div>
             <div className="modal-footer">
@@ -341,13 +334,11 @@ const CumDashboard = (props) => {
         </div>
       </div>
 
-
       <div className="modal fade" id="deleteRule" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Deelete Rules</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Delete Rules</h1>
             </div>
             <div className="modal-body">
               <form>
@@ -383,7 +374,6 @@ const CumDashboard = (props) => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="defineRoleModalLabel">Define New Role</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
               <div className="mb-3">
@@ -413,7 +403,7 @@ const CumDashboard = (props) => {
                   </div>
                 </div>
               ))}
-              <button type="button" className="btn btn-success" onClick={addNewRuleInput}>
+              <button type="button" className="btn btn-success" disabled={!newRole} onClick={addNewRuleInput}>
                 Add Rule
               </button>
             </div>
@@ -443,7 +433,6 @@ const CumDashboard = (props) => {
         </div>
       </div>
 
-
       <div className='my-2 mx-4' style={{ border: "none" }}>
         {loading ? (
           <Loading />
@@ -467,7 +456,6 @@ const CumDashboard = (props) => {
             <div>No rules defined yet.</div>
           )
         )}
-
       </div>
 
       {userData.member.isAdmin && <div className='d-grid gap-2 d-md-flex justify-content-md-end' style={{ position: "relative", right: "5.5rem", bottom: "2rem" }}>

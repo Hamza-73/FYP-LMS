@@ -673,7 +673,7 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     const projectRequest = new ProjectRequest({
       supervisor: supervisor._id,
       projectTitle, description,
-      scope, status: false, active: active
+      scope, status: false, active: supervisor.slots<=0 ?  false : active
     });
 
     await projectRequest.save();

@@ -10,12 +10,10 @@ router.post('/add-role', async (req, res) => {
         // Check if the role already exists
         const existingRole = await SharedRules.findOne({ 'rule.role': role });
 
-        if (existingRole) {
-            // If the role already exists, update its rules
-            existingRole.rule[0].rules = rules;
-            await existingRole.save();
-            res.json({ success: true, message: 'Role and rules updated successfully' });
+        if (existingRole) {;
+            return res.json({ success: false, message: `Rules for ${role} already exists` });
         } else {
+            const newRole = role.toLowerCase();
             // If the role doesn't exist, create a new document
             await SharedRules.create({ rule: [{ role, rules }] });
             res.json({ success: true, message: 'Role and rules added successfully' });
