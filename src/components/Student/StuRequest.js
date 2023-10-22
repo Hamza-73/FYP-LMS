@@ -45,7 +45,11 @@ const StuRequest = (props) => {
             }, 1000);
         }
     }, []);
-
+    const handleCloseModal = (id) => {
+        document.getElementById(id).classList.remove("show", "d-block");
+        document.querySelectorAll(".modal-backdrop")
+            .forEach(el => el.classList.remove("modal-backdrop"));
+    }
     const handleRequests = async (e, id, action) => {
         try {
             if (choice.action === 'improve') {
@@ -74,6 +78,7 @@ const StuRequest = (props) => {
                 setRequests(prevRequests => ({
                     requests: prevRequests.requests.filter(request => request.projectId !== id)
                 }));
+                handleCloseModal("exampleModal")
             } else {
                 NotificationManager.error(json.message, '', 1000);;
             }
@@ -174,7 +179,7 @@ const StuRequest = (props) => {
                             </div>
                         </div>
                     ) : (
-                        <h1 className='text-center' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You have no requests for now.</h1>
+                        <h1 className='text-center' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You have no requests for now.</h1>
                     )}
                 </>
             ) : (

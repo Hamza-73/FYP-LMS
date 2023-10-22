@@ -14,7 +14,11 @@ const SupervisorList = (props) => {
   const [editMode, setEditMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
-
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -64,6 +68,7 @@ const SupervisorList = (props) => {
         setRegister({
           name: "", username: "", department: "", designation: "", password: "", slots: "", email: ""
         });
+        handleCloseModal("exampleModal");
       } else {
         NotificationManager.error(json.message);
       }
@@ -126,6 +131,7 @@ const SupervisorList = (props) => {
         setRegister({
           name: '', username: '', department: '', designation: '', slots: '', email: ''
         });
+        handleCloseModal("exampleModal")
       }
     } catch (error) {
       console.log('Error:', error); // Log the error message
@@ -387,7 +393,8 @@ const SupervisorList = (props) => {
       const json = await response.json();
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
-        getMembers()
+        getMembers();
+        handleCloseModal("uploadFile")
       } else {
         NotificationManager.error(json.message, '', 3000);
       }

@@ -42,6 +42,11 @@ const ProjectRequests = (props) => {
     }
   }, []);
 
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const handleRequests = async (e) => {
     try {
       e.preventDefault();
@@ -53,8 +58,8 @@ const ProjectRequests = (props) => {
           'Content-Type': 'application/json',
           "Authorization": token,
         },
-        body : JSON.stringify({
-          projectTitle: improve.projectTitle, scope: improve.scope, description: improve.description 
+        body: JSON.stringify({
+          projectTitle: improve.projectTitle, scope: improve.scope, description: improve.description
         })
       });
       console.log('after fetch')
@@ -67,10 +72,11 @@ const ProjectRequests = (props) => {
         setRequests(prevState => ({
           request: prevState.request.filter(req => req.requestId !== requestId)
         }));
-        setImprove({projectTitle:"",scope:"",description:""});
-        NotificationManager.success(json.message,'',1000);
+        setImprove({ projectTitle: "", scope: "", description: "" });
+        NotificationManager.success(json.message, '', 1000);
+        handleCloseModal("exampleModal")
       } else {
-        NotificationManager.error(json.message,'',1000);;
+        NotificationManager.error(json.message, '', 1000);;
       }
     } catch (error) {
       console.log('error dealing with requests', error);
@@ -79,7 +85,7 @@ const ProjectRequests = (props) => {
 
   const rejectRequest = async (id) => {
     try {
-      
+
       console.log('request is started');
       console.log('improve', improve)
       const token = localStorage.getItem('token');
@@ -100,9 +106,9 @@ const ProjectRequests = (props) => {
         setRequests(prevState => ({
           request: prevState.request.filter(req => req.requestId !== id)
         }));
-        NotificationManager.success(json.message,'',1000);
+        NotificationManager.success(json.message, '', 1000);
       } else {
-        NotificationManager.error(json.message,'',1000);;
+        NotificationManager.error(json.message, '', 1000);;
       }
     } catch (error) {
       console.log('error dealing with requests', error);
@@ -129,9 +135,9 @@ const ProjectRequests = (props) => {
         setRequests(prevState => ({
           request: prevState.request.filter(req => req.requestId !== id)
         }));
-        NotificationManager.success(json.message,'',1000);
+        NotificationManager.success(json.message, '', 1000);
       } else {
-        NotificationManager.error(json.message,'',1000);;
+        NotificationManager.error(json.message, '', 1000);;
       }
     } catch (error) {
       console.log('error dealing with requests', error);
@@ -180,9 +186,9 @@ const ProjectRequests = (props) => {
 
       {!loading ? (
         <>
-            {requests.request.length > 0 ? (
-          <div div className="container" style={{ width: '100%' }}>
-            <h3 className="text-center">Requests</h3>
+          {requests.request.length > 0 ? (
+            <div div className="container" style={{ width: '100%' }}>
+              <h3 className="text-center">Requests</h3>
               <div>
                 <div>
                   <table className="table table-hover">
@@ -226,7 +232,7 @@ const ProjectRequests = (props) => {
                                   <button className="btn btn-warning btn-sm" type="button" onClick={(e) => {
                                     rejectRequest(group.requestId);
                                   }}>Reject</button>
-                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={()=>setRequestId(group.requestId)}>Improve</button>
+                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={() => setRequestId(group.requestId)}>Improve</button>
                                 </div>
                               </div>
                             </td>
@@ -237,10 +243,10 @@ const ProjectRequests = (props) => {
                   </table>
                 </div>
               </div>
-          </div>
-            ) : (
-              <h1 className='text-center' style={{ position:"absolute", transform: "translate(-50%,-50%", left:"50%", top:"50%" }}>You have no requests for now.</h1>
-            )}
+            </div>
+          ) : (
+            <h1 className='text-center' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You have no requests for now.</h1>
+          )}
         </>
       ) : (
         <Loading />

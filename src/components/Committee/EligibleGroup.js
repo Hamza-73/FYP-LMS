@@ -36,6 +36,11 @@ const EligibleGroup = (props) => {
     }
   }
 
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const scheduleViva = async (e) => {
     try {
       e.preventDefault();
@@ -59,6 +64,7 @@ const EligibleGroup = (props) => {
 
       if (json.message && json.success) {
         NotificationManager.success(json.message);
+        handleCloseModal("exampleModal1")
       } else {
         NotificationManager.error(json.message);
       }
@@ -113,24 +119,6 @@ const EligibleGroup = (props) => {
     setViva({ ...viva, [e.target.name]: e.target.value });
   };
 
-  const handleCalendarChange = (date) => {
-    // Prevent selecting dates behind the current date
-    const currentDate = new Date();
-    if (date < currentDate) {
-      setIsInvalidDate(true); // Set invalid date flag to true
-      return; // Don't update the state if the selected date is behind the current date
-    }
-
-    setViva({ ...viva, vivaDate: date });
-    setIsFieldsModified(true); // Field modified, enable the button
-    setIsInvalidDate(false); // Reset invalid date flag
-  };
-
-  const handleTimeChange = (time) => {
-    setViva({ ...viva, vivaTime: time });
-    setIsFieldsModified(true); // Field modified, enable the button
-  };
-
   return (
     <div>
       <div>
@@ -155,7 +143,7 @@ const EligibleGroup = (props) => {
                     <label htmlFor="name" className="form-label">
                       Viva Date
                     </label>
-                      <input className='input-form' name='vivaDate' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaDate} />
+                    <input className='input-form' name='vivaDate' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaDate} />
                   </div>
                   {isInvalidDate && (
                     <div className="text-danger">Please enter a valid date (not in the past).</div>

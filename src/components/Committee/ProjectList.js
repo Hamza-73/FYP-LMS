@@ -30,7 +30,11 @@ const ProjectList = (props) => {
     } catch (error) {
     }
   }
-
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const giveRemarks = async (id) => {
     try {
       const response = await fetch(`http://localhost:5000/committee/remarks/${id}`,
@@ -43,8 +47,8 @@ const ProjectList = (props) => {
         });
       const json = await response.json();
       console.log('json is', json)
-      if(json.success){
-      NotificationManager.sucess('Remarks have been given');
+      if (json.success) {
+        NotificationManager.sucess('Remarks have been given');
       }
 
     } catch (error) {
@@ -58,6 +62,7 @@ const ProjectList = (props) => {
       await giveRemarks(id);
       setRemarks('')
       getProjects();
+      handleCloseModal("exampleModal")
     } catch (error) {
       console.log(' useerror is ', error)
     }

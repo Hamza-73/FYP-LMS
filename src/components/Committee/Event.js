@@ -40,6 +40,11 @@ const Event = (props) => {
       console.log('error in fetching supervisor ', error);
     }
   }
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const editViva = async (e) => {
     try {
       e.preventDefault();
@@ -61,7 +66,8 @@ const Event = (props) => {
 
       if (json.message && json.success) {
         NotificationManager.success(json.message);
-        getVivas()
+        getVivas();
+        handleCloseModal("exampleModal1")
       } else {
         NotificationManager.error(json.message);
       }

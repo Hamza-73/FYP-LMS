@@ -21,6 +21,12 @@ const GroupDetail = () => {
   const [groupId, setGroupId] = useState("");
   const [review, setReview] = useState({ text: "", index: "" });
 
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
+
   const giveReviews = async (e) => {
     try {
       e.preventDefault();
@@ -36,7 +42,7 @@ const GroupDetail = () => {
       const json = await response.json();
       if (json.success) {
         alert(json.message);
-        handleClose()
+        handleCloseModal("exampleModal")
       }
     } catch (error) {
       console.log('error in giving reviews', error);
@@ -110,27 +116,6 @@ const GroupDetail = () => {
   }
 `;
 
-  const myStyle = `
-.meeting-box {
-  background-color: #ffffff;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  width: 200px;
-  height: 100px;
-  padding: 16px;
-  margin: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-.items {
-  display: flex;
-  justify-content: space-between;
-}
-.meeting-box a {
-  text-decoration: none;
-  color: #007bff;
-}
-`
-
   const handleChange = (e) => {
     setReview({ ...review, [e.target.name]: e.target.value });
   }
@@ -138,22 +123,6 @@ const GroupDetail = () => {
   const handleClose = (id, action) => {
     setReview({ text: "", index: "" });
     setGroupId('');
-  }
-
-  const handleRequest = async (id, action) => {
-    try {
-      const response = await fetch(`http://localhost:5000/supervisor/extension/${id}/${action}`, {
-        method: "POST",
-        headers: {
-          "Authorization": localStorage.getItem('token')
-        }
-      });
-      const json = await response.json();
-      console.log('json is ', json);
-      alert(json.message);
-    } catch (error) {
-      console.log('error in json ', error);
-    }
   }
 
   const currentGroup = group.groups.length > 0 ? group.groups[currentIndex] : {};
@@ -197,54 +166,6 @@ const GroupDetail = () => {
           </div>
           {group.groups.length > 0 ? (
             <div className="container" style={{ border: "none", height: "700px", width: "1000px" }}>
-              {currentGroup.extensionRequest &&
-                currentGroup.extensionRequest.length > 0 &&
-                currentGroup.extensionRequest.map((item, i) => (
-                  !item.isresponded && ( // Check if isresponded is false
-                    <div
-                      className="notify"
-                      style={{ position: "absolute", right: "30px", top: `${140 + i * 200}px` }}
-                      key={i}
-                    >
-                      <style>{myStyle}</style>
-                      <div>
-                        <div>
-                          <div>
-                            <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
-                              <div className="container">
-                                <h4 className="text-center">Request For Extension</h4>
-                                {item.reason && <div className="items">
-                                  <h6>Reason</h6>
-                                  <p>{item.reason}</p>
-                                </div>}
-                                <div>
-                                  <button
-                                    className="btn btn-sm"
-                                    style={{ background: "maroon", color: "white" }}
-                                    onClick={() => {
-                                      handleRequest(item._id, "accept");
-                                    }}
-                                  >
-                                    Accept
-                                  </button>
-                                  <button
-                                    className="btn btn-sm"
-                                    style={{ background: "maroon", color: "white" }}
-                                    onClick={() => {
-                                      handleRequest(item._id, "rejected");
-                                    }}
-                                  >
-                                    Reject
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                ))}
               <div className="upperpart">
                 <div className="proj-detail d-flex justify-content-between">
                   <h4>

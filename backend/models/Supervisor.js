@@ -32,7 +32,9 @@ const supervisorSchema = new Schema({
   extensionRequest: [{
     isresponded: { type: Boolean, default: false },
     student: { type: String },
-    reason: { type: String }
+    reason: { type: String },
+    group: { type: String },
+    requestId: { type: Schema.Types.ObjectId }
   }],
   requests: [{
     group: { type: String },

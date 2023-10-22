@@ -90,18 +90,18 @@ const SideBar = (props) => {
                                 <Link className="nav-link" to={`/${props.user}/${props.link6}`}>{props.title6}</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/${props.user}/${props.link7}`}><i style={{fontSize:"20px"}} className="fa-solid fa-bell"></i></Link>
-                            </li>
-                            <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link00}`}>{props.title00}</Link>
                             </li>
                             <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link7}`}><i style={{fontSize:"20px"}} className="fa-solid fa-bell"></i></Link>
+                            </li>
+                            {/* <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link01}`}>{props.title01}</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link02}`}>{props.title02}</Link>
-                            </li>
-                            <li className="nav-item dropdown">
+                            </li> */}
+                            {/* <li className="nav-item dropdown">
                                 <Link className="nav-link dropdown-toggle" to='/' role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     {props.title0}
                                 </Link>
@@ -112,7 +112,7 @@ const SideBar = (props) => {
                                     <li><Link className="dropdown-item" to={`/${props.user}/${props.link10}`}>{props.title10}</Link></li>
                                 </ul>
                                 </div>
-                            </li>
+                            </li> */}
                         </ul>
                         <form className={`d-flex ${!localStorage.getItem('token') ? 'd-none' : ''} `} role="search">
                             <h6 className={`text-center`}>{

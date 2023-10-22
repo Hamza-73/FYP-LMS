@@ -32,7 +32,7 @@ const StudentMain = (props) => {
               link4='group' title5='Fyp Ideas' link5='ideas' detailLink='student' title7='Requests'
               link7='requests' link00='supervisors' title00='Supervisors' title6='Project List'
               link6='project'
-              title01='Notification' link01='notification' hide='d-none'
+              link01='notification' hide='d-none'
             />
           )}
         </div>

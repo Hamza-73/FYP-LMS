@@ -103,10 +103,15 @@ router.post('/meeting', authenticateUser, async (req, res) => {
 
 // Update a meeting by ID
 router.put('/edit-meeting/:id', async (req, res) => {
-  const { id } = req.params;
+  let { id } = req.params;
   const updatedMeetingData = req.body;
 
   try {
+    console.log('id is ', id)
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      id = new mongoose.Types.ObjectId(id);
+    }
+
     const existingMeeting = await Meeting.findById(id);
 
     if (!existingMeeting) {
@@ -156,10 +161,8 @@ router.get('/get-meeting', authenticateUser, async (req, res) => {
     }
 
     const meetingPromises = supervisor.meeting.map(async (id) => {
-      console.log('meeting id is ', id);
       const meet = await Meeting.findById(id);
       if (!meet) {
-        console.log('not found');
         return null; // Return null for meetings that are not found
       }
       return {
@@ -185,14 +188,23 @@ router.get('/get-meeting', authenticateUser, async (req, res) => {
 
 // Delete a meeting by ID
 router.delete('/delete-meeting/:id', async (req, res) => {
-  const { id } = req.params;
+  let { id } = req.params;
 
   try {
-    const deletedMeeting = await Meeting.findByIdAndDelete(id);
-
+    console.log('id is ', id);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      id = new mongoose.Types.ObjectId(id);
+    }
+    console.log('is after if ', id);
+    const deletedMeeting = await Meeting.findById(id);
+    if (!deletedMeeting) {
+      return res.status(404).json({ message: 'Meeting not found' });
+    }
+    console.log('meeting is ',deletedMeeting );
     const group = await Group.findOne({ 'projects.projectTitle': deletedMeeting.projectTitle });
     if (group) {
       group.projects[0].students.map(async stu => {
+        console.log('stu is ', stu);
         const studentObj = await User.findById(stu.userId);
         if (studentObj) {
           studentObj.unseenNotifications.push({
@@ -204,17 +216,22 @@ router.delete('/delete-meeting/:id', async (req, res) => {
     }
 
     group.meetingLink = ''; group.meetingDate = '';
-    group.meetingTime = ''; group.meetingid = '';
-    group.meetingReport = group.meetingReport.filter(meet => { return !meet.id.equals(id) });
-    await group.save();
+    group.meetingTime = ''; group.meetingid = null;
+    group.meetingReport = group.meetingReport.filter(meet => { 
+      console.log('meet is ', meet);
+      return !meet.id.equals(id) });
+      console.log(" group.meetingReport  ",  group.meetingReport )
+      await group.save();
 
-    if (!deletedMeeting) {
-      return res.status(404).json({ message: 'Meeting not found' });
+    const meetingToBeDelete = await Meeting.findByIdAndDelete(id);
+    if(!meetingToBeDelete){
+      return res.json({success:false , message:"Meeting Not Found"});
     }
+    return res.json({success:true , message:"Canceled"})
 
     return res.json({ success: true, message: 'Meeting Cancelled successfully' });
   } catch (error) {
-    console.error(error);
+    console.error('error in deleting ', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });

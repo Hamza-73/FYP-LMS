@@ -87,6 +87,7 @@ const ProjectIdeas = () => {
         // Update the state with the new idea
         getIdeas()
         setFypIdea({ projectTitle: "", scope: "", description: "" });
+        handleCloseModal("exampleModal")
       }
       // Close the modal
       $(addIdeaModalRef.current).modal('hide');
@@ -114,6 +115,7 @@ const ProjectIdeas = () => {
 
       if (json.success) {
         NotificationManager.success(json.message);
+        handleCloseModal("exampleModal1")
       }
       else {
         NotificationManager.error(json.message);
@@ -192,10 +194,15 @@ const ProjectIdeas = () => {
       NotificationManager.error('Some Error occurred. Try Again');
     }
   };
-
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     await handleIdea();
+    handleCloseModal("exampleModal")
   }
 
   const handleChange = (e) => {

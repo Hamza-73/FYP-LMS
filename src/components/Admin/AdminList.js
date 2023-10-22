@@ -22,16 +22,6 @@ const CommitteeMember = (props) => {
     fname: "", lname: "", username: "", email: "", password: ""
   });
 
-  // Function to open the modal
-  const openModal = () => {
-    setShowModal(true);
-  };
-
-  // Function to close the modal
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -74,7 +64,7 @@ const CommitteeMember = (props) => {
         setRegister({
           fname: "", lname: "", username: "", email: "", password: ""
         });
-        closeModal();
+        handleCloseModal("exampleModal")
       }
       else {
         NotificationManager.error('Register According to the standard of Registration');
@@ -126,13 +116,12 @@ const CommitteeMember = (props) => {
         setRegister({
           fname: '', lname: '', username: '', email: '', password: ''
         });
-        closeModal();
         NotificationManager.success('Edited Successfully');
+        handleCloseModal("exampleModal")
       }
 
     } catch (error) {
       console.log('Error:', error); // Log the error message
-      NotificationManager.error('Error in Editing');
     }
   };
 
@@ -390,7 +379,8 @@ const CommitteeMember = (props) => {
       const json = await response.json();
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
-        getMembers()
+        getMembers();
+        handleCloseModal("uploadFile")
       } else {
         NotificationManager.error(json.message, '', 3000);
       }
@@ -398,7 +388,11 @@ const CommitteeMember = (props) => {
       console.error('Error:', error);
     }
   };
-
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
 
   return (
     <>
@@ -430,7 +424,7 @@ const CommitteeMember = (props) => {
       {/* REGISTER */}
       <div className="register">
         <style>{style}</style>
-        <div className={`modal fade ${showModal ? 'show' : ''}`} id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden={!showModal} data-backdrop="static" data-keyboard="false" onHide={() => setEditMode(false)}>
+        <div className={`modal fade show`} id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden={!showModal} data-backdrop="static" data-keyboard="false" onHide={() => setEditMode(false)}>
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">

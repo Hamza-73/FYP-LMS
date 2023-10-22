@@ -75,30 +75,12 @@ const Meeting = (props) => {
       if (json) {
         // Clear the form fields
         setMeeting({
-          meetingGroup: "",
-          meetingLink: "",
-          purpose: "",
-          meetingTime: "",
-          meetingDate: "",
-          meetingType: ""
+          meetingGroup: "", meetingLink: "",
+          purpose: "", meetingTime: "",
+          meetingDate: "", meetingType: ""
         });
-
-        // Map properties from API response to the expected state structure
-        const mappedMeeting = {
-          meetingGroup: json.meeting.projectTitle,
-          meetingLink: json.meeting.meetingLink,
-          purpose: json.meeting.purpose,
-          meetingTime: json.meeting.time,
-          meetingDate: json.meeting.date,
-          meetingType: json.meeting.type
-        };
-
-        // Update the state with the newly scheduled meeting
-        setData((prevData) => ({
-          ...prevData,
-          meeting: [...prevData.meeting, mappedMeeting]
-        }));
         alert("Success: " + json.message);
+        getMeeting();
       } else {
         alert("Error: " + json.message, 'danger');
       }
@@ -106,12 +88,16 @@ const Meeting = (props) => {
       console.log('Error dealing with requests', error);
     }
   };
-
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
 
   const editMeeting = async (e) => {
     try {
       e.preventDefault();
-      console.log('meeting starts')
+      console.log('meeting starts', meetingId)
       const response = await fetch(`http://localhost:5000/meeting/edit-meeting/${meetingId}`, {
         method: "PUT",
         headers: {
@@ -131,28 +117,14 @@ const Meeting = (props) => {
       if (json.success) {
         alert(`Meeting Edited Successfully`);
         // Update the state with the edited meeting
-        setData((prevData) => ({
-          ...prevData,
-          meeting: prevData.meeting.map((item) => {
-            if (item.meetingId === meetingId) {
-              return {
-                ...item,
-                meetingGroup: edit.meetingGroup,
-                meetingLink: edit.meetingLink,
-                meetingTime: edit.meetingTime,
-                meetingDate: edit.meetingDate,
-                meetingType: edit.meetingType
-              };
-            }
-            return item;
-          })
-        }));
+        getMeeting();
         setEdit({
           meetingGroup: "", meetingLink: "",
           purpose: "", meetingTime: "",
           meetingDate: "", meetingType: ""
-        })
-      }else{
+        });
+        handleCloseModal("exampleModal");
+      } else {
         alert(json.message)
       }
     } catch (error) {
@@ -188,12 +160,10 @@ const Meeting = (props) => {
           }
         });
         const json = await response.json();
-        if (json.success) {
+        console.log("deleting meeting ", json);
+        if (json) {
           // Remove the canceled meeting from the state
-          setData((prevData) => ({
-            ...prevData,
-            meeting: prevData.meeting.filter((meeting) => meeting.meetingId !== id)
-          }));
+          getMeeting();
           alert(json.message);
         }
       }
@@ -317,7 +287,10 @@ const Meeting = (props) => {
     document.getElementById(divId).style.display =
       element.value == 1 ? "block" : "none";
   }
-
+  const handleEditMeeting = async (e) => {
+    e.preventDefault();
+    await editMeeting(e);
+  }
   return (
     <>
       <div className="meeting"  >
@@ -328,7 +301,7 @@ const Meeting = (props) => {
                 <h5 className="modal-title" >Register</h5>
               </div>
               <div className="modal-body">
-                <form onSubmit={editMeeting}>
+                <form onSubmit={handleEditMeeting}>
 
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Project Title</label>

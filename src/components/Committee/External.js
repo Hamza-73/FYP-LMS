@@ -53,7 +53,7 @@ const External = (props) => {
                         name: register.name, username: register.username, email: register.email
                     }]
                 }));
-
+                handleCloseModal("exampleModal")
                 // Clear the register form fields
                 setRegister({
                     name: "", username: "", email: ""
@@ -112,6 +112,7 @@ const External = (props) => {
                 }));
 
                 NotificationManager.success('Edited Successfully');
+                handleCloseModal("exampleModal")
                 setEditMode(false); // Disable edit mode after successful edit
                 setRegister({
                     name: '', username: '', email: ''
@@ -340,7 +341,8 @@ const External = (props) => {
             const json = await response.json();
             if (json.success) {
                 NotificationManager.success(json.message, '', 3000);
-                getMembers()
+                getMembers();
+                handleCloseModal("uploadFile")
             } else {
                 NotificationManager.error(json.message, '', 3000);
             }
@@ -349,6 +351,11 @@ const External = (props) => {
         }
     };
 
+    const handleCloseModal = (id) => {
+        document.getElementById(id).classList.remove("show", "d-block");
+        document.querySelectorAll(".modal-backdrop")
+            .forEach(el => el.classList.remove("modal-backdrop"));
+    }
     return (
         <>
             <div className="UploadFile"  >

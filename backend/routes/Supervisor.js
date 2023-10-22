@@ -1107,7 +1107,7 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
         const stuObj = await User.findById(stu.userId);
         stuObj.unseenNotifications.push({
           type: 'Important',
-          message: `Your request for extension of ${request.type} has been accepted`,
+          message: `Your request for extension  has been accepted`,
         });
         await stuObj.save();
       });

@@ -18,6 +18,12 @@ const StudentList = (props) => {
   const [recordsPerPage, setRecordsPerPage] = useState(5);
   const [rollNoError, setRollNoError] = useState(false);
 
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -91,6 +97,7 @@ const StudentList = (props) => {
           name: "", father: "", department: "", batch: "", semester: "", cnic: "", rollNo: "", email: ""
         });
         setRollNoError(false);
+        handleCloseModal("exampleModal")
 
       }
       else {
@@ -165,7 +172,6 @@ const StudentList = (props) => {
       );
 
       const updatedStudent = await response.json();
-      // console.log('updatedStudent is ', updatedStudent)
       if (updatedStudent) {
         setData((prevData) => ({
           ...prevData,
@@ -180,6 +186,7 @@ const StudentList = (props) => {
         });
         NotificationManager.success('Edited Successfully');
         setRollNoError(false);
+        handleCloseModal("exampleModal")
       }
     } catch (error) {
       console.log('Error:', error); // Log the error message
@@ -411,7 +418,8 @@ const StudentList = (props) => {
       const json = await response.json();
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
-        getMembers()
+        getMembers();
+        handleCloseModal("uploadFile")
       } else {
         NotificationManager.error(json.message, '', 3000);
       }

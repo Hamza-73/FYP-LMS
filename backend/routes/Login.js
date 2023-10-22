@@ -1029,7 +1029,7 @@ router.post('/request-meeting', authenticateUser, async (req, res) => {
 //Request Supervisor for date Extension
 router.post('/extension', authenticateUser, async (req, res) => {
   try {
-    const { reason } = req.body ;
+    const { reason } = req.body;
     const student = await User.findById(req.user.id);
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student Not found' });
@@ -1072,18 +1072,18 @@ router.post('/extension', authenticateUser, async (req, res) => {
 
     group.extensionRequest.push({
       student: student.name,
-      reason : reason
+      reason: reason
     });
     console.log('group', group.extensionRequest)
 
     await group.save();
     const requestId = group.extensionRequest[group.extensionRequest.length - 1]._id;
-    const mongooseId = new mongoose.Types.ObjectId(requestId);
+    console.log('request Id', requestId)
     supervisor.extensionRequest.push({
       student: student.name,
       group: group.projects[0].projectTitle,
-      requestId: mongooseId,
-      reason : reason
+      requestId: requestId,
+      reason: reason
     });
 
     supervisor.unseenNotifications.push({

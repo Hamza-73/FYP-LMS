@@ -80,16 +80,6 @@ const CumDashboard = (props) => {
     }
   }
 
-  const handleEditRule = (index) => {
-    if (index === editRuleIndex) {
-      // User clicked "Save" for the same rule, apply the changes
-      editRule();
-    } else {
-      // User clicked "Edit" for a different rule, update editRuleIndex
-      setEditRuleIndex(index);
-    }
-  }
-
   const editRule = async (e) => {
     try {
       e.preventDefault();
@@ -109,6 +99,7 @@ const CumDashboard = (props) => {
         setModalRules([]);
         setEditRuleIndex(-1);
         getRules();
+        handleCloseModal("exampleModal")
       }
     } catch (error) {
       console.log('error', error);
@@ -227,7 +218,6 @@ const CumDashboard = (props) => {
             },)
         },
       );
-
       const json = await response.json();
       console.log('json is ', json)
       if (json.success) {
@@ -238,6 +228,7 @@ const CumDashboard = (props) => {
         // Refresh the existing roles and rules after defining a new role
         getRules();
         getRoles();
+        handleCloseModal("defineRoleModal")
       } else {
         NotificationManager.error(json.message);
       }
@@ -245,7 +236,11 @@ const CumDashboard = (props) => {
       console.log('error', error);
     }
   };
-
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const addNewRuleInput = () => {
     // Add an empty rule to newRules when the user clicks "Add Rule"
     setNewRules([...newRules, '']);
@@ -272,6 +267,7 @@ const CumDashboard = (props) => {
         NotificationManager.success(json.message);
         getRules();
         getRoles();
+        handleCloseModal("deleteRule")
       } else {
         NotificationManager.error(json.message);
       }

@@ -88,6 +88,11 @@ const MyGroup = (props) => {
     }
   }
 
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
   const requestextension = async (e) => {
     try {
       e.preventDefault();
@@ -102,6 +107,7 @@ const MyGroup = (props) => {
       const json = await response.json();
       console.log('json in sending extension is ', json);
       alert(json.message);
+      handleCloseModal("exampleModal2")
     } catch (error) {
       console.log('error in extension', error);
     }
@@ -163,6 +169,7 @@ const MyGroup = (props) => {
           },
         }));
         setFile();
+        handleCloseModal("exampleModal")
       }
     } catch (error) {
       console.log('error in uploading file', error);

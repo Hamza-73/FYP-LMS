@@ -47,7 +47,8 @@ const ProjectProgress = (props) => {
       });
       const json = await response.json();
       if (json)
-        alert(json.message)
+        alert(json.message);
+      handleCloseModal("exampleModal")
 
     } catch (error) {
       console.log(`Some error occurred: ${error}`);
@@ -122,6 +123,11 @@ const ProjectProgress = (props) => {
     color: #007bff;
   }
   `
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
 
   return (
     <div>

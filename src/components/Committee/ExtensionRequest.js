@@ -91,7 +91,7 @@ const ExtensionRequest = (props) => {
         }
     };
 
-    const [ id , setId ] = useState('');
+    const [id, setId] = useState('');
 
     const extendDate = async (e) => {
         try {
@@ -106,10 +106,10 @@ const ExtensionRequest = (props) => {
             const response = await fetch(`http://localhost:5000/committee/make-extension/${id}`, {
                 method: 'POST',
                 headers: {
-                    "Content-Type" : "application/json" ,
+                    "Content-Type": "application/json",
                     'Authorization': token
                 },
-                body : JSON.stringify({ date : date })
+                body: JSON.stringify({ date: date })
             });
             const json = await response.json();
             console.log('json in extending requet is : ', json);
@@ -117,7 +117,8 @@ const ExtensionRequest = (props) => {
                 alert(json.message)
                 //   console.log('User data is: ', json);
                 setUserData(json);
-                getDetail()
+                getDetail();
+                handleCloseModal("exampleModal")
             }
         } catch (err) {
             console.log('error in extending : ', err);
@@ -166,10 +167,14 @@ const ExtensionRequest = (props) => {
   }
   
 `;
-
+    const handleCloseModal = (id) => {
+        document.getElementById(id).classList.remove("show", "d-block");
+        document.querySelectorAll(".modal-backdrop")
+            .forEach(el => el.classList.remove("modal-backdrop"));
+    }
     return (
         <>
-        <div className="register">
+            <div className="register">
                 <style>{style}</style>
                 <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div className="modal-dialog" role="document">
@@ -193,15 +198,15 @@ const ExtensionRequest = (props) => {
                                                 id="date"
                                                 name="date"
                                                 value={date}
-                                                onChange={(e)=>setDate(e.target.value)}
+                                                onChange={(e) => setDate(e.target.value)}
                                             />
                                         </div>
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={()=>setDate('')}>Close</button>
-                                            <button type="submit" className="btn btn-success">
-                                                Extend
-                                            </button>
+                                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setDate('')}>Close</button>
+                                        <button type="submit" className="btn btn-success">
+                                            Extend
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -239,8 +244,8 @@ const ExtensionRequest = (props) => {
                         </div>
                         {filteredDataPaginated.length > 0 ? (
                             <table className="table table-hover text-center">
-                                <thead style={{textAlign:"center"}}>
-                                    <tr style={{textAlign:"center"}}>
+                                <thead style={{ textAlign: "center" }}>
+                                    <tr style={{ textAlign: "center" }}>
                                         <th scope="col">Supervisor</th>
                                         <th scope="col">Group</th>
                                         <th scope="col">Reason</th>
@@ -254,15 +259,15 @@ const ExtensionRequest = (props) => {
                                         <tr key={key}>
                                             <td>{val.supervisor}</td>
                                             <td>{val.group}</td>
-                                            <td>{val.reason?val.reason:"---"}</td>
+                                            <td>{val.reason ? val.reason : "---"}</td>
                                             {(userData.member.isAdmin) &&
-                                            <td><button className="btn btn-sm" style={{
-                                                color:"white", background:"maroon", cursor:"pointer"
-                                            }}
-                                            onClick={()=>{
-                                                setId(val._id)
-                                            }}  data-toggle="modal" data-target="#exampleModal"
-                                            >Extend</button></td>
+                                                <td><button className="btn btn-sm" style={{
+                                                    color: "white", background: "maroon", cursor: "pointer"
+                                                }}
+                                                    onClick={() => {
+                                                        setId(val._id)
+                                                    }} data-toggle="modal" data-target="#exampleModal"
+                                                >Extend</button></td>
                                             }
                                         </tr>
                                     ))}

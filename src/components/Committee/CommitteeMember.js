@@ -96,7 +96,7 @@ const CommitteeMember = (props) => {
         setRegister({
           fname: "", lname: "", username: "", department: "", designation: "", password: "", email: ""
         });
-        closeModal();
+        handleCloseModal("exampleModal");
       }
       else {
         NotificationManager.error('Register According to the standard of Registration');
@@ -150,6 +150,7 @@ const CommitteeMember = (props) => {
         });
         closeModal();
         NotificationManager.success('Edited Successfully');
+        handleCloseModal("exampleModal")
       }
 
     } catch (error) {
@@ -168,7 +169,6 @@ const CommitteeMember = (props) => {
       designation: student.designation, slots: student.slots, email: student.email
     });
   };
-
 
 
   // Function to handle delete
@@ -396,6 +396,12 @@ const CommitteeMember = (props) => {
     setFile(event.target.files[0]);
   };
 
+  const handleCloseModal = (id) => {
+    document.getElementById(id).classList.remove("show", "d-block");
+    document.querySelectorAll(".modal-backdrop")
+      .forEach(el => el.classList.remove("modal-backdrop"));
+  }
+
   const handleSubmit = async (event, userType) => {
     event.preventDefault();
 
@@ -416,7 +422,8 @@ const CommitteeMember = (props) => {
       const json = await response.json();
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
-        getMembers()
+        getMembers();
+        handleCloseModal("uploadFile")
       } else {
         NotificationManager.error(json.message, '', 3000);
       }
