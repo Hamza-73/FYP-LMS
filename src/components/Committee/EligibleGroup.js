@@ -74,11 +74,12 @@ const EligibleGroup = (props) => {
     }
   };
 
-
   useEffect(() => {
     setTimeout(() => {
       getDetail();
       getProjects();
+      getCommittee();
+      getExternal();
     }, 1000)
   }, []);
 
@@ -119,6 +120,45 @@ const EligibleGroup = (props) => {
     setViva({ ...viva, [e.target.name]: e.target.value });
   };
 
+  // Function to get members
+  const getCommittee = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/supervisor/get-supervisors", {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await response.json();
+      console.log('students are ', json); // Log the response data to see its structure
+      setCommittee(json);
+    } catch (error) {
+    }
+  }
+
+  const [committee, setCommittee] = useState({ members: [] });
+  const [external, setExternal] = useState({ members: [] });
+  const getExternal = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found', 'danger');
+        return;
+      }
+      const response = await fetch("http://localhost:5000/external/get-externals", {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await response.json();
+      console.log('supervisors are ', json); // Log the response data to see its structure
+      setExternal(json);
+    } catch (error) {
+      console.log('error in fetching supervisor ', error);
+    }
+  }
+
   return (
     <div>
       <div>
@@ -142,8 +182,8 @@ const EligibleGroup = (props) => {
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">
                       Viva Date
-                    </label>
-                    <input className='input-form' name='vivaDate' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaDate} />
+                    </label> <br />
+                    <input className='input-form' type='date' name='vivaDate' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaDate} />
                   </div>
                   {isInvalidDate && (
                     <div className="text-danger">Please enter a valid date (not in the past).</div>
@@ -153,31 +193,37 @@ const EligibleGroup = (props) => {
                       Viva Time
                     </label>
                     <div>
-                      <input className='input-form' name='vivaTime' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaTime} />
+                      <input className='input-form' type='time' name='vivaTime' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.vivaTime} />
                     </div>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">
                       Internal
                     </label>
-                    <div>
-                      <input className='input-form' name='internal' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.internal} />
-                    </div>
+                    <select className='form-select' name='internal' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.internal}>
+                      <option value="">Select Internal</option>
+                      {committee.members && committee.members.map((member, index) => (
+                        <option key={index} value={member.username}>{member.username}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">
                       External
                     </label>
-                    <div>
-                      <input className='input-form' name='external' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.external} />
-                    </div>
+                    <select className='form-select' name='external' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.external}>
+                      <option value="">Select External Member</option>
+                      {external.members && external.members.map((member, index) => (
+                        <option key={index} value={member.username}>{member.username}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">
                       Close
                     </button>
                     <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                      disabled={!isFieldsModified || !viva.projectTitle || !viva.external || !viva.internal}
+                      disabled={!viva.vivaTime || !viva.vivaDate || !viva.projectTitle || !viva.external || !viva.internal}
                     >
                       Schedule
                     </button>
@@ -205,11 +251,9 @@ const EligibleGroup = (props) => {
               <tbody style={{ textAlign: "center" }}>
                 {group.groups
                   .filter((group) =>
-
-                    group.proposal && group.documentation
-                    && !group.viva
-
-                  ).map((group, groupIndex) => (
+                    group.proposal && group.documentation && !group.viva
+                  )
+                  .map((group, groupIndex) => (
                     group.projects.map((project, projectKey) => (
                       <tr key={projectKey}>
                         <td>
