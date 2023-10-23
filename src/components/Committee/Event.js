@@ -113,7 +113,6 @@ const Event = (props) => {
     }
   };
 
-
   useEffect(() => {
     // setLoading(true);
     if (localStorage.getItem('token')) {
@@ -129,27 +128,8 @@ const Event = (props) => {
     setViva({ ...viva, [e.target.name]: e.target.value });
   };
 
-  const handleCalendarChange = (date) => {
-    // Prevent selecting dates behind the current date
-    const currentDate = new Date();
-    if (date < currentDate) {
-      setIsInvalidDate(true); // Set invalid date flag to true
-      return; // Don't update the state if the selected date is behind the current date
-    }
-
-    setViva({ ...viva, vivaDate: date });
-    setIsFieldsModified(true); // Field modified, enable the button
-    setIsInvalidDate(false); // Reset invalid date flag
-  };
-
-  const handleTimeChange = (time) => {
-    setViva({ ...viva, vivaTime: time });
-    setIsFieldsModified(true); // Field modified, enable the button
-  };
-
   return (
     <div>
-
 
       <div className="viva">
         <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -181,7 +161,7 @@ const Event = (props) => {
                       Viva Time
                     </label>
                     <div>
-                      <input type="time" name='vivaTime' value={viva.vivaTime} />
+                      <input type="time" name='vivaTime' value={viva.vivaTime} onChange={handleChange1} />
                     </div>
                   </div>
                   <div className="mb-3">
@@ -212,7 +192,7 @@ const Event = (props) => {
                       Close
                     </button>
                     <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                      disabled={!isFieldsModified || !viva.projectTitle || !viva.external || !viva.internal}
+                      disabled={!viva.vivaDate || !viva.vivaTime || !viva.projectTitle || !viva.external || !viva.internal}
                     >
                       Schedule
                     </button>
@@ -235,6 +215,7 @@ const Event = (props) => {
                 <table className="table text-center table-hover">
                   <thead>
                     <tr>
+                      <th scope="col">Supervisor</th>
                       <th scope="col">Student Name</th>
                       <th scope="col">Project Title</th>
                       <th scope="col">Internal</th>
@@ -247,6 +228,7 @@ const Event = (props) => {
                   <tbody className="text-center">
                     {data.vivas.map((val, key) => (
                       <tr key={key}>
+                        <td>{val.sup}</td>
                         <td>
                           <div>
                             {val.students.map((student, studentKey) => (

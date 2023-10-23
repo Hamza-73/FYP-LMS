@@ -105,6 +105,9 @@ const Groups = (props) => {
     setAddStudent({ rollNo: '', projectTitle: '', });
     setGrades({ external: 0, marks: 0 });
   }
+  console.log( new Date())
+  console.log('new ', new Date("2023-10-30T19:00:00.000Z"))
+  console.log('check ', new Date() < new Date("2023-10-30T19:00:00.000Z"))
 
   return (
     <div>
@@ -213,7 +216,18 @@ const Groups = (props) => {
                           <td>{group.proposal ? 'Submitted' : 'Pending'}</td>
                           <td>{group.documentation ? 'Submitted' : 'Pending'}</td>
                           <td><button disabled={project.students.length === 2} onClick={() => setAddStudent({ projectTitle: project.projectTitle })} className="btn btn-sm" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
-                          <td>{(group.vivaDate ? (new Date() > group.vivaDate ? new Date(group.vivaDate).toLocaleDateString('en-US') : "Taken") : "Pending")}</td>
+                          <td>
+                            {
+                              group.vivaDate ?
+                                (
+                                  new Date() < new Date(group.vivaDate) ?
+                                    new Date(group.vivaDate).toISOString().split('T')[0] :
+                                    "Taken"
+                                ) :
+                                "Pending"
+                            }
+                          </td>
+
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
                               {(group.marks && group.externalMarks && group.internalMarks && group.hodMarks) ? (group.marks + group.externalMarks + group.internalMarks + group.hodMarks) / 4 : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={() => {

@@ -16,6 +16,7 @@ const Admin = require('../../models/Admin');
 const nodemailer = require('nodemailer');
 const ProjectRequest = require('../../models/ProjectRequest');
 const Allocation = require('../../models/Allocation');
+const moment = require('moment')
 
 
 // Registration route
@@ -383,9 +384,9 @@ router.post('/dueDate', async (req, res) => {
     console.log('due datw starts')
     const { type, dueDate, instructions } = req.body;
     const currentDate = new Date();
-    const newDate = new Date(dueDate);
+    const newDate = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();;
     // Validate if the due date is not behind the current date
-    if (new Date(dueDate) < currentDate) {
+    if (newDate < currentDate) {
       return res.status(400).json({ message: "Due Date cannot be behind the current date" });
     }
 
@@ -416,11 +417,11 @@ router.post('/dueDate', async (req, res) => {
           }
           // console.log('students is ', stu);
           if (type === 'proposal') {
-            group.propDate = dueDate;
-            stu.propDate = dueDate;
+            group.propDate = newDate;
+            stu.propDate = newDate;
           } else if (type === 'documentation') {
-            group.docDate = dueDate;
-            stu.docDate = dueDate;
+            group.docDate = newDate;
+            stu.docDate = newDate;
             console.log('documentation');
           }
           group.instructions = instructions;
@@ -441,17 +442,17 @@ router.post('/dueDate', async (req, res) => {
     const supervisors = await Supervisor.find({ isAdmin: true });
     committeeMembers.forEach(async member => {
       if (type === 'proposal')
-        member.propDate = vivaDate;
+        member.propDate = newDate;
       else
-        member.docDate = vivaDate;
+        member.docDate = newDate;
       await member.save();
     });
 
     supervisors.forEach(async member => {
       if (type === 'proposal')
-        member.propDate = vivaDate;
+        member.propDate = newDate;
       else
-        member.docDate = vivaDate;
+        member.docDate = newDate;
       await member.save();
     });
 
@@ -562,15 +563,14 @@ router.post('/make-extension/:requestId', authenticateUser, async (req, res) => 
     const { requestId } = req.params;
     const { date } = req.body;
     console.log('date is ', date)
-    const [year, month, day] = date.split('-');
-    const formattedDate = `${month}-${day}-${year}`;
-    const newDate = new Date(formattedDate);
+    const formattedDate = moment.utc(date, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
+    console.log('formated date us ', formattedDate)
     let supervisor;
     supervisor = await Supervisor.findById(req.user.id);
     if (!supervisor) {
       supervisor = await Committee.findById(req.user.id);
       if (!supervisor) {
-        return res.json({ message: "user Not Found" });
+        return res.json({ success: false, message: "user Not Found" });
       }
     }
     const request = supervisor.requests.filter(request => {
@@ -585,7 +585,7 @@ router.post('/make-extension/:requestId', authenticateUser, async (req, res) => 
     if (!group) {
       return res.json({ success: false, message: "Group Not Found" });
     }
-    group.docDate = newDate;
+    group.docDate = formattedDate;
     await group.save();
     group.projects[0].students.forEach(async stu => {
       const stuObj = await User.findById(stu.userId)

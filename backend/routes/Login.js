@@ -11,7 +11,6 @@ const Supervisor = require('../models/Supervisor');
 const ProjectRequest = require('../models/ProjectRequest');
 const Group = require('../models/Group');
 const moment = require('moment');
-
 const multer = require('multer');
 const Viva = require('../models/Viva');
 const storage = multer.diskStorage({
@@ -72,10 +71,10 @@ router.post('/upload', authenticateUser, async (req, res) => {
       // Update the group with the uploaded file URL
       if (type === 'proposal') {
         groupUpdate.proposal = result.url;
-        groupUpdate.propSub = moment(new Date(), 'DD-MM-YYYY').toDate();
+        groupUpdate.propSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
       } else if (type === 'documentation') {
         groupUpdate.documentation = result.url;
-        groupUpdate.docSub = moment(new Date(), 'DD-MM-YYYY').toDate();
+        groupUpdate.docSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
       } else {
         return res.status(400).json({ success: false, message: 'Invalid file type' });
       }
@@ -660,7 +659,7 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       groupMember: group.projects[0].students.filter(stu => !stu.userId.equals(userId)),
       proposal: group.proposal, documentation: group.documentation,
       docDate: group.docDate, propDate: group.propDate,
-      propSub: group.propSub,
+      propSub: group.propSub, docSub: group.docSub, vivaDate: group.vivaDate,
       viva: viva, meetingReport: group.meetingReport,
       instructions: group.instructions,
       docs: group.docs,
@@ -1050,6 +1049,10 @@ router.post('/extension', authenticateUser, async (req, res) => {
 
     if (group.documentation) {
       return res.status(500).json({ success: false, message: `You've already submitted documentation` });
+    }
+
+    if (!new Date(group.docDate) < new Date()) {
+      return res.json({ success: false, message: "You cannot send extension request untill the documentation date has not been passed" })
     }
 
     if (group.extensionRequest.length > 0) {

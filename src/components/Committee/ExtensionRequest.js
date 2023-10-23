@@ -96,7 +96,7 @@ const ExtensionRequest = (props) => {
     const extendDate = async (e) => {
         try {
             e.preventDefault();
-            console.log('date is ', date)
+            alert(date);
             const token = localStorage.getItem('token');
             if (!token) {
                 console.log('token not found');

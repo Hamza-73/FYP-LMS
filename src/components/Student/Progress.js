@@ -197,7 +197,6 @@ const Progress = (props) => {
         });
     }
 
-
     return (
         <>
             {!loading ? (
@@ -322,7 +321,15 @@ const Progress = (props) => {
                                         <tr>
                                             <td>Viva</td>
                                             <td>
-                                                {groupDetails.group.viva && groupDetails.group.viva.vivaDate ? (new Date(groupDetails.group.viva.vivaDate) > new Date() ? 'Pending' : 'Taken') : '----'}
+                                                {
+                                                    groupDetails.group.vivaDate ?
+                                                        (
+                                                            new Date() < new Date(groupDetails.group.vivaDate) ?
+                                                                new Date(groupDetails.group.vivaDate).toISOString().split('T')[0] :
+                                                                "Taken"
+                                                        ) :
+                                                        "Pending"
+                                                }
                                             </td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>

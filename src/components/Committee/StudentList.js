@@ -469,7 +469,7 @@ const StudentList = (props) => {
                 <form onSubmit={editMode ? handleEdit : handleRegister}>
                   <div className="col">
                     <label htmlFor="name" className="form-label">
-                      First Name
+                      Name
                     </label>
                     <div className="input-group">
                       <span className="input-group-text">

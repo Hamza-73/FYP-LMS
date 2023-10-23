@@ -229,7 +229,6 @@ router.delete('/delete-meeting/:id', async (req, res) => {
     }
     return res.json({success:true , message:"Canceled"})
 
-    return res.json({ success: true, message: 'Meeting Cancelled successfully' });
   } catch (error) {
     console.error('error in deleting ', error);
     res.status(500).json({ success: false, message: 'Internal server error' });

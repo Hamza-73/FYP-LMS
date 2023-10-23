@@ -20,8 +20,6 @@ const External = require('../../models/External');
 router.post('/schedule-viva', async (req, res) => {
   try {
     const { projectTitle, vivaDate, vivaTime, external, internal } = req.body;
-    console.log('external is ', external)
-    console.log('internal is ', internal)
 
     if (new Date(vivaDate) < new Date()) {
       return res.json({ success: false, message: "Enter a valid date" })
@@ -45,7 +43,7 @@ router.post('/schedule-viva', async (req, res) => {
       return res.status(404).json({ success: false, message: 'External Member not found' });
     }
 
-    const parsedDate = moment(vivaDate, 'DD-MM-YYYY').toDate();
+    const parsedDate = moment.utc(vivaDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
 
     const internalMember = await Supervisor.findOne({ username: internal })
     if (!internalMember) {
@@ -101,16 +99,17 @@ router.post('/schedule-viva', async (req, res) => {
         group: group._id,
         projectTitle: project.projectTitle,
         supervisor: group.supervisorId,
+        sup : group.supervisor,
         students: Array.from(project.students).map(student => ({
           studentId: student.userId,
           name: student.name,
           rollNo: student.rollNo
         })),
-        vivaDate: new Date(parsedDate), vivaTime: vivaTime,
+        vivaDate: parsedDate, vivaTime: vivaTime,
         external: external, internal: internal
       });
       group.viva = viva._id;
-      group.vivaDate = new Date(parsedDate);
+      group.vivaDate = parsedDate;
       group.external = external;
       group.vivaTime = vivaTime;
       group.internal = internal;
@@ -153,9 +152,15 @@ router.put('/edit', async (req, res) => {
   try {
     const { projectTitle, vivaDate, vivaTime, external, internal } = req.body;
     // Use findOneAndUpdate to find and update the document
+    console.log('date is ', vivaDate);
+    console.log('internal is ', internal)
+    console.log('external is ', external)
+    const parsedDate = moment.utc(vivaDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
+    console.log('parsed date is ', parsedDate)
     const updatedViva = await Viva.findOneAndUpdate(
       { projectTitle: projectTitle },
-      { vivaDate: vivaDate, vivaTime: vivaTime },
+      { vivaDate: parsedDate, vivaTime: vivaTime },
+      { internal : internal , external : external },
       { new: true }
     );
 
@@ -200,7 +205,6 @@ router.put('/edit', async (req, res) => {
       await externalMember.save()
     }
 
-    const parsedDate = moment(vivaDate, 'DD-MM-YYYY').toDate();
     if (internal && !group.internal === internal) {
       console.log('internal exist', exist);
 
@@ -231,7 +235,7 @@ router.put('/edit', async (req, res) => {
     updatedViva.external = external;
     updatedViva.internal = internal;
     await updatedViva.save();
-    group.vivaDate = vivaDate? vivaDate : group.vivaDate; group.vivaTime = vivaTime;
+    group.vivaDate = vivaDate? parsedDate : group.vivaDate; group.vivaTime = vivaTime;
     group.external = external; group.internal = internal;
     await group.save();
 
@@ -241,7 +245,7 @@ router.put('/edit', async (req, res) => {
         if (!student) {
           return;
         }
-        student.vivaDate = vivaDate;
+        student.vivaDate = parsedDate;
         student.unseenNotifications.push({
           type: "Important",
           message: `Viva Date has been changed by the Committee 

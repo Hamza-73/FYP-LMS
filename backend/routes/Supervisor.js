@@ -820,13 +820,17 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
 router.put('/editProposal/:projectId', authenticateUser, async (req, res) => {
   try {
     const supervisor = await Supervisor.findOne({ _id: req.user.id });
-    const updatedDetails = req.body;
+    let updatedDetails = req.body;
     const { projectId } = req.params;
 
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-
+    if(supervisor.slots<=0){
+      if(updatedDetails.active){
+        updatedDetails.active = false;
+      }
+    }
     const idea = await ProjectRequest.findByIdAndUpdate({ _id: projectId }, updatedDetails, { new: true });
     if (!idea) {
       return res.status(404).json({ success: false, message: 'Project Idea not found' });
