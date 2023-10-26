@@ -15,37 +15,31 @@ const Progress = (props) => {
     const [review] = useState(props.review); // assuming review is a prop passed to your component
     const [meetingReport, setMeetingReport] = useState([
         {
-            id: "1",
             date: "2023-10-1",
             review: true,
             value: 4
         },
         {
-            id: "2",
             date: "2023-9-4",
             review: false,
             value: 2
         },
         {
-            id: "3",
             date: "2023-10-15",
             review: false,
             value: 5
-        }, ,
+        }, 
         {
-            id: "2",
             date: "2023-9-4",
             review: false,
             value: 2
         },
         {
-            id: "3",
             date: "2023-8-5",
             review: true,
             value: 5
         },
         {
-            id: "3",
             date: "2023-11-5",
             review: true,
             value: 5
@@ -147,7 +141,7 @@ const Progress = (props) => {
             if (json) {
                 console.log('group detail is ', json);
                 setGroupDetails(json);
-                setMeetingReport(json.group.meetingReport); // Set meetingReport state with the fetched data
+                setMeetingReport(json.group.meetings); // Set meetingReport state with the fetched data
             }
             if (json.success && json.message) {
                 NotificationManager.success(json.message);

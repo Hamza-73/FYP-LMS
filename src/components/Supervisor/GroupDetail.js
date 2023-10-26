@@ -125,6 +125,8 @@ const GroupDetail = () => {
     setGroupId('');
   }
 
+  const [comment, setComment] = useState('')
+
   const currentGroup = group.groups.length > 0 ? group.groups[currentIndex] : {};
   return (
     <div>
@@ -142,6 +144,12 @@ const GroupDetail = () => {
                 <div className="modal-body">
                   <>
                     <form onSubmit={giveReviews}>
+                      <div className="mb-3">
+                        <label htmlFor="exampleInputEmail163" className="form-label">
+                          Comment
+                        </label>
+                        <textarea className="form-control" id="text" name="text" value={comment} disabled={true} />
+                      </div>
                       <div className="mb-3">
                         <label htmlFor="exampleInputEmail163" className="form-label">
                           Review
@@ -240,8 +248,9 @@ const GroupDetail = () => {
                             data-bs-target="#exampleModal"
                             onClick={() => {
                               setGroupId(currentGroup._id);
+                              setComment(doc.comment)
                               setReview({ index: docKey, text: doc.review });
-                            }}>Reviews</button>
+                            }}>Reviews/Comment</button>
                         </div>
                       </div>
                     ))

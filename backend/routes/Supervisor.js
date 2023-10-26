@@ -673,7 +673,7 @@ router.post('/send-project-idea', authenticateUser, async (req, res) => {
     const projectRequest = new ProjectRequest({
       supervisor: supervisor._id,
       projectTitle, description,
-      scope, status: false, active: supervisor.slots<=0 ?  false : active
+      scope, status: false, active: supervisor.slots <= 0 ? false : active
     });
 
     await projectRequest.save();
@@ -775,7 +775,7 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
 // Give marks
 router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
   try {
-    const { marks, external , internal , hod } = req.body;
+    const { marks, external, internal, hod } = req.body;
     const { groupId } = req.params;
 
     const group = await Group.findById(groupId);
@@ -786,11 +786,14 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
     if (!group.proposal || !group.documentation) {
       return res.status(500).json({ success: false, message: 'One of the Documentation is Pending' });
     }
-    if (group.vivaDate > new Date()) {
+    if (!group.vivaDate) {
+      return res.json({ success: false, message: "Marks will be given only when Viva is being taken" })
+    }
+    if (new Date(group.vivaDate) > new Date()) {
       return res.status(201).json({ success: false, message: 'VIVA has not been taken yet' });
     }
 
-    group.marks = marks; group.externalMarks = external; group.hodMarks = hod , group.internalMarks = internal;
+    group.marks = marks; group.externalMarks = external; group.hodMarks = hod, group.internalMarks = internal;
     group.projects.map(project => {
       console.log(' project is ', project);
       project.students.map(async student => {
@@ -826,8 +829,8 @@ router.put('/editProposal/:projectId', authenticateUser, async (req, res) => {
     if (!supervisor) {
       return res.status(404).json({ success: false, message: 'Supervisor not found' });
     }
-    if(supervisor.slots<=0){
-      if(updatedDetails.active){
+    if (supervisor.slots <= 0) {
+      if (updatedDetails.active) {
         updatedDetails.active = false;
       }
     }
@@ -1084,7 +1087,7 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
       return !request.requestId.equals(requestId)
     });
 
-    group.extensionRequest[0].isresponded = true ;
+    group.extensionRequest[0].isresponded = true;
 
     await Promise.all([supervisor.save(), group.save()]);
 
@@ -1095,7 +1098,7 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
         sup.requests.push({
           group: request[0].group,
           supervisor: supervisor.name,
-          reason : request[0].reason
+          reason: request[0].reason
         });
         await sup.save();
       });
@@ -1103,7 +1106,7 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
         sup.requests.push({
           group: request[0].group,
           supervisor: supervisor.name,
-          reason : request[0].reason
+          reason: request[0].reason
         });
         await sup.save();
       });

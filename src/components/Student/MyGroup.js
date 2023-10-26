@@ -113,8 +113,16 @@ const MyGroup = (props) => {
     }
   }
 
-  const allowedFileTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'video/mp4'];
-  const maxFileSize = 20 * 1024 * 1024; // 5 MB in bytes
+  const allowedFileTypes = [
+    'application/pdf', 
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+    'image/jpeg', 
+    'image/png', 
+    'video/mp4',
+    'application/zip',  // ZIP files
+    'application/msword' // DOC files
+  ];
+  const maxFileSize = 5 * 1024 * 1024; // 5 MB in bytes
 
   const upload = async (e) => {
     e.preventDefault();
@@ -125,7 +133,7 @@ const MyGroup = (props) => {
       }
       const formData = new FormData();
       formData.append('doc', file); // Make sure to match the field name with your backend route
-
+      formData.append('comment', comment);
       console.log('form data is ', formData);
 
       // Check if the selected file type is allowed
@@ -154,11 +162,13 @@ const MyGroup = (props) => {
         NotificationManager.error(json.message);
       }
       if (json.success) {
-        NotificationManager.success('File Uploaded successfully');
+        handleCloseModal("exampleModal")
+          NotificationManager.success('File Uploaded successfully');
         // Update the state with the uploaded file URL
         const newDocument = {
           docLink: json.url, // Document URL
-          review: '', // Empty review
+          review: '', // Empty review,
+          comment:""
         };
 
         setGroupDetails((prevGroup) => ({
@@ -169,7 +179,6 @@ const MyGroup = (props) => {
           },
         }));
         setFile();
-        handleCloseModal("exampleModal")
       }
     } catch (error) {
       console.log('error in uploading file', error);
@@ -246,6 +255,8 @@ const MyGroup = (props) => {
 `
   const [review, setReview] = useState('');
   const [reason, setReason] = useState('');
+  const [comment, setComment] = useState('');
+  const [newComment, setnewComment] = useState('');
 
   return (
     <div>
@@ -254,14 +265,26 @@ const MyGroup = (props) => {
           <div className="modal-content">
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel">Upload Documentation</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={()=>{
+                setComment(""); setFile(null)
+              }}></button>
             </div>
             <div className="modal-body">
               <>
                 <form onSubmit={upload}>
+                  <div className="mb-3">
+                    <label htmlFor="comment">Comment</label>
+                    <br />
+                    <textarea name="comment" id="" className='form-input' value={comment} onChange={(e) => {
+                      setComment(e.target.value)
+                    }}></textarea>
+                  </div>
+                  <br />
                   <input type="file" onChange={(e) => { handleFileChange(e) }} />
                   <div className="modal-footer">
-                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>
+                    <button type="submit" disabled={
+                      !comment || !file
+                    } className="btn" style={{ background: "maroon", color: "white" }}>
                       Submit
                     </button>
                   </div>
@@ -283,6 +306,8 @@ const MyGroup = (props) => {
               <>
                 <form>
                   <textarea className='form-control' value={review ? review : "No Reviews Yet"} />
+                  <br />
+                  <textarea className='form-control' value={newComment ? newComment : ""} />
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
                   </div>
@@ -318,80 +343,6 @@ const MyGroup = (props) => {
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
           group.group ? <>
-            {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
-              <div className="notify" style={{ position: "absolute", right: "30%", bottom: "3px" }}>
-                <style>{myStyle}</style>
-                <div>
-                  <div>
-                    <div>
-                      <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
-                        <div className="contaner">
-                          <h4 className='text-center'>Meeting</h4>
-                          <div className="items">
-                            <h5>Time</h5>
-                            <h6>{group.group.meetingTime ? group.group.meetingTime : "==="}</h6>
-                          </div>
-                          <div className="items">
-                            <h5>Date</h5>
-                            <h6>
-                              {group.group.meetingDate
-                                ? new Date(group.group.meetingDate).toLocaleDateString(
-                                  'en-US'
-                                )
-                                : '----'}
-                            </h6>
-                          </div>
-                          {group.group.meetingLink && (
-                            <div className="items">
-                              <h5>Link</h5>
-                              <a
-                                href={
-                                  group.group.meetingLink.startsWith('http')
-                                    ? group.group.meetingLink
-                                    : `http://${group.group.meetingLink}`
-                                }
-                                target="_blank"
-                              >
-                                Link
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>}
-
-            {group.group.viva && group.group.viva.vivaDate &&
-              <div className="notify" style={{ position: "absolute", right: "50%", bottom: "3px" }}>
-                <style>{myStyle}</style>
-                <div>
-                  <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
-                    <div className="contaner">
-                      <h4 className='text-center'>Viva</h4>
-                      <div className="items">
-                        <h5>Date</h5>
-                        <h6>{group.group.viva.vivaDate && new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
-                      </div>
-                      <div className="items">
-                        <h5>Time</h5>
-                        <h6>{group.group.viva.vivaTime && group.group.viva.vivaTime} </h6>
-                      </div><div className="items">
-                        <h5>Internal</h5>
-                        <h6>{group.group.viva.internal} </h6>
-                      </div><div className="items">
-                        <h5>External</h5>
-                        <h6>{group.group.viva.external} </h6>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
-
-
             <div className="upperpart">
               <div className="proj-detail d-flex justify-content-between">
                 <h4>
@@ -448,6 +399,81 @@ const MyGroup = (props) => {
             </div>
 
             <div className="last">
+              {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
+                <div className="notify">
+                  <style>{myStyle}</style>
+                  <div>
+                    <div>
+                      <div>
+                        <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
+                          <div className="contaner">
+                            <h4 className='text-center'>Meeting</h4>
+                            <div className="items">
+                              <h5>Time</h5>
+                              <h6>{group.group.meetingTime ? group.group.meetingTime : "==="}</h6>
+                            </div>
+                            <div className="items">
+                              <h5>Date</h5>
+                              <h6>
+                                {group.group.meetingDate
+                                  ? new Date(group.group.meetingDate).toLocaleDateString(
+                                    'en-US'
+                                  )
+                                  : '----'}
+                              </h6>
+                            </div>
+                            <div className="items">
+                              <h5>Purpose</h5>
+                              <textarea name="" id="" value={group.meetingPurpose?group.meetingPurpose:""}></textarea>
+                            </div>
+                            {group.group.meetingLink && (
+                              <div className="items">
+                                <h5>Link</h5>
+                                <a
+                                  href={
+                                    group.group.meetingLink.startsWith('http')
+                                      ? group.group.meetingLink
+                                      : `http://${group.group.meetingLink}`
+                                  }
+                                  target="_blank"
+                                >
+                                  Link
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>}
+              {group.group.viva && group.group.viva.vivaDate &&
+                <div className="notify" style={{ position: "absolute", right: "50%", bottom: "3px" }}>
+                  <style>{myStyle}</style>
+                  <div>
+                    <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
+                      <div className="contaner">
+                        <h4 className='text-center'>Viva</h4>
+                        <div className="items">
+                          <h5>Date</h5>
+                          <h6>{group.group.viva.vivaDate && new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
+                        </div>
+                        <div className="items">
+                          <h5>Time</h5>
+                          <h6>{group.group.viva.vivaTime && group.group.viva.vivaTime} </h6>
+                        </div><div className="items">
+                          <h5>Internal</h5>
+                          <h6>{group.group.viva.internal} </h6>
+                        </div><div className="items">
+                          <h5>External</h5>
+                          <h6>{group.group.viva.external} </h6>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
               <div className="meeting-row">
                 {group.group &&
                   group.group.docs &&
@@ -460,7 +486,7 @@ const MyGroup = (props) => {
                           <a target="_blank" href={grp.docLink}>
                             View Uploaded Doc
                           </a>
-                          <button className="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal1" onClick={() => setReview(grp.review)}>Review</button>
+                          <button className="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal1" onClick={() =>{ setReview(grp.review); setnewComment(grp.comment)}}>Review</button>
                         </div>
                       </div>
                     );

@@ -95,6 +95,7 @@ router.post('/upload', authenticateUser, async (req, res) => {
 router.post('/doc', authenticateUser, async (req, res) => {
   try {
     // Check if the user belongs to the specified group
+    const { comment } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'Student Not Found' });
@@ -114,7 +115,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
       groupUpdate.docs = []
     }
     groupUpdate.docs.push({
-      docLink: result.url, review: ""
+      docLink: result.url, review: "", comment: comment
     });
     await groupUpdate.save();
 
@@ -661,7 +662,8 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       docDate: group.docDate, propDate: group.propDate,
       propSub: group.propSub, docSub: group.docSub, vivaDate: group.vivaDate,
       viva: viva, meetingReport: group.meetingReport,
-      instructions: group.instructions,
+      meetings: group.meetings,
+      instructions: group.instructions, purpose: group.meetingPurpose,
       docs: group.docs,
       internalMarks: group.internalMarks, externalMarks: group.externalMarks,
       marks: group.marks, hodMarks: group.hodMarks,
@@ -1040,11 +1042,11 @@ router.post('/extension', authenticateUser, async (req, res) => {
     }
 
     if (!group.propDate) {
-      return res.status(500).json({ success: false, message: 'The Date for proposal has not been announced so you cannot send extension request' });
+      return res.status(500).json({ success: false, message: 'No Date for Submission has been announced yet.' });
     }
 
     if (!group.docDate) {
-      return res.status(500).json({ success: false, message: 'The Date for Documentation has not been announced so you cannot send extension request' });
+      return res.status(500).json({ success: false, message: 'Extension is acceptable only for Documentation' });
     }
 
     if (group.documentation) {

@@ -86,8 +86,9 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     group.meetingDate = parsedDate;
     group.meetingTime = time;
     group.meetingLink = meetingLink;
+    group.meetingPurpose = purpose;
     group.meetingReport.push({
-      id: meeting._id, date: parsedDate, review: 0
+      id: meeting._id, date: parsedDate, review: null
     });
     await group.save()
     const messageToSupervisor = `You scheduled a meeting with group ${projectTitle}`;
@@ -272,6 +273,11 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
     }
 
     // Update the review
+    group.meetings.push({
+      date : group.meetingReport[index].date ,
+      review : review,
+      value: review? 5 : 3
+    })
     group.meetingReport[index].review = review;
     if (review) {
       group.meetingReport[index].value = 5;

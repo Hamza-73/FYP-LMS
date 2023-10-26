@@ -12,16 +12,6 @@ const adminSchema = new Schema({
         name: {type: String},
         rollNo: {type: String}
     }],
-    CumRequests: [{
-        userId: {type: Schema.Types.ObjectId, ref: 'Student' },
-        name: {type: String},
-        designation: {type: String}
-    }],
-    supRequests: [{
-        userId: {type: Schema.Types.ObjectId, ref: 'Student' },
-        name: {type: String},
-        designation: {type: String}
-    }]
 });
 
 module.exports = mongoose.model('Admin', adminSchema);

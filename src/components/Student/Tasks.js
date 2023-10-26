@@ -20,8 +20,16 @@ const Tasks = (props) => {
   });
   const [loading, setLoading] = useState(false);
 
-  const allowedFileTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'video/mp4'];
-  const maxFileSize = 20 * 1024 * 1024;
+  const allowedFileTypes = [
+    'application/pdf', 
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+    'image/jpeg', 
+    'image/png', 
+    'video/mp4',
+    'application/zip',  // ZIP files
+    'application/msword' // DOC files
+  ];
+  const maxFileSize = 5 * 1024 * 1024;
 
   const upload = async (type) => {
     try {
@@ -59,13 +67,7 @@ const Tasks = (props) => {
       console.log('response in uploading proposal is', json);
       if (json.success) {
         NotificationManager.success('file Uploaded Successfully');
-        setGroupDetails(prevGroup => ({
-          ...prevGroup,
-          group: {
-            ...prevGroup.group,
-            [type === 'proposal' ? 'proposal' : 'documentation']: json.url,
-          },
-        }));
+        groupDetail()
       }
     } catch (error) {
       console.log('error in uploading file', error);
@@ -262,8 +264,8 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   <div className="boxes d-flex justify-content-evenly">
-                    <div>Grading Status</div>
-                    <div>{group.group.marks ? 'Graded' : 'Not Graded'}</div>
+                    <div>Submission Date</div>
+                    <div>{group.group.propSub ? new Date(group.group.propSub).toISOString().split('T')[0] : '----'}</div>
                   </div>
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>
@@ -328,8 +330,8 @@ const Tasks = (props) => {
                     </div>
                   </div>
                   <div className="boxes d-flex justify-content-evenly">
-                    <div>Grading Status</div>
-                    <div>{group.group.marks ? 'Graded' : 'Not Graded'}</div>
+                    <div>Submission Date</div>
+                    <div>{group.group.docSub ? new Date(group.group.docSub).toISOString().split('T')[0] : '----'}</div>
                   </div>
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>

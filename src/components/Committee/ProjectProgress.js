@@ -129,6 +129,11 @@ const ProjectProgress = (props) => {
       .forEach(el => el.classList.remove("modal-backdrop"));
   }
 
+  const [showDeadlineHistory, setShowDeadlineHistory] = useState(false);
+  const toggleDeadlineHistory = () => {
+    setShowDeadlineHistory(!showDeadlineHistory);
+  };
+
   return (
     <div>
       <div>
@@ -172,27 +177,39 @@ const ProjectProgress = (props) => {
       {loading ? <Loading /> : <>
         {group.groups.length > 0 ? (
           <>
-            {(userData.member.propDate || userData.member.docDate) && <div>
-              <style>{myStyle}</style>
-              <div>
-                <div>
-                  <div className="meeting-box" style={{ width: "200px", position:"absolute", right:"10px", top
-                :"3.7rem" }}>
-                    <div className="container">
-                      <p>Deadlines History</p>
-                      {userData.member.propDate && <div className='items'>
-                        <h6>Proposal :</h6>
-                        <p>{userData.member.propDate}</p>
-                      </div>}
-                      {userData.member.docDate && <div className='items'>
-                        <h6>Documentation :</h6>
-                        <p>{userData.member.docDate}</p>
-                      </div>}
+            {(userData.member.propDate || userData.member.docDate) && <button
+              className="btn btn-secondary"
+              style={{ position: "absolute", top: "82px", right: "15rem", background: "maroon", color: "white" }}
+              onClick={toggleDeadlineHistory}
+            >
+              {showDeadlineHistory ? "Hide Deadline History" : "Show Deadline History"}
+            </button>}
+            {showDeadlineHistory &&
+              <>{
+                (userData.member.propDate || userData.member.docDate) && <div>
+                  <style>{myStyle}</style>
+                  <div>
+                    <div>
+                      <div className="meeting-box" style={{
+                        width: "200px", position: "absolute", right: "10px", top
+                          : "3.7rem"
+                      }}>
+                        <div className="container">
+                          <p>Deadlines History</p>
+                          {userData.member.propDate && <div className='items' style={{ fontSize: "12px" }}>
+                            <p>Proposal :</p>
+                            <p>{new Date(userData.member.propDate).toISOString().split('T')[0]}</p>
+                          </div>}
+                          {userData.member.docDate && <div className='items' style={{ fontSize: "12px" }}>
+                            <p>Documentation :</p>
+                            <p>{new Date(userData.member.docDate).toISOString().split('T')[0]}</p>
+                          </div>}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>}
+              }</>}
 
             <h3 className='text-center my-4'>Pending Project</h3>
             <div className='container' style={{ width: "100%" }}>
