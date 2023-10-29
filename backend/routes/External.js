@@ -36,18 +36,34 @@ router.post('/create', [
 });
 
 
-// Route to update student details
+// Route to update external student details
 router.put('/edit/:id', async (req, res) => {
     const studentId = req.params.id;
     const updatedDetails = req.body;
+    
     try {
-        const updatedStudent = await External.findByIdAndUpdate(studentId, updatedDetails, { new: true });
-        if (!updatedStudent) {
-            return res.status(404).json({ message: 'External not found' });
+        // Check if the updated username or email already exists for another external student
+        const existingExternalStudent = await External.findOne({
+            $or: [
+                { username: updatedDetails.username },
+                { email: updatedDetails.email }
+            ]
+        });
+
+        if (existingExternalStudent && existingExternalStudent._id.toString() !== studentId) {
+            return res.status(400).json({ success: false, message: "Username or Email already exists for another external student." });
         }
-        res.status(200).json({ success: true, message: "Edited Successfully", updatedStudent });
+
+        // Update external student details
+        const updatedExternalStudent = await External.findByIdAndUpdate(studentId, updatedDetails, { new: true });
+
+        if (!updatedExternalStudent) {
+            return res.status(404).json({ success: false, message: 'External student not found' });
+        }
+
+        res.status(200).json({ success: true, message: "Edited Successfully", updatedStudent: updatedExternalStudent });
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
 

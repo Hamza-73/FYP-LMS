@@ -413,22 +413,6 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// Get Supervisor
-router.get('/my-supervisor', async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const user = await User.findById(userId).populate('supervisor');
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    const supervisor = user.supervisor;
-    res.json({ success: true, supervisor });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
 
 // User sends a project request to a supervisor
 router.post('/send-project-request', authenticateUser, async (req, res) => {
@@ -606,34 +590,50 @@ router.put('/edit/:id', async (req, res) => {
   const updatedDetails = req.body;
 
   try {
-    const student = await User.findById(studentId);
-    if (student) {
-      if (student.group) {
-        const group = await Group.findById(student.group)
-        if (!group) {
-          return;
-        }
-        group.projects.map(proj => {
-          proj.students.map(async stu => {
-            if (stu.userId.equals(studentId)) {
-              stu.name = updatedDetails.name; // Update the name
-              stu.rollNo = updatedDetails.rollNo; // Update the rollNo
-              await group.save()
-            }
-          })
-        })
-      }
+    // Check if the updated username or email already exists for another student
+    const existingStudent = await User.findOne({
+      $or: [
+        { username: updatedDetails.username },
+        { email: updatedDetails.email },
+        { rollNo: updatedDetails.rollNo },
+        { cnic: updatedDetails.cnic }
+      ]
+    });
 
+    if (existingStudent && existingStudent._id.toString() !== studentId) {
+      return res.status(400).json({ success: false, message: "Roll No., Cnic, Email, Username should be unique." });
     }
+
+    // Update student details
     const updatedStudent = await User.findByIdAndUpdate(studentId, updatedDetails, { new: true });
+
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
     }
-    res.status(200).json(updatedStudent);
+
+    // Logic to update student details in related group
+    const student = await User.findById(studentId);
+    if (student && student.group) {
+      const group = await Group.findById(student.group);
+      if (group) {
+        group.projects.forEach(proj => {
+          proj.students.forEach(stu => {
+            if (stu.userId.equals(studentId)) {
+              stu.name = updatedDetails.name; // Update the name
+              stu.rollNo = updatedDetails.rollNo; // Update the rollNo
+            }
+          });
+        });
+        await group.save();
+      }
+    }
+
+    return res.status(200).json({ success: true, message: "Edited Successfully" });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 router.get('/my-group', authenticateUser, async (req, res) => {
@@ -788,8 +788,10 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
     // Remove the request from the student's request array
     const filterRequests = user.requests.filter(reqId => !reqId.equals(projectId));
     user.requests = filterRequests;
-    await user.save()
-
+    await user.save();
+    if (supervisor.slots <= 0) {
+      return res.json({ success: false, message: "Superisor's Slots Are Full So Look For Another Supervisor" })
+    }
     if (action === 'accept') {
       console.log('accape code starts');
       // Check if a group with the same title exists
@@ -1053,7 +1055,7 @@ router.post('/extension', authenticateUser, async (req, res) => {
       return res.status(500).json({ success: false, message: `You've already submitted documentation` });
     }
 
-    if (!new Date(group.docDate) < new Date()) {
+    if (new Date(group.docDate) > new Date()) {
       return res.json({ success: false, message: "You cannot send extension request untill the documentation date has not been passed" })
     }
 
@@ -1102,6 +1104,18 @@ router.post('/extension', authenticateUser, async (req, res) => {
   } catch (error) {
     console.error('error in sending extension request', error);
     return res.json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+// Route to get all students' rollNo and filter those who are not members
+router.get('/rollNo', async (req, res) => {
+  try {
+    const students = await User.find({ isMember: false }, 'rollNo'); // Retrieve students with isMember set to false, and only select rollNo field
+    const rollNumbers = students.map(student => student.rollNo); // Extract rollNo from the filtered students
+    res.status(200).json(rollNumbers); // Send the roll numbers in the response
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

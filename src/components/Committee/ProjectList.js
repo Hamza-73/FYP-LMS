@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const ProjectList = (props) => {
 
@@ -30,11 +31,7 @@ const ProjectList = (props) => {
     } catch (error) {
     }
   }
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
+
   const giveRemarks = async (id) => {
     try {
       const response = await fetch(`http://localhost:5000/committee/remarks/${id}`,
@@ -62,7 +59,7 @@ const ProjectList = (props) => {
       await giveRemarks(id);
       setRemarks('')
       getProjects();
-      handleCloseModal("exampleModal")
+      setShow(false);
     } catch (error) {
       console.log(' useerror is ', error)
     }
@@ -119,33 +116,33 @@ const ProjectList = (props) => {
   const location = useLocation();
   const path = ['/studentMain/project', '/studentMain'];
   const showSidebar = path.includes(location.pathname);
+
+  const [show, setShow] = useState(false);
+
   return (
     <>
       <div>
         <div className="remarks"  >
-          <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div className="modal-dialog" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title" >Give Reamrks</h5>
-                </div>
-                <div className="modal-body">
-                  <form onSubmit={(e) => handleRemarks(e, selectedGroupId)}>
+          <Modal show={show} onHide={() => {
+            setShow(false);
+          }}>
+            <Modal.Header className="modal-header">
+              <Modal.Title >Give Reamrks</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="modal-body">
+              <form onSubmit={(e) => handleRemarks(e, selectedGroupId)}>
 
-                    <div className="mb-3">
-                      <label htmlFor="remrks" className="form-label">Remarks</label>
-                      <textarea className="form-control" id="remarks" name='remarks' value={remarks} onChange={(e) => setRemarks(e.target.value)} />
-                    </div>
-                    <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setRemarks('')}>Close</button>
-                      <button type="submit" className="btn btn-success" disabled={!remarks}> Give Remarks </button>
-                    </div>
-                  </form>
+                <div className="mb-3">
+                  <label htmlFor="remrks" className="form-label">Remarks</label>
+                  <textarea className="form-control" id="remarks" name='remarks' value={remarks} onChange={(e) => setRemarks(e.target.value)} />
                 </div>
-
-              </div>
-            </div>
-          </div>
+                <Modal.Footer className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => { setRemarks(''); setShow(false) }}>Close</button>
+                  <button type="submit" className="btn btn-success" disabled={!remarks}> Give Remarks </button>
+                </Modal.Footer>
+              </form>
+            </Modal.Body>
+          </Modal>
         </div>
 
       </div>
@@ -197,8 +194,8 @@ const ProjectList = (props) => {
                           </div>
                         </td>
                         <td>{group.projectTitle}</td>
-                        <td>{group.remarks} {!showSidebar && userData.member.isAdmin && <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal">
-                          <i className="fa-solid fa-pen-to-square" onClick={() => setSelectedGroupId(group.groupId)}></i>
+                        <td>{group.remarks} {!showSidebar && userData.member.isAdmin && <div style={{ cursor: "pointer" }} >
+                          <i className="fa-solid fa-pen-to-square" onClick={() => { setSelectedGroupId(group.groupId); setShow(true) }}></i>
                         </div>}
                         </td>
                       </tr>

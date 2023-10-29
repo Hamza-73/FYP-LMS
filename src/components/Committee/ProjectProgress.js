@@ -5,6 +5,7 @@ import 'react-notifications/lib/notifications.css';
 import Calendar from 'react-calendar';
 import TimePicker from 'react-time-picker';
 import Loading from '../Loading';
+import { Modal } from 'react-bootstrap';
 
 const ProjectProgress = (props) => {
   const [group, setGroup] = useState({ groups: [] });
@@ -41,15 +42,15 @@ const ProjectProgress = (props) => {
       const response = await fetch(`http://localhost:5000/committee/dueDate`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization" : localStorage.getItem("token")
         },
         body: JSON.stringify({ dueDate: deadline.date, type: deadline.type, instructions: deadline.instructions })
       });
       const json = await response.json();
       if (json)
         alert(json.message);
-      handleCloseModal("exampleModal")
-
+      setShow(false);
     } catch (error) {
       console.log(`Some error occurred: ${error}`);
     }
@@ -123,55 +124,50 @@ const ProjectProgress = (props) => {
     color: #007bff;
   }
   `
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
 
   const [showDeadlineHistory, setShowDeadlineHistory] = useState(false);
   const toggleDeadlineHistory = () => {
     setShowDeadlineHistory(!showDeadlineHistory);
   };
 
+  const [show, setShow] = useState(false);
+
   return (
     <div>
       <div>
         <div className="Deadline"  >
-          <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div className="modal-dialog" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title" >Upload Deadline</h5>
+          <Modal show={show} onHide={() => {
+            setShow(false);
+          }}>
+            <Modal.Header className="modal-header">
+              <Modal.Title className="modal-title" >Upload Deadline</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="modal-body">
+              <form onSubmit={(e) => handleDate(e)}>
+                <div className="mb-3">
+                  <label htmlFor="remrks" className="form-label">Type</label>
+                  <select className="form-control" id="type" name='type' value={deadline.type} onChange={handleChange}>
+                    <option value="">Select Type</option>
+                    {typeOptions.map((option, index) => (
+                      <option key={index} value={option}>{option[0].toUpperCase() + option.slice(1, option.length)}</option>
+                    ))}
+                  </select>
                 </div>
-                <div className="modal-body">
-                  <form onSubmit={(e) => handleDate(e)}>
-                    <div className="mb-3">
-                      <label htmlFor="remrks" className="form-label">Type</label>
-                      <select className="form-control" id="type" name='type' value={deadline.type} onChange={handleChange}>
-                        <option value="">Select Type</option>
-                        {typeOptions.map((option, index) => (
-                          <option key={index} value={option}>{option[0].toUpperCase() + option.slice(1, option.length)}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="remrks" className="form-label">date</label>
-                      <input type='date' className="form-control" id="date" name='date' value={deadline.date} onChange={handleChange} />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="remrks" className="form-label">Instructions</label>
-                      <textarea type='text' className="form-control" id="instructions" name='instructions' value={deadline.instructions} onChange={handleChange} />
-                    </div>
-                    <div className="modal-footer">
-                      <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={(e) => { setdeadline({ type: "", dueDate: "", instructions: "" }); }}>Close</button>
-                      <button type="submit" className="btn btn-success" disabled={!deadline.type || !deadline.date}> Add deadline </button>
-                    </div>
-                  </form>
+                <div className="mb-3">
+                  <label htmlFor="remrks" className="form-label">date</label>
+                  <input type='date' className="form-control" id="date" name='date' value={deadline.date} onChange={handleChange} />
                 </div>
-              </div>
-            </div>
-          </div>
+                <div className="mb-3">
+                  <label htmlFor="remrks" className="form-label">Instructions</label>
+                  <textarea type='text' className="form-control" id="instructions" name='instructions' value={deadline.instructions} onChange={handleChange} />
+                </div>
+                <Modal.Footer className="modal-footer">
+                  <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={(e) => { setdeadline({ type: "", dueDate: "", instructions: "" }); setShow(false); }}>Close</button>
+                  <button type="submit" className="btn btn-success" disabled={!deadline.type || !deadline.date}> Add deadline </button>
+                </Modal.Footer>
+              </form>
+            </Modal.Body>
+          </Modal>
         </div>
       </div>
       {loading ? <Loading /> : <>
@@ -261,7 +257,9 @@ const ProjectProgress = (props) => {
             </div>
             {userData.member.isAdmin && <div>
               <div className='d-grid gap-2 d-md-flex justify-content-md-end buttonCls' style={{ position: "relative", marginTop: "4%", right: "9%" }}>
-                <button className="btn" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal" >Add Date</button>
+                <button className="btn" style={{ background: "maroon", color: "white" }} onClick={() => {
+                  setShow(true);
+                }} >Add Date</button>
               </div>
             </div>}
           </>

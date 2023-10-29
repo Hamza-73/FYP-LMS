@@ -3,6 +3,7 @@ import Loading from '../Loading';
 import SideBar from '../SideBar';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const ProjectRequests = (props) => {
   const [requests, setRequests] = useState({ request: [] });
@@ -42,11 +43,6 @@ const ProjectRequests = (props) => {
     }
   }, []);
 
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
   const handleRequests = async (e) => {
     try {
       e.preventDefault();
@@ -74,7 +70,7 @@ const ProjectRequests = (props) => {
         }));
         setImprove({ projectTitle: "", scope: "", description: "" });
         NotificationManager.success(json.message, '', 1000);
-        handleCloseModal("exampleModal")
+        setShow(false);
       } else {
         NotificationManager.error(json.message, '', 1000);;
       }
@@ -148,40 +144,40 @@ const ProjectRequests = (props) => {
     setImprove({ ...improve, [e.target.name]: e.target.value });
   };
 
+  const [show, setShow] = useState(false);
+
   return (
     <div>
       <div className="imporve">
-        <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Register</h5>
+        <Modal show={show} onHide={() => {
+          setShow(false);
+        }}>
+          <Modal.Header>
+            <Modal.Title>Register</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={handleRequests}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Project Title</label>
+                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={handleRequests}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Project Title</label>
-                    <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                    <input type="text" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
-                    <textarea className="form-control" id="description" name="description" value={improve.description} onChange={handleChange} />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }} disabled={!improve.projectTitle || !improve.scope || !improve.description}>
-                      Improve Request
-                    </button>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
+                <input type="text" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
               </div>
-            </div>
-          </div>
-        </div>
+              <div className="mb-3">
+                <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
+                <textarea className="form-control" id="description" name="description" value={improve.description} onChange={handleChange} />
+              </div>
+              <Modal.Footer >
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }} disabled={!improve.projectTitle || !improve.scope || !improve.description}>
+                  Improve Request
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {!loading ? (
@@ -232,7 +228,7 @@ const ProjectRequests = (props) => {
                                   <button className="btn btn-warning btn-sm" type="button" onClick={(e) => {
                                     rejectRequest(group.requestId);
                                   }}>Reject</button>
-                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={() => setRequestId(group.requestId)}>Improve</button>
+                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} type="button" onClick={() => { setRequestId(group.requestId); setShow(true); }}>Improve</button>
                                 </div>
                               </div>
                             </td>

@@ -3,6 +3,7 @@ import Loading from '../Loading';
 import SideBar from '../SideBar';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const StuRequest = (props) => {
     const [requests, setRequests] = useState({
@@ -14,30 +15,31 @@ const StuRequest = (props) => {
     const [improve, setImprove] = useState({ projectTitle: '', scope: '', description: '' });
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const getRequests = async () => {
-            try {
-                setLoading(true);
-                const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:5000/student/getRequests', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: token,
-                    },
-                });
-                const json = await response.json();
-                console.log('ia am side bar');
-                console.log('json requests is ', json);
 
-                if (json) {
-                    setRequests(json);
-                }
-                setLoading(false);
-            } catch (error) {
-                console.log('error fetching requests', error);
+    const getRequests = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/student/getRequests', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: token,
+                },
+            });
+            const json = await response.json();
+            console.log('json requests is ', json);
+
+            if (json) {
+                setRequests(json);
             }
-        };
+            setLoading(false);
+        } catch (error) {
+            console.log('error fetching requests', error);
+        }
+    };
+
+    useEffect(() => {
         if (localStorage.getItem('token')) {
             setTimeout(() => {
                 // setLoading(true);
@@ -45,11 +47,7 @@ const StuRequest = (props) => {
             }, 1000);
         }
     }, []);
-    const handleCloseModal = (id) => {
-        document.getElementById(id).classList.remove("show", "d-block");
-        document.querySelectorAll(".modal-backdrop")
-            .forEach(el => el.classList.remove("modal-backdrop"));
-    }
+
     const handleRequests = async (e, id, action) => {
         try {
             if (choice.action === 'improve') {
@@ -74,14 +72,11 @@ const StuRequest = (props) => {
 
             if (json.message && json.success) {
                 NotificationManager.success(json.message, '', 1000);
-                // Remove the request that was acted upon from the state
-                setRequests(prevRequests => ({
-                    requests: prevRequests.requests.filter(request => request.projectId !== id)
-                }));
-                handleCloseModal("exampleModal")
+                setShow(false)
             } else {
                 NotificationManager.error(json.message, '', 1000);;
             }
+            getRequests();
         } catch (error) {
             console.log('error dealing with requests', error);
             NotificationManager.error(`Some error occured try to reload the page/ try again`, '', 1000);
@@ -92,43 +87,45 @@ const StuRequest = (props) => {
         setImprove({ ...improve, [e.target.name]: e.target.value });
     };
 
+    const [show, setShow] = useState(false);
+
     return (
         <div>
-            <div className="imporve">
-                <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Register</h5>
+            <Modal className="imporve">
+                <div show={show} onHide={() => {
+                    setShow(false);
+                }}>
+                    <Modal.Header>
+                        <Modal.Title>Register</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <form onSubmit={(e) => {
+                            handleRequests(e, choice.id, 'improve');
+                        }}>
+                            <div className="mb-3">
+                                <label htmlFor="name" className="form-label">Project Title</label>
+                                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
                             </div>
-                            <div className="modal-body">
-                                <form onSubmit={(e) => {
-                                    handleRequests(e, choice.id, 'improve');
-                                }}>
-                                    <div className="mb-3">
-                                        <label htmlFor="name" className="form-label">Project Title</label>
-                                        <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                                        <input type="text" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
-                                        <textarea className="form-control" id="description" name="description" value={improve.description} onChange={handleChange} />
-                                    </div>
-                                    <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                                        <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }} disabled={!improve.projectTitle || !improve.scope || !improve.description}>
-                                            Add Idea
-                                        </button>
-                                    </div>
-                                </form>
+                            <div className="mb-3">
+                                <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
+                                <input type="text" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
                             </div>
-                        </div>
-                    </div>
+                            <div className="mb-3">
+                                <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
+                                <textarea className="form-control" id="description" name="description" value={improve.description} onChange={handleChange} />
+                            </div>
+                            <Modal.Footer>
+                                <button type="button" className="btn btn-secondary" onClick={() => {
+                                    setShow(false);
+                                }}>Close</button>
+                                <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }} disabled={!improve.projectTitle || !improve.scope || !improve.description}>
+                                    Add Idea
+                                </button>
+                            </Modal.Footer>
+                        </form>
+                    </Modal.Body>
                 </div>
-            </div>
+            </Modal>
 
             {!loading ? (
                 <>
@@ -167,6 +164,7 @@ const StuRequest = (props) => {
                                                                 }}>Reject</button>
                                                                 <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={(e) => {
                                                                     setChoice({ action: 'improve', id: group.projectId });
+                                                                    setShow(true);
                                                                 }}>Improve</button>
                                                             </div>
                                                         </div>

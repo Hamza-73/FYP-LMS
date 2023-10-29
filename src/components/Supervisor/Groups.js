@@ -1,5 +1,6 @@
 import { current } from '@reduxjs/toolkit';
 import React, { useEffect, useState } from 'react';
+import { Modal } from 'react-bootstrap';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 
@@ -31,6 +32,7 @@ const Groups = (props) => {
 
       if (json.success) {
         NotificationManager.success(json.message);
+        setShowStudent(false);
       }
       else {
         NotificationManager.error(json.message);
@@ -62,6 +64,7 @@ const Groups = (props) => {
         NotificationManager.success(json.message);
         getGroup()
         handleClose();
+        setShow(false);
       }
       else {
         NotificationManager.error(json.message);
@@ -91,6 +94,7 @@ const Groups = (props) => {
 
   useEffect(() => {
     getGroup();
+    getRollNo();
   }, []);
 
   const handleChange1 = (e) => {
@@ -105,78 +109,99 @@ const Groups = (props) => {
     setAddStudent({ rollNo: '', projectTitle: '', });
     setGrades({ external: 0, marks: 0 });
   }
-  console.log( new Date())
-  console.log('new ', new Date("2023-10-30T19:00:00.000Z"))
-  console.log('check ', new Date() < new Date("2023-10-30T19:00:00.000Z"))
+  const [show, setShow] = useState(false);
+  const [showStudent, setShowStudent] = useState(false);
+
+  const [rollNo, setRollNo] = useState([])
+
+  const getRollNo = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/student/rollNo`, {
+        method: "GET",
+      });
+      const json = await response.json();
+      console.log('roll No are ', json)
+      setRollNo(json);
+    } catch (error) {
+
+    }
+  }
 
   return (
     <div>
       <div className="fypIdea">
-        <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Assign Grades</h5>
+        <Modal show={show} onHide={() => {
+          setShow(false);
+        }}>
+          <Modal.Header className="modal-header">
+            <Modal.Title className="modal-title">Assign Grades</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={(e) => { handleMarks(e) }}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Marks</label>
+                <input type="number" className="form-control" id="marks" min='0' max='100' name="marks" value={grades.marks} onChange={handleChange1} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={(e) => { handleMarks(e) }}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Marks</label>
-                    <input type="number" className="form-control" id="marks" min='0' max='100' name="marks" value={grades.marks} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Chair Person</label>
-                    <input type="number" className="form-control" id="marks" min='0' max='100' name="hod" value={grades.hod} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">External</label>
-                    <input type="number" className="form-control" id="marks" min='0' max='100' name="external" value={grades.external} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Internal</label>
-                    <input type="number" className="form-control" id="internal" min='0' max='100' name="internal" value={grades.internal} onChange={handleChange1} />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={handleClose}>Close</button>
-                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external || !grades.internal || !grades.hod}>
-                      Give Grades
-                    </button>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Chair Person</label>
+                <input type="number" className="form-control" id="marks" min='0' max='100' name="hod" value={grades.hod} onChange={handleChange1} />
               </div>
-            </div>
-          </div>
-        </div>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">External</label>
+                <input type="number" className="form-control" id="marks" min='0' max='100' name="external" value={grades.external} onChange={handleChange1} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="exampleInputPassword1" className="form-label">Internal</label>
+                <input type="number" className="form-control" id="internal" min='0' max='100' name="internal" value={grades.internal} onChange={handleChange1} />
+              </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                  handleClose(); setShow(false);
+                }}>Close</button>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external || !grades.internal || !grades.hod}>
+                  Give Grades
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       <div className="fypIdea">
-        <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModal" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Add Student To Existing Group</h5>
+        <Modal show={showStudent} onHide={() => {
+          setShowStudent(false);
+        }}>
+          <Modal.Header>
+            <Modal.Title>Add Student To Existing Group</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={handleAddStudent}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Project Title</label>
+                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={handleAddStudent}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Project Title</label>
-                    <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="rollNo" className="form-label">Student Roll No</label>
-                    <input type="text" className="form-control" id="rollNo" name="rollNo" value={addStudent.rollNo} onChange={handleChange} />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={handleClose}>Close</button>
-                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} >
-                      Add Student
-                    </button>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label htmlFor="rollNo" className="form-label">Student Roll No</label>
+                <select name="rollNo" id="" className='form-select' value={addStudent.rollNo} onChange={handleChange} >
+                  <option value="">Select Student</option>
+                  {
+                    rollNo && rollNo.map((student, studentKey) => {
+                      return (<option key={studentKey} value={student}>{student}</option>)
+                    })
+                  }
+                </select>
               </div>
-            </div>
-          </div>
-        </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                  handleClose(); setShowStudent(false);
+                }}>Close</button>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} >
+                  Add Student
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {current.length > 0 ? (
@@ -215,7 +240,7 @@ const Groups = (props) => {
                           <td>{group.meeting}</td>
                           <td>{group.proposal ? 'Submitted' : 'Pending'}</td>
                           <td>{group.documentation ? 'Submitted' : 'Pending'}</td>
-                          <td><button disabled={project.students.length === 2} onClick={() => setAddStudent({ projectTitle: project.projectTitle })} className="btn btn-sm" style={{ background: "maroon", color: "white" }} data-toggle="modal" data-target="#exampleModal">Add Student</button></td>
+                          <td><button disabled={project.students.length === 2} onClick={() => { setAddStudent({ projectTitle: project.projectTitle }); setShowStudent(true); }} className="btn btn-sm" style={{ background: "maroon", color: "white" }}>Add Student</button></td>
                           <td>
                             {
                               group.vivaDate ?
@@ -229,11 +254,12 @@ const Groups = (props) => {
                           </td>
 
                           <td>
-                            <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
+                            <div style={{ cursor: "pointer" }}>
                               {(group.marks && group.externalMarks && group.internalMarks && group.hodMarks) ? (group.marks + group.externalMarks + group.internalMarks + group.hodMarks) / 4 : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={() => {
                                 setGrouppId(group._id); setGrades({
                                   external: group.externalMarks, internal: group.internalMarks, hod: group.hodMarks, marks: group.marks
-                                })
+                                });
+                                setShow(true);
                               }}></i>
                             </div>
                           </td>

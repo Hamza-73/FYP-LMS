@@ -20,7 +20,7 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     const meetingDate = new Date(date); // Parse the date from the request body
 
     if (meetingDate < currentDate) {
-      return res.status(200).json({ message: `There's still a while for the Meeting` });
+      return res.status(200).json({ success: false ,message: `Invalid Date Format` });
     }
     // Check if a meeting with the same projectTitle and future meeting time exists
     const existingMeeting = await Meeting.findOne({ projectTitle: projectTitle });
@@ -294,6 +294,24 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
     // Handle errors here
     console.error('error i giving review', error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/supervisor', authenticateUser, async (req, res) => {
+  const supervisorId  = req.user.id;
+
+  try {
+    const groups = await Group.find({ supervisorId: supervisorId });
+
+    if (!groups) {
+      return res.status(404).json({ message: 'No groups found for this supervisor.' });
+    }
+    const projectTitles = groups.map(group => group.projects.map(project => project.projectTitle)).flat();
+
+    res.status(200).json({ projectTitles });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
   }
 });
 

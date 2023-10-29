@@ -258,15 +258,31 @@ router.put('/edit/:id', async (req, res) => {
   const updatedDetails = req.body;
 
   try {
+    // Check if the updated username or email already exists for another student
+    const existingStudent = await Committee.findOne({
+      $or: [
+        { username: updatedDetails.username },
+        { email: updatedDetails.email }
+      ]
+    });
+
+    if (existingStudent && existingStudent._id.toString() !== studentId) {
+      return res.status(400).json({ message: "Username or Email already exists for another student." });
+    }
+
+    // Update student details
     const updatedStudent = await Committee.findByIdAndUpdate(studentId, updatedDetails, { new: true });
+
     if (!updatedStudent) {
       return res.status(404).json({ message: 'Student not found' });
     }
-    res.status(200).json(updatedStudent);
+
+    res.status(200).json({ success: true, updatedStudent });
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 // give remarks to students
@@ -379,7 +395,7 @@ router.get('/progress', async (req, res) => {
 });
 
 // Add due date
-router.post('/dueDate', async (req, res) => {
+router.post('/dueDate', authenticateUser, async (req, res) => {
   try {
     console.log('due datw starts')
     const { type, dueDate, instructions } = req.body;
@@ -388,6 +404,30 @@ router.post('/dueDate', async (req, res) => {
     // Validate if the due date is not behind the current date
     if (newDate < currentDate) {
       return res.status(400).json({ message: "Due Date cannot be behind the current date" });
+    }
+
+    const supervisor = await Supervisor.findById(req.user.id);
+    if (!supervisor) {
+      const committee = await Committee.findById(req.user.id);
+      if (type === 'proposal') {
+        if (new Date(committee.propDate) < new Date()) {
+          return res.json({ success: false, message: "Proposal Are Submitted" })
+        }
+      } else if (type === 'documentation') {
+        if (new Date(committee.docDate) < new Date()) {
+          return res.json({ success: false, message: "Documentations Sre Submitted now Schedule Vivas" })
+        }
+      }
+    } else {
+      if (type === 'proposal') {
+        if (new Date(supervisor.propDate) < new Date()) {
+          return res.json({ success: false, message: "Proposal Are Submitted" })
+        }
+      } else if (type === 'documentation') {
+        if (new Date(supervisor.docDate) < new Date()) {
+          return res.json({ success: false, message: "Documentations Sre Submitted now Schedule Vivas" })
+        }
+      }
     }
 
     const groups = await Group.find();

@@ -20,15 +20,6 @@ const Tasks = (props) => {
   });
   const [loading, setLoading] = useState(false);
 
-  const allowedFileTypes = [
-    'application/pdf', 
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
-    'image/jpeg', 
-    'image/png', 
-    'video/mp4',
-    'application/zip',  // ZIP files
-    'application/msword' // DOC files
-  ];
   const maxFileSize = 5 * 1024 * 1024;
 
   const upload = async (type) => {
@@ -41,12 +32,6 @@ const Tasks = (props) => {
       const formData = new FormData();
       formData.append('type', type); // Add the 'type' field to the FormData object
       formData.append(type, file);
-
-      // Check if the selected file type is allowed
-      if (!allowedFileTypes.includes(file.type)) {
-        console.log('Invalid file type. Allowed file types are PDF, DOCX, images, and videos.');
-        return;
-      }
 
       // Check if the file size is within the allowed limit
       if (file.size > maxFileSize) {
@@ -80,8 +65,6 @@ const Tasks = (props) => {
     // Check if a file is selected
     if (selectedFile) {
       // Check file type
-      const allowedTypes = ['application/pdf']; // Only allow PDF files
-      if (allowedTypes.includes(selectedFile.type)) {
         // Check file size (in bytes)
         const maxSize = 3 * 1024 * 1024; // 3MB
         if (selectedFile.size <= maxSize) {
@@ -89,12 +72,7 @@ const Tasks = (props) => {
         } else {
           // File size exceeds the limit
           NotificationManager.error('File size must be less than 3MB.');
-          e.target.value = null; // Clear the file input
-        }
-      } else {
-        // Invalid file type
-        NotificationManager.error('Invalid file format. Please select a PDF file.');
-        e.target.value = null; // Clear the file input
+          e.target.value = null; // Clear the file input 
       }
     }
   }
@@ -281,6 +259,7 @@ const Tasks = (props) => {
                         type="file"
                         onChange={(e) => handleFileChange(e)}
                         name="proposal"
+                        accept=".zip, .pdf"
                       />
                       <button
                         className="btn"
@@ -347,6 +326,7 @@ const Tasks = (props) => {
                         type="file"
                         onChange={(e) => handleFileChange(e)}
                         name="documentation"
+                        accept=".zip, .pdf"
                       />
                       <button
                         className="btn"

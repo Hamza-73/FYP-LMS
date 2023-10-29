@@ -3,6 +3,7 @@ import '../../css/group.css'
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const MyGroup = (props) => {
   const [group, setGroupDetails] = useState({
@@ -88,11 +89,6 @@ const MyGroup = (props) => {
     }
   }
 
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
   const requestextension = async (e) => {
     try {
       e.preventDefault();
@@ -107,21 +103,12 @@ const MyGroup = (props) => {
       const json = await response.json();
       console.log('json in sending extension is ', json);
       alert(json.message);
-      handleCloseModal("exampleModal2")
+      setShow(false);
     } catch (error) {
       console.log('error in extension', error);
     }
   }
 
-  const allowedFileTypes = [
-    'application/pdf', 
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
-    'image/jpeg', 
-    'image/png', 
-    'video/mp4',
-    'application/zip',  // ZIP files
-    'application/msword' // DOC files
-  ];
   const maxFileSize = 5 * 1024 * 1024; // 5 MB in bytes
 
   const upload = async (e) => {
@@ -134,13 +121,6 @@ const MyGroup = (props) => {
       const formData = new FormData();
       formData.append('doc', file); // Make sure to match the field name with your backend route
       formData.append('comment', comment);
-      console.log('form data is ', formData);
-
-      // Check if the selected file type is allowed
-      if (!allowedFileTypes.includes(file.type)) {
-        console.log('Invalid file type. Allowed file types are PDF, DOCX, images, and videos.');
-        return;
-      }
 
       // Check if the file size is within the allowed limit
       if (file.size > maxFileSize) {
@@ -162,13 +142,13 @@ const MyGroup = (props) => {
         NotificationManager.error(json.message);
       }
       if (json.success) {
-        handleCloseModal("exampleModal")
-          NotificationManager.success('File Uploaded successfully');
+        setShowUpload(false);
+        NotificationManager.success('File Uploaded successfully');
         // Update the state with the uploaded file URL
         const newDocument = {
           docLink: json.url, // Document URL
           review: '', // Empty review,
-          comment:""
+          comment: ""
         };
 
         setGroupDetails((prevGroup) => ({
@@ -258,42 +238,44 @@ const MyGroup = (props) => {
   const [comment, setComment] = useState('');
   const [newComment, setnewComment] = useState('');
 
+  const [show, setShow] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+
   return (
     <div>
-      <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Upload Documentation</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={()=>{
-                setComment(""); setFile(null)
-              }}></button>
-            </div>
-            <div className="modal-body">
-              <>
-                <form onSubmit={upload}>
-                  <div className="mb-3">
-                    <label htmlFor="comment">Comment</label>
-                    <br />
-                    <textarea name="comment" id="" className='form-input' value={comment} onChange={(e) => {
-                      setComment(e.target.value)
-                    }}></textarea>
-                  </div>
-                  <br />
-                  <input type="file" onChange={(e) => { handleFileChange(e) }} />
-                  <div className="modal-footer">
-                    <button type="submit" disabled={
-                      !comment || !file
-                    } className="btn" style={{ background: "maroon", color: "white" }}>
-                      Submit
-                    </button>
-                  </div>
-                </form>
-              </>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Modal show={showUpload} onHide={() => {
+        setShowUpload(false);
+      }}>
+        <Modal.Header>
+          <Modal.Title>Upload Documentation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <>
+            <form onSubmit={upload}>
+              <div className="mb-3">
+                <div class="form-floating">
+                  <textarea class="form-control" value={comment} placeholder="Leave a comment here" onChange={(e) => {
+                    setComment(e.target.value)
+                  }} id="floatingTextarea"></textarea>
+                  <label for="floatingTextarea">Comments</label>
+                </div>
+              </div>
+              <br />
+              <input type="file" onChange={(e) => { handleFileChange(e) }} accept=".zip, .pdf, .png, .jpeg, .jpg, .mp4, .mkv, .docx, .xlsx, .doc, .ppt, .pptx" />
+              <Modal.Footer>
+                <button className="btn btn-secondary" onClick={() => {
+                  setShowUpload(false);
+                }}>Close</button>
+                <button type="submit" disabled={
+                  !comment || !file
+                } className="btn" style={{ background: "maroon", color: "white" }}>
+                  Submit
+                </button>
+              </Modal.Footer>
+            </form>
+          </>
+        </Modal.Body>
+      </Modal>
 
       <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
@@ -318,27 +300,25 @@ const MyGroup = (props) => {
         </div>
       </div>
 
-      <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Extension Request</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div className="modal-body">
-              <>
-                <form onSubmit={requestextension}>
-                  <textarea className='form-control' value={reason} onChange={(e) => setReason(e.target.value)} />
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
-                    <button className="btn" style={{ background: "maroon", color: "white" }} disabled={!reason}>Request</button>
-                  </div>
-                </form>
-              </>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Modal show={show} onHide={() => {
+        setShow(false);
+      }}>
+        <Modal.Header>
+          <Modal.Title>Extension Request</Modal.Title>
+          <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </Modal.Header>
+        <Modal.Body>
+          <>
+            <form onSubmit={requestextension}>
+              <textarea className='form-control' value={reason} onChange={(e) => setReason(e.target.value)} />
+              <Modal.Footer>
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                <button className="btn" style={{ background: "maroon", color: "white" }} disabled={!reason}>Request</button>
+              </Modal.Footer>
+            </form>
+          </>
+        </Modal.Body>
+      </Modal>
 
       {!loading ? <div className={`${group.group ? 'container' : ""}`}>
         {
@@ -424,7 +404,7 @@ const MyGroup = (props) => {
                             </div>
                             <div className="items">
                               <h5>Purpose</h5>
-                              <textarea name="" id="" value={group.meetingPurpose?group.meetingPurpose:""}></textarea>
+                              <textarea name="" id="" value={group.group.purpose ? group.group.purpose : ""}></textarea>
                             </div>
                             {group.group.meetingLink && (
                               <div className="items">
@@ -449,7 +429,7 @@ const MyGroup = (props) => {
                 </div>
               </div>}
               {group.group.viva && group.group.viva.vivaDate &&
-                <div className="notify" style={{ position: "absolute", right: "50%", bottom: "3px" }}>
+                <div className="notify">
                   <style>{myStyle}</style>
                   <div>
                     <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
@@ -464,10 +444,10 @@ const MyGroup = (props) => {
                           <h6>{group.group.viva.vivaTime && group.group.viva.vivaTime} </h6>
                         </div><div className="items">
                           <h5>Internal</h5>
-                          <h6>{group.group.viva.internal} </h6>
+                          <h6>{group.group.viva.internalName} </h6>
                         </div><div className="items">
                           <h5>External</h5>
-                          <h6>{group.group.viva.external} </h6>
+                          <h6>{group.group.viva.externalName} </h6>
                         </div>
                       </div>
                     </div>
@@ -486,7 +466,7 @@ const MyGroup = (props) => {
                           <a target="_blank" href={grp.docLink}>
                             View Uploaded Doc
                           </a>
-                          <button className="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal1" onClick={() =>{ setReview(grp.review); setnewComment(grp.comment)}}>Review</button>
+                          <button className="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal1" onClick={() => { setReview(grp.review); setnewComment(grp.comment) }}>Review</button>
                         </div>
                       </div>
                     );
@@ -497,9 +477,13 @@ const MyGroup = (props) => {
             <div className="d-flex justify-content-between">
               <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} onClick={requestMeeting}>Request Meeting</button>
 
-              <button className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal2" disabled={group.group.documentation}>Extension Request</button>
+              <button className="btn btn-danger" onClick={() => {
+                setShow(true);
+              }} disabled={group.group.documentation}>Extension Request</button>
 
-              <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} data-bs-toggle="modal" data-bs-target="#exampleModal">Upload Document</button>
+              <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} onClick={() => {
+                setShowUpload(true);
+              }}>Upload Document</button>
             </div>
           </> : <h1 className='text-center my-4' style={{ position: "absolute", transform: "translate(-50%,-50%", left: "50%", top: "50%" }}>You're currently not enrolled in any Group.</h1>
         }

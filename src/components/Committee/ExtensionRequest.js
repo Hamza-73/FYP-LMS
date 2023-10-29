@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const ExtensionRequest = (props) => {
     const history = useNavigate();
@@ -118,7 +119,7 @@ const ExtensionRequest = (props) => {
                 //   console.log('User data is: ', json);
                 setUserData(json);
                 getDetail();
-                handleCloseModal("exampleModal")
+                setShow(false);
             }
         } catch (err) {
             console.log('error in extending : ', err);
@@ -167,52 +168,44 @@ const ExtensionRequest = (props) => {
   }
   
 `;
-    const handleCloseModal = (id) => {
-        document.getElementById(id).classList.remove("show", "d-block");
-        document.querySelectorAll(".modal-backdrop")
-            .forEach(el => el.classList.remove("modal-backdrop"));
-    }
+    const [show, setShow] = useState(false);
     return (
         <>
             <div className="register">
                 <style>{style}</style>
-                <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Register</h5>
+                <Modal show={show} onHide={() => { setShow(false) }}>
+                    <Modal.Header >
+                        <Modal.Title >Register</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className="modal-body">
+                        <form onSubmit={extendDate}>
+                            <div className="col">
+                                <label htmlFor="name" className="form-label">
+                                    Date
+                                </label>
+                                <div className="input-group">
+                                    <span className="input-group-text">
+                                        <i className="fas fa-user"></i>
+                                    </span>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        id="date"
+                                        name="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                    />
+                                </div>
                             </div>
-                            <div className="modal-body">
-                                <form onSubmit={extendDate}>
-                                    <div className="col">
-                                        <label htmlFor="name" className="form-label">
-                                            Date
-                                        </label>
-                                        <div className="input-group">
-                                            <span className="input-group-text">
-                                                <i className="fas fa-user"></i>
-                                            </span>
-                                            <input
-                                                type="date"
-                                                className="form-control"
-                                                id="date"
-                                                name="date"
-                                                value={date}
-                                                onChange={(e) => setDate(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setDate('')}>Close</button>
-                                        <button type="submit" className="btn btn-success">
-                                            Extend
-                                        </button>
-                                    </div>
-                                </form>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setDate('')}>Close</button>
+                                <button type="submit" className="btn btn-success">
+                                    Extend
+                                </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </form>
+                    </Modal.Body>
+                </Modal>
             </div>
 
             {loading ? (<Loading />) : (
@@ -265,8 +258,9 @@ const ExtensionRequest = (props) => {
                                                     color: "white", background: "maroon", cursor: "pointer"
                                                 }}
                                                     onClick={() => {
-                                                        setId(val._id)
-                                                    }} data-toggle="modal" data-target="#exampleModal"
+                                                        setId(val._id);
+                                                        setShow(true);
+                                                    }}
                                                 >Extend</button></td>
                                             }
                                         </tr>

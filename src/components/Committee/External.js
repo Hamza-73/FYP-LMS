@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const External = (props) => {
     const history = useNavigate();
@@ -47,13 +48,8 @@ const External = (props) => {
                 // Save the auth token and redirect
                 localStorage.setItem('token', json.token);
                 NotificationManager.success('Registration Successful');
-                setData((prevData) => ({
-                    ...prevData,
-                    members: [...prevData.members, {
-                        name: register.name, username: register.username, email: register.email
-                    }]
-                }));
-                handleCloseModal("exampleModal")
+                getMembers();
+                setShow(false)
                 // Clear the register form fields
                 setRegister({
                     name: "", username: "", email: ""
@@ -101,22 +97,17 @@ const External = (props) => {
             });
 
             const updatedSupervisor = await response.json(); // Await the response here
-            if (updatedSupervisor) {
-                console.log('updated success')
+            if (updatedSupervisor.success) {
                 // Update the state immediately with the edited data
-                setData((prevData) => ({
-                    ...prevData,
-                    members: prevData.members.map((member) =>
-                        member._id === updatedSupervisor._id ? updatedSupervisor : member
-                    ),
-                }));
-
+                getMembers();
                 NotificationManager.success('Edited Successfully');
-                handleCloseModal("exampleModal")
+                setShow(false)
                 setEditMode(false); // Disable edit mode after successful edit
                 setRegister({
                     name: '', username: '', email: ''
                 });
+            }else{
+                NotificationManager.error(updatedSupervisor.message);
             }
         } catch (error) {
             console.log('Error:', error); // Log the error message
@@ -342,7 +333,7 @@ const External = (props) => {
             if (json.success) {
                 NotificationManager.success(json.message, '', 3000);
                 getMembers();
-                handleCloseModal("uploadFile")
+                setShowUpload(false)
             } else {
                 NotificationManager.error(json.message, '', 3000);
             }
@@ -350,119 +341,111 @@ const External = (props) => {
             console.error('Error:', error);
         }
     };
-
-    const handleCloseModal = (id) => {
-        document.getElementById(id).classList.remove("show", "d-block");
-        document.querySelectorAll(".modal-backdrop")
-            .forEach(el => el.classList.remove("modal-backdrop"));
-    }
+    const [show, setShow] = useState(false);
+    const [showUpload, setShowUpload] = useState(false);
     return (
         <>
             <div className="UploadFile"  >
-                <div className="modal fade" id="uploadFile" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title" >Export Data From File</h5>
-                            </div>
-                            <div className="modal-body">
-                                <form onSubmit={(e) => handleSubmit(e, 'external')}>
+                <Modal show={showUpload} onHide={() => {
+                    setShowUpload(false);
+                }}>
+                    <Modal.Header>
+                        <Modal.Title className="modal-title" >Export Data From File</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className="modal-body">
+                        <form onSubmit={(e) => handleSubmit(e, 'external')}>
 
-                                    <div className="mb-3">
-                                        <label htmlFor="remrks" className="form-label">File</label>
-                                        <small>File Type should be : .xls/.xlsx</small>
-                                        <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
-                                    </div>
-                                    <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setFile(null)}>Close</button>
-                                        <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
-                                    </div>
-                                </form>
+                            <div className="mb-3">
+                                <label htmlFor="remrks" className="form-label">File</label>
+                                <small>File Type should be : .xls/.xlsx</small>
+                                <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
                             </div>
-                        </div>
-                    </div>
-                </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setFile(null); setShowUpload(false); }}>Close</button>
+                                <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
+                            </div>
+                        </form>
+                    </Modal.Body>
+                </Modal>
             </div>
             {/* REGISTER */}
             <div className="register">
                 <style>{style}</style>
-                <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Register</h5>
+                <Modal show={show} onHide={() => {
+                    setShow(false);
+                }}>
+                    <Modal.Header className="modal-header">
+                        <Modal.Title className="modal-title">Register</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className="modal-body">
+                        <form onSubmit={editMode ? handleEdit : handleRegister}>
+                            <div className="col">
+                                <label htmlFor="name" className="form-label">
+                                    Name
+                                </label>
+                                <div className="input-group">
+                                    <span className="input-group-text">
+                                        <i className="fas fa-user"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        id="name"
+                                        name="name"
+                                        value={register.name}
+                                        onChange={handleChange1}
+                                    />
+                                </div>
                             </div>
-                            <div className="modal-body">
-                                <form onSubmit={editMode ? handleEdit : handleRegister}>
-                                    <div className="col">
-                                        <label htmlFor="name" className="form-label">
-                                            First Name
-                                        </label>
-                                        <div className="input-group">
-                                            <span className="input-group-text">
-                                                <i className="fas fa-user"></i>
-                                            </span>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                id="name"
-                                                name="name"
-                                                value={register.name}
-                                                onChange={handleChange1}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="col">
-                                        <label htmlFor="username" className="form-label">
-                                            Username
-                                        </label>
-                                        <div className="input-group">
-                                            <span className="input-group-text">
-                                                <i className="fas fa-user"></i>
-                                            </span>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                id="username"
-                                                name="username"
-                                                value={register.username}
-                                                onChange={handleChange1}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="col">
-                                        <label htmlFor="name" className="form-label">
-                                            Email
-                                        </label>
-                                        <div className="input-group">
-                                            <span className="input-group-text">
-                                                <i class="fa-regular fa-envelope"></i>
-                                            </span>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                id="email"
-                                                name="email"
-                                                value={register.email}
-                                                onChange={handleChange1}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setEditMode(false); handleClose() }}>Close</button>
-                                        {editMode ? (
-                                            <button type="submit" className="btn btn-primary" disabled={!register.name || !register.username || !register.email}>Save Changes</button>
-                                        ) : (
-                                            <button type="submit" className="btn btn-success" disabled={!register.name || !register.username || !register.email}>
-                                                Register
-                                            </button>
-                                        )}
-                                    </div>
-                                </form>
+                            <div className="col">
+                                <label htmlFor="username" className="form-label">
+                                    Username
+                                </label>
+                                <div className="input-group">
+                                    <span className="input-group-text">
+                                        <i className="fas fa-user"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        id="username"
+                                        name="username"
+                                        value={register.username}
+                                        onChange={handleChange1}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                            <div className="col">
+                                <label htmlFor="name" className="form-label">
+                                    Email
+                                </label>
+                                <div className="input-group">
+                                    <span className="input-group-text">
+                                        <i class="fa-regular fa-envelope"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        id="email"
+                                        name="email"
+                                        value={register.email}
+                                        onChange={handleChange1}
+                                    />
+                                </div>
+                            </div>
+                            <Modal.Footer className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setEditMode(false); handleClose(); setShow(false) }}>Close</button>
+                                {editMode ? (
+                                    <button type="submit" className="btn btn-primary" disabled={!register.name || !register.username || !register.email}>Save Changes</button>
+                                ) : (
+                                    <button type="submit" className="btn btn-success" disabled={!register.name || !register.username || !register.email}>
+                                        Register
+                                    </button>
+                                )}
+                            </Modal.Footer>
+                        </form>
+                    </Modal.Body>
+                </Modal>
             </div>
 
             {loading ? (<Loading />) : (
@@ -513,7 +496,7 @@ const External = (props) => {
                                             <td>{val.email}</td>
                                             {(userData.member.isAdmin) &&
                                                 <>
-                                                    <td data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                                                    <td data-toggle="modal" data-target="#exampleModal" onClick={() => { openEditModal(val); setShow(true); }}>
                                                         <button className="btn" style={{ color: "white", cursor: "pointer", background: "maroon" }}>
                                                             <i className="fa-solid fa-pen-to-square"></i>
                                                         </button>
@@ -537,17 +520,16 @@ const External = (props) => {
                         </div>
                     </div>
                     {(userData.member.isAdmin) && <div className="d-grid gap-2 col-6 mx-auto my-4">
-                        <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
+                        <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" onClick={() => { setEditMode(false); handleClose(); setShow(true) }}>
                             Register
                         </button>
                         <button
                             style={{ background: "maroon" }}
                             type="button"
                             className="btn btn-danger mx-5"
-                            data-toggle="modal"
-                            data-target="#uploadFile"
                             onClick={() => {
                                 setFile(null);
+                                setShowUpload(true);
                             }}
                         >
                             Register From File

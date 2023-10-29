@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Loading from './Loading';
 import '../css/meeting.css'
+import { Modal } from 'react-bootstrap';
 
 const Meeting = (props) => {
   const myStyle = {
@@ -72,7 +73,7 @@ const Meeting = (props) => {
       const json = await response.json();
       console.log('JSON meeting is ', json);
 
-      if (json) {
+      if (json.success) {
         // Clear the form fields
         setMeeting({
           meetingGroup: "", meetingLink: "",
@@ -82,17 +83,12 @@ const Meeting = (props) => {
         alert("Success: " + json.message);
         getMeeting();
       } else {
-        alert("Error: " + json.message, 'danger');
+        alert("Error: " + json.message);
       }
     } catch (error) {
       console.log('Error dealing with requests', error);
     }
   };
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
 
   const editMeeting = async (e) => {
     try {
@@ -123,7 +119,7 @@ const Meeting = (props) => {
           purpose: "", meetingTime: "",
           meetingDate: "", meetingType: ""
         });
-        handleCloseModal("exampleModal");
+        setShow(false);
       } else {
         alert(json.message)
       }
@@ -132,19 +128,32 @@ const Meeting = (props) => {
     }
   }
 
+  const [dateError, setDateError] = useState(null);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    if (name === 'meetingLink') {
-      // Use a regular expression to check if the input value is a valid link
-      const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
-      const isValid = linkRegex.test(value);
-      setIsLinkValid(isValid);
+  if (name === 'meetingDate') {
+    const selectedDate = new Date(value);
+    const currentDate = new Date();
+
+    if (selectedDate < currentDate) {
+      setDateError("Meeting date cannot be in the past.");
+    } else {
+      setDateError(null);
     }
+  }
 
-    setMeeting({ ...meeting, [name]: value });
-  };
+  if (name === 'meetingLink') {
+    // Use a regular expression to check if the input value is a valid link
+    const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+    const isValid = linkRegex.test(value);
+    setIsLinkValid(isValid);
+  }
+
+  setMeeting({ ...meeting, [name]: value });
+};
+
 
   const deleteMeeting = async (id) => {
     try {
@@ -172,7 +181,6 @@ const Meeting = (props) => {
     }
   };
 
-
   const handleEditChange = (e) => {
     const { name, value } = e.target;
 
@@ -185,7 +193,6 @@ const Meeting = (props) => {
 
     setEdit({ ...edit, [name]: value }); // Update the 'edit' state here
   };
-
 
   const [userData, setUserData] = useState({ member: [] });
   const [loading, setLoading] = useState(false);
@@ -213,6 +220,7 @@ const Meeting = (props) => {
           ...prevData,
           meeting: prevData.meeting.filter((meeting) => meeting.meetingId !== meetingId)
         }));
+        setShowreview(false);
       }
     } catch (error) {
 
@@ -255,7 +263,8 @@ const Meeting = (props) => {
     if (localStorage.getItem('token')) {
       setTimeout(() => {
         getDetail();
-        getMeeting()
+        getMeeting();
+        getGroups();
       }, 700);
     }
   }, []);
@@ -291,128 +300,143 @@ const Meeting = (props) => {
     e.preventDefault();
     await editMeeting(e);
   }
+  const [show, setShow] = useState(false);
+  const [showReview, setShowreview] = useState(false);
+
+  const [groups, setGroups] = useState({ projectTitles: [] });
+  const getGroups = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/meeting/supervisor`, {
+        method: "GET",
+        headers: {
+          "Authorization": localStorage.getItem("token")
+        }
+      });
+      const json = await response.json();
+      console.log('groups under me are ', json);
+      setGroups(json);
+    } catch (error) {
+      console.log('error in getting groups ', error);
+    }
+  }
   return (
     <>
       <div className="meeting"  >
-        <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" >Register</h5>
+        <Modal show={show} onHide={() => {
+          setShow(false);
+        }}>
+          <Modal.Header>
+            <Modal.Title>Register</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={handleEditMeeting}>
+
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Project Title</label>
+                <input type="text" className="form-control" id="name" name='meetingGroup' value={edit.meetingGroup} onChange={handleEditChange} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={handleEditMeeting}>
-
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Project Title</label>
-                    <input type="text" className="form-control" id="name" name='meetingGroup' value={edit.meetingGroup} onChange={handleEditChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="time" className="form-label">Time</label>
-                    <input type="time" className="form-control" id="time" name='meetingTime' value={edit.meetingTime} onChange={handleEditChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="date" className="form-label">Date</label>
-                    <input type="date" className="form-control" id="meetingDate" name='meetingDate' value={edit.meetingDate} onChange={handleEditChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="type" className="form-label">Type</label>
-                    <div className="select">
-                      <input
-                        type="radio"
-                        name="meetingType"
-                        value="In Person"
-                        checked={edit.meetingType === 'In Person'}
-                        onChange={handleEditChange}
-                      />
-                      <label htmlFor="inperson" className="mx-2">
-                        In Person
-                      </label>
-                    </div>
-                    <div className="select">
-                      <input
-                        type="radio"
-                        name="meetingType"
-                        value="Online"
-                        checked={edit.meetingType === 'Online'}
-                        onChange={handleEditChange}
-                      />
-                      <label htmlFor="online" className="mx-2">
-                        Online
-                      </label>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="meetingLink" className="form-label">Link</label>
-                    <input type="text" className="form-control" name='meetingLink' value={edit.meetingLink} disabled={edit.meetingType === 'In Person'} onChange={handleEditChange} />
-                    {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
-                  </div>
-
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-
-                    <button type="submit" className="btn btn-success" disabled={!(edit.meetingGroup)
-                      || !(edit.meetingTime)
-                    }>
-                      Edit
-                    </button>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label htmlFor="time" className="form-label">Time</label>
+                <input type="time" className="form-control" id="time" name='meetingTime' value={edit.meetingTime} onChange={handleEditChange} />
               </div>
-            </div>
-          </div>
-        </div>
+              <div className="mb-3">
+                <label htmlFor="date" className="form-label">Date</label>
+                <input type="date" className="form-control" id="meetingDate" name='meetingDate' value={edit.meetingDate} onChange={handleEditChange} />
+                {dateError && <div className="text-danger">Select a valid Date</div>}
+              </div>
+              <div className="mb-3">
+                <label htmlFor="type" className="form-label">Type</label>
+                <div className="select">
+                  <input
+                    type="radio"
+                    name="meetingType"
+                    value="In Person"
+                    checked={edit.meetingType === 'In Person'}
+                    onChange={handleEditChange}
+                  />
+                  <label htmlFor="inperson" className="mx-2">
+                    In Person
+                  </label>
+                </div>
+                <div className="select">
+                  <input
+                    type="radio"
+                    name="meetingType"
+                    value="Online"
+                    checked={edit.meetingType === 'Online'}
+                    onChange={handleEditChange}
+                  />
+                  <label htmlFor="online" className="mx-2">
+                    Online
+                  </label>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="meetingLink" className="form-label">Link</label>
+                <input type="text" className="form-control" name='meetingLink' value={edit.meetingLink} disabled={edit.meetingType === 'In Person'} onChange={handleEditChange} />
+                {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
+              </div>
+              <Modal.Footer>
+                <button type="button" className="btn btn-secondary" onClick={() => {
+                  setShow(false);
+                }}>Close</button>
+
+                <button type="submit" className="btn btn-success" disabled={!(edit.meetingGroup)
+                  || !(edit.meetingTime)
+                }>
+                  Edit
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
       <div className="review"  >
-        <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel1" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" >Give Review</h5>
+        <Modal show={showReview} onHide={() => {
+          setShowreview(false);
+        }}>
+          <Modal.Header >
+            <Modal.Title className="modal-title" >Give Review</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={giveReview}>
+              <div className="mb-3">
+                <label>
+                  <input
+                    type="radio"
+                    name="reviewOption"
+                    value="true"
+                    onChange={() => setReview(true)}
+                  />
+                  Successful
+                </label>
+                <br />
+                <label>
+                  <input
+                    type="radio"
+                    name="reviewOption"
+                    value="false"
+                    onChange={() => setReview(false)}
+                  />
+                  Not Successful
+                </label>
               </div>
-              <div className="modal-body">
-                <form onSubmit={giveReview}>
-                  <div className="mb-3">
-                    <label>
-                      <input
-                        type="radio"
-                        name="reviewOption"
-                        value="true"
-                        onChange={() => setReview(true)}
-                      />
-                      Successful
-                    </label>
-                    <br />
-                    <label>
-                      <input
-                        type="radio"
-                        name="reviewOption"
-                        value="false"
-                        onChange={() => setReview(false)}
-                      />
-                      Not Successful
-                    </label>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      data-dismiss="modal"
-                      onClick={() => setReview(null)}
-                    >
-                      Close
-                    </button>
-                    <button type="submit" className="btn btn-success" disabled={review === null}>
-                      Give Reviews
-                    </button>
-                  </div>
-                </form>
-
-              </div>
-            </div>
-          </div>
-        </div>
+              <Modal.Footer className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                  onClick={() => { setReview(null); setShowreview(false); }}
+                >
+                  Close
+                </button>
+                <button type="submit" className="btn btn-success" disabled={review === null}>
+                  Give Reviews
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {!loading ?
@@ -422,7 +446,14 @@ const Meeting = (props) => {
               <h1>Link Information</h1>
               <div>
                 <textarea name="purpose" value={meeting.purpose} id="" placeholder='Purpose of Meeting' cols="30" rows="2" onChange={handleInputChange} style={myStyle}></textarea> <br />
-                <input type='text' name="meetingGroup" value={meeting.meetingGroup} id="" placeholder='Project title' onChange={handleInputChange} className='my-3' style={myStyle}></input>
+                <select name="meetingGroup" class="form-select" onChange={handleInputChange} value={meeting.meetingGroup}>
+                  <option value="">Select Group</option>
+                  {
+                    groups.projectTitles && groups.projectTitles.map((group, groupKey) => {
+                      return (<option key={groupKey} value={group}>{group}</option>)
+                    })
+                  }
+                </select>
               </div>
 
               <h6>Select a meeting type</h6>
@@ -498,15 +529,18 @@ const Meeting = (props) => {
                   name="meetingDate"
                   value={meeting.meetingDate}
                 />
+                {dateError && <div className="text-danger">Select a valid Date</div>}
               </div>{" "}
               <br />
               <div className="link" id="link">
                 <h1>Link</h1>
                 <textarea name="meetingLink" id="" disabled={meeting.meetingType === 'In Person'} cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
               </div>
-              {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
+                {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
 
-              <button className="btn btn-danger" style={{ background: "maroon" }} onClick={scheduleMeeting} >Schedule Metting</button>
+              <button className="btn btn-danger" style={{ background: "maroon" }}
+              disabled={dateError || !meeting.meetingLink || !meeting.meetingType || !meeting.meetingDate || !meeting.meetingGroup || !meeting.meetingTime}
+              onClick={scheduleMeeting} >Schedule Metting</button>
 
             </div>
 
@@ -566,6 +600,7 @@ const Meeting = (props) => {
                                   meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
                                   meetingDate: meeting.meetingDate,
                                 });
+                                setShow(true);
                               }}
                             >
                               Edit
@@ -584,10 +619,9 @@ const Meeting = (props) => {
                               ) : (
                                 <button
                                   className="btn btn-danger btn-sm"
-                                  data-toggle="modal"
-                                  data-target="#exampleModal1"
                                   onClick={() => {
                                     setMeetingId(meeting.meetingId);
+                                    setShowreview(true);
                                   }}
                                 >
                                   Review

@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const CommitteeMember = (props) => {
   const history = useNavigate();
@@ -64,7 +65,7 @@ const CommitteeMember = (props) => {
         setRegister({
           fname: "", lname: "", username: "", email: "", password: ""
         });
-        handleCloseModal("exampleModal")
+        setShow(false);
       }
       else {
         NotificationManager.error('Register According to the standard of Registration');
@@ -105,21 +106,19 @@ const CommitteeMember = (props) => {
 
       const updatedStudent = await response.json();
       if (updatedStudent) {
-        setData((prevData) => ({
-          ...prevData,
-          members: prevData.members.map((member) =>
-            member._id === updatedStudent._id ? updatedStudent : member
-          ),
-        }));
-        console.log('updated student is ', updatedStudent)
+        getMembers();
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
           fname: '', lname: '', username: '', email: '', password: ''
         });
-        NotificationManager.success('Edited Successfully');
-        handleCloseModal("exampleModal")
+        setShow(false);
       }
+      if(updatedStudent.success)
+        NotificationManager.success('Edited Successfully');
+      else
+      NotificationManager.error(updatedStudent.message);
 
+      
     } catch (error) {
       console.log('Error:', error); // Log the error message
     }
@@ -238,17 +237,23 @@ const CommitteeMember = (props) => {
   // Function to handle input changes
   const handleChange1 = (e) => {
     const { name, value } = e.target;
-
+    setFirstNameLastNameEqual(false);
     if (name === 'fname' || name === 'lname') {
       // Allow only one space between words and trim spaces at the beginning and end
       const trimmedValue = value.replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue === register.lname && trimmedValue !== '' && register.lname !== '') {
+      if (name === 'fname' && trimmedValue === register.lname.toLowerCase() && trimmedValue !== '' && register.lname !== '') {
         setFirstNameLastNameEqual(true);
-      } else if (name === 'lname' && trimmedValue === register.fname && trimmedValue !== '' && register.fname !== '') {
+        // Display an error message
+        NotificationManager.error('First name and last name should not be equal.');
+
+      } else if (name === 'lname' && trimmedValue === register.fname.toLowerCase() && trimmedValue !== '' && register.fname !== '') {
         setFirstNameLastNameEqual(true);
+        // Display an error message
+        NotificationManager.error('First name and last name should not be equal.');
+
       } else {
         setFirstNameLastNameEqual(false);
       }
@@ -380,7 +385,7 @@ const CommitteeMember = (props) => {
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
         getMembers();
-        handleCloseModal("uploadFile")
+        setShowUpload(false);
       } else {
         NotificationManager.error(json.message, '', 3000);
       }
@@ -388,92 +393,86 @@ const CommitteeMember = (props) => {
       console.error('Error:', error);
     }
   };
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
+
+  const [show, setShow] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
   return (
     <>
       <div className="UploadFile"  >
-        <div className="modal fade" id="uploadFile" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" >Export Data From File</h5>
+        <Modal show={showUpload} onHide={() => {
+          setShowUpload(false);
+        }}>
+          <Modal.Header>
+            <Modal.Title>Export Data From File</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={(e) => handleSubmit(e, 'admin')}>
+              <div className="mb-3">
+                <label htmlFor="remrks" className="form-label">File</label>
+                <small>File Type should be : .xls/.xlsx</small>
+                <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
               </div>
-              <div className="modal-body">
-                <form onSubmit={(e) => handleSubmit(e, 'admin')}>
-
-                  <div className="mb-3">
-                    <label htmlFor="remrks" className="form-label">File</label>
-                    <small>File Type should be : .xls/.xlsx</small>
-                    <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setFile(null)}>Close</button>
-                    <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+              <Modal.Footer>
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setFile(null); setShowUpload(false); }}>Close</button>
+                <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
       {/* REGISTER */}
       <div className="register">
         <style>{style}</style>
-        <div className={`modal fade show`} id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden={!showModal} data-backdrop="static" data-keyboard="false" onHide={() => setEditMode(false)}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" >Register</h5>
+        <Modal show={show} onHide={() => setEditMode(false)}>
+          <Modal.Header>
+            <Modal.Title>Register</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={editMode ? handleEdit : handleRegister}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">First Name</label>
+                <input type="text" className="form-control" id="name" name='fname' value={register.fname} onChange={handleChange1} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={editMode ? handleEdit : handleRegister}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">First Name</label>
-                    <input type="text" className="form-control" id="name" name='fname' value={register.fname} onChange={handleChange1} />
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Last Name</label>
+                <input type="text" className="form-control" id="name" name='lname' value={register.lname} onChange={handleChange1} />
+                {firstNameLastNameEqual && (
+                  <div className="alert alert-danger" role="alert">
+                    First name and last name should not be equal.
                   </div>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Last Name</label>
-                    <input type="text" className="form-control" id="name" name='lname' value={register.lname} onChange={handleChange1} />
-                    {firstNameLastNameEqual && (
-                      <div className="alert alert-danger" role="alert">
-                        First name and last name should not be equal.
-                      </div>
-                    )}
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                    <input type="text" className="form-control" id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label"> Email </label>
-                    <input type="email" className="form-control" id="email" name="email" value={register.email} onChange={handleChange1} />
-                  </div>
-                  {!editMode ? <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                    <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
-                    <small>password should be of at least 4 characters </small>
-                  </div> : ''}
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={handleClose}>Close</button>
-                    {editMode ? (
-                      <button type="submit" className="btn" style={{ background: "maroon", color: "white" }}>Save Changes</button>
-                    ) : (
-                      <button type="submit" className="btn btn-success" disabled={!(register.fname) || !(register.lname)
-                        || !(register.username) || !(register.email)}>
-                        Register
-                      </button>
-                    )}
-                  </div>
-                </form>
+                )}
               </div>
-            </div>
-          </div>
-        </div>
+              <div className="mb-3">
+                <label htmlFor="exampleInputusername1" className="form-label">Username</label>
+                <input type="text" className="form-control" id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label"> Email </label>
+                <input type="email" className="form-control" id="email" name="email" value={register.email} onChange={handleChange1} />
+              </div>
+              {!editMode ? <div className="mb-3">
+                <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
+                <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
+                <small>password should be of at least 4 characters </small>
+              </div> : ''}
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                  handleClose(); setShow(false);
+                }}>Close</button>
+                {editMode ? (
+                  <button type="submit" className="btn" disabled={!(register.fname) || !(register.lname)
+                    || !(register.username) || !(register.email) || firstNameLastNameEqual} style={{ background: "maroon", color: "white" }}>Save Changes</button>
+                ) : (
+                  <button type="submit" className="btn btn-success" disabled={!(register.fname) || !(register.lname)
+                    || !(register.username) || !(register.email) || firstNameLastNameEqual}>
+                    Register
+                  </button>
+                )}
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {loading ? (<Loading />) : (<>
@@ -522,7 +521,7 @@ const CommitteeMember = (props) => {
                     <td>{!val.isAdmin ? val.fname + ' ' + val.lname : <>{val.fname + ' ' + val.lname} <small>(committee)</small></>}</td>
                     <td>{val.username}</td>
                     <td>{val.email}</td>
-                    <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                    <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); setShow(true); }}>
                       <button className="btn" style={{ background: "maroon", color: "white" }}>
                         <i className="fa-solid fa-pen-to-square"></i>
                       </button>
@@ -548,17 +547,16 @@ const CommitteeMember = (props) => {
         </div>
         {(!showSidebar && !userData.member.isAdmin) && (
           <div className="d-grid gap-2 col-6 mx-auto my-4">
-            <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
+            <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose(); setShow(true); }}>
               Register
             </button>
             <button
               style={{ background: "maroon" }}
               type="button"
               className="btn btn-danger mx-5"
-              data-toggle="modal"
-              data-target="#uploadFile"
               onClick={() => {
                 setFile(null);
+                setShowUpload(true);
               }}
             >
               Register From File

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-// import image1 from '../images/logo.png'
 import image1 from '../../images/logo.png'
 import axios from 'axios'
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min';
+import 'jquery';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const ComNav = (props) => {
     let history = useNavigate()

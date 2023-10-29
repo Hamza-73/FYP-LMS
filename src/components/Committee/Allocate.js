@@ -125,7 +125,22 @@ const Allocate = () => {
         getDetail();
         getList();
         getMembers();
-    }, [])
+        getProjects();
+    }, []);
+
+    const [projects, setProjects] = useState([]);
+    const getProjects = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/allocation/groups`, {
+                method: "GET"
+            });
+            const json = await response.json();
+            console.log('group are ', json);
+            setProjects(json);
+        } catch (error) {
+
+        }
+    }
 
     return (
         <>
@@ -135,7 +150,14 @@ const Allocate = () => {
                     <form onSubmit={(e) => AllocateSupervisor(e)} className='container' style={{ border: "none" }}>
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label"> <h5>Project Title</h5></label>
-                            <input type="text" class="form-control" id="exampleInputEmail1" name='projectTitle' value={allocate.projectTitle} aria-describedby="emailHelp" onChange={handleChange} />
+                            <select name="projectTitle" className='form-select' id="" value={allocate.projectTitle} onChange={handleChange}>
+                                <option value="">Select Group</option>
+                                {
+                                    projects && projects.map((project) => {
+                                        return (<option key={project} value={project}>{project}</option>)
+                                    })
+                                }
+                            </select>
                         </div>
                         <div className="mb-3">
                             <label htmlFor="newSupervisor" className="form-label"> <h5>New Supervisor's Username</h5></label>

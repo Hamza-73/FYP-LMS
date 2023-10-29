@@ -8,6 +8,7 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import 'react-notifications/lib/notifications.css';
 import Loading from '../Loading';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Cell } from 'recharts';
+import { Modal } from 'react-bootstrap';
 
 const Progress = (props) => {
 
@@ -28,7 +29,7 @@ const Progress = (props) => {
             date: "2023-10-15",
             review: false,
             value: 5
-        }, 
+        },
         {
             date: "2023-9-4",
             review: false,
@@ -112,6 +113,7 @@ const Progress = (props) => {
             const json = await response.json();
             if (json.success && json.message) {
                 handleClose();
+                setShow(false);
                 NotificationManager.success(json.message);
             } else {
                 NotificationManager.error(json.message);
@@ -191,70 +193,71 @@ const Progress = (props) => {
         });
     }
 
+    const [show, setShow] = useState(false);
+
     return (
         <>
             {!loading ? (
                 <>
-                    <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h1 className="modal-title fs-5" id="exampleModalLabel">
-                                        Your Request
-                                    </h1>
-                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={handleClose}></button>
-                                </div>
-                                <div className="modal-body">
-                                    <>
-                                        <form onSubmit={sendRequest}>
-                                            <div className="mb-3">
-                                                <label htmlFor="exampleInputEmail163" className="form-label">
-                                                    Supervisor Username
-                                                </label>
-                                                <input type="text" className="form-control" id="username" name="username" value={request.username} onChange={handleChange}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label htmlFor="exampleInputPassword331" className="form-label">
-                                                    Project Title
-                                                </label>
-                                                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={request.projectTitle} onChange={handleChange}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label htmlFor="exampleInputPassword13" className="form-label">
-                                                    Scope of Study
-                                                </label>
-                                                <input type="text" className="form-control" id="scope" name="scope" value={request.scope} onChange={handleChange}
-                                                />
-                                            </div>
-                                            <div className="mb-3">
-                                                <label htmlFor="exampleInputPassword153" className="form-label">
-                                                    Description
-                                                </label>
-                                                <div className="form-floating">
-                                                    <textarea className="form-control" id="description" name="description" value={request.description} onChange={handleChange}
-                                                    ></textarea>
-                                                </div>
-                                            </div>
-                                            <div className="modal-footer">
-                                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"
-                                                    onClick={handleClose}
-                                                > Close</button>
-                                                <button type="submit"
-                                                    className="btn"
-                                                    style={{ background: 'maroon', color: 'white' }}
-                                                    disabled={!request.projectTitle || !request.scope || !request.description}
-                                                >
-                                                    Send Request
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </>
-                                </div>
-                            </div>
+                    <Modal show={show} onHide={() => {
+                        setShow(false);
+                    }}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                Your Request
+                            </Modal.Title>
+                        </Modal.Header>
+                        <div className="modal-body">
+                            <>
+                                <form onSubmit={sendRequest}>
+                                    <div className="mb-3">
+                                        <label htmlFor="exampleInputEmail163" className="form-label">
+                                            Supervisor Username
+                                        </label>
+                                        <input type="text" className="form-control" id="username" name="username" value={request.username} onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label htmlFor="exampleInputPassword331" className="form-label">
+                                            Project Title
+                                        </label>
+                                        <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={request.projectTitle} onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label htmlFor="exampleInputPassword13" className="form-label">
+                                            Scope of Study
+                                        </label>
+                                        <input type="text" className="form-control" id="scope" name="scope" value={request.scope} onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label htmlFor="exampleInputPassword153" className="form-label">
+                                            Description
+                                        </label>
+                                        <div className="form-floating">
+                                            <textarea className="form-control" id="description" name="description" value={request.description} onChange={handleChange}
+                                            ></textarea>
+                                        </div>
+                                    </div>
+                                    <Modal.Footer>
+                                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"
+                                            onClick={() => {
+                                                handleClose(); setShow(false);
+                                            }}
+                                        > Close</button>
+                                        <button type="submit"
+                                            className="btn"
+                                            style={{ background: 'maroon', color: 'white' }}
+                                            disabled={!request.projectTitle || !request.scope || !request.description}
+                                        >
+                                            Send Request
+                                        </button>
+                                    </Modal.Footer>
+                                </form>
+                            </>
                         </div>
-                    </div>
+                    </Modal>
                     {groupDetails.group ? (
                         <>
                             <div className="container d-flex">
@@ -348,9 +351,10 @@ const Progress = (props) => {
                             type="button"
                             style={{ background: 'maroon' }}
                             className="btn btn-danger"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
                             disabled={groupDetails.group}
+                            onClick={() => {
+                                setShow(true);
+                            }}
                         >
                             Request Idea
                         </button>

@@ -7,6 +7,7 @@ import {
   NotificationManager,
 } from "react-notifications";
 import "react-notifications/lib/notifications.css";
+import { Modal } from "react-bootstrap";
 
 const CommitteeMember = (props) => {
   const history = useNavigate();
@@ -96,7 +97,7 @@ const CommitteeMember = (props) => {
         setRegister({
           fname: "", lname: "", username: "", department: "", designation: "", password: "", email: ""
         });
-        handleCloseModal("exampleModal");
+        setShow(false);
       }
       else {
         NotificationManager.error('Register According to the standard of Registration');
@@ -136,13 +137,8 @@ const CommitteeMember = (props) => {
       );
 
       const updatedStudent = await response.json();
-      if (updatedStudent) {
-        setData((prevData) => ({
-          ...prevData,
-          members: prevData.members.map((member) =>
-            member._id === updatedStudent._id ? updatedStudent : member
-          ),
-        }));
+      if (updatedStudent.success) {
+        getMembers();
         console.log('updated student is ', updatedStudent)
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
@@ -150,7 +146,9 @@ const CommitteeMember = (props) => {
         });
         closeModal();
         NotificationManager.success('Edited Successfully');
-        handleCloseModal("exampleModal")
+        setShow(false);
+      } else {
+        NotificationManager.error(updatedStudent.message);
       }
 
     } catch (error) {
@@ -272,16 +270,16 @@ const CommitteeMember = (props) => {
   // Function to handle input changes
   const handleChange1 = (e) => {
     const { name, value } = e.target;
-
+    setFirstNameLastNameEqual(false);
     if (name === 'fname' || name === 'lname') {
       // Allow only one space between words and trim spaces at the beginning and end
       const trimmedValue = value.replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue === register.lname && trimmedValue !== '' && register.lname !== '') {
+      if (name === 'fname' && trimmedValue === register.lname.toLowerCase() && trimmedValue !== '' && register.lname !== '') {
         setFirstNameLastNameEqual(true);
-      } else if (name === 'lname' && trimmedValue === register.fname && trimmedValue !== '' && register.fname !== '') {
+      } else if (name === 'lname' && trimmedValue === register.fname.toLowerCase() && trimmedValue !== '' && register.fname !== '') {
         setFirstNameLastNameEqual(true);
       } else {
         setFirstNameLastNameEqual(false);
@@ -390,17 +388,10 @@ const CommitteeMember = (props) => {
   
 `;
 
-
   const [file, setFile] = useState(null);
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
-
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
 
   const handleSubmit = async (event, userType) => {
     event.preventDefault();
@@ -423,7 +414,7 @@ const CommitteeMember = (props) => {
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
         getMembers();
-        handleCloseModal("uploadFile")
+        setShowUpload(false);
       } else {
         NotificationManager.error(json.message, '', 3000);
       }
@@ -437,244 +428,240 @@ const CommitteeMember = (props) => {
 
   // Check if the current location is in the pathsWithoutSidebar array
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
+  // states to show modal
+  const [show, setShow] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
   return (
     <>
 
       <div className="UploadFile"  >
-        <div className="modal fade" id="uploadFile" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" >Export Data From File</h5>
+        <Modal show={showUpload} onHide={() => setShowUpload(false)}>
+          <Modal.Header className="modal-header">
+            <h5 className="modal-title" >Export Data From File</h5>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={(e) => handleSubmit(e, 'committee')}>
+              <div className="mb-3">
+                <label htmlFor="remrks" className="form-label">File</label>
+                <small>File Type should be : .xls/.xlsx</small>
+                <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
               </div>
-              <div className="modal-body">
-                <form onSubmit={(e) => handleSubmit(e, 'committee')}>
-
-                  <div className="mb-3">
-                    <label htmlFor="remrks" className="form-label">File</label>
-                    <small>File Type should be : .xls/.xlsx</small>
-                    <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setFile(null)}>Close</button>
-                    <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setFile(null); setShowUpload(false) }}>Close</button>
+                <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {/* REGISTER */}
       <div className="register">
         <style>{style}</style>
-        <div
-          className={`modal fade ${showModal ? "show" : ""}`}
-          id="exampleModal"
-          tabIndex="-1"
-          role="dialog"
-          aria-labelledby="exampleModalLabel"
-          aria-hidden={!showModal}
-          data-backdrop="static"
-          data-keyboard="false"
-          onHide={() => setEditMode(false)}
+        <Modal
+          show={show}
+          onHide={() => { setEditMode(false); setShow(false) }}
         >
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Register</h5>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={editMode ? handleEdit : handleRegister}>
-                  <div className="row mb-3">
-                    <div className="col">
-                      <label htmlFor="name" className="form-label">
-                        First Name
-                      </label>
-                      <div className="input-group">
-                        <span className="input-group-text">
-                          <i className="fas fa-user"></i>
-                        </span>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="name"
-                          name="fname"
-                          value={register.fname}
-                          onChange={handleChange1}
-                        />
+          <Modal.Header className="modal-header">
+            <Modal.Title className="modal-title">Register</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={editMode ? handleEdit : handleRegister}>
+              <div className="row mb-3">
+                <div className="col">
+                  <label htmlFor="name" className="form-label">
+                    First Name
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="fas fa-user"></i>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="name"
+                      name="fname"
+                      value={register.fname}
+                      onChange={handleChange1}
+                    />
+                  </div>
+                </div>
+                <div className="col">
+                  <label htmlFor="name" className="form-label">
+                    Last Name
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="fas fa-user"></i>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="name"
+                      name="lname"
+                      value={register.lname}
+                      onChange={handleChange1}
+                    />
+                    {firstNameLastNameEqual && (
+                      <div className="text-danger">
+                        First name and last name should not be same.
                       </div>
-                    </div>
-                    <div className="col">
-                      <label htmlFor="name" className="form-label">
-                        Last Name
-                      </label>
-                      <div className="input-group">
-                        <span className="input-group-text">
-                          <i className="fas fa-user"></i>
-                        </span>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="name"
-                          name="lname"
-                          value={register.lname}
-                          onChange={handleChange1}
-                        />
-                        {firstNameLastNameEqual && (
-                          <div className="text-danger">
-                            First name and last name should not be same.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label
-                      htmlFor="exampleInputusername1"
-                      className="form-label"
-                    >
-                      Username
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <i className="fas fa-user"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="exampleInputusername2"
-                        name="username"
-                        value={register.username}
-                        onChange={handleChange1}
-                      />
-                    </div>
-                  </div>
-                  <div className="col">
-                    <label htmlFor="name" className="form-label">
-                      Email
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <i class="fa-regular fa-envelope"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="email"
-                        name="email"
-                        value={register.email}
-                        onChange={handleChange1}
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="department" className="form-label">
-                      {" "}
-                      Department{" "}
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text"><i className="fas fa-building"></i></span>
-                      <select
-                        type="text"
-                        className="form-control"
-                        id="department"
-                        name="department"
-                        value={register.department}
-                        onChange={handleChange1}
-                      >
-                        <option value="">Select Department</option>
-                        <option value="Computer Science">Computer Science</option>
-                        <option value="Other">other</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="designation" className="form-label">
-                      {" "}
-                      Designation{" "}
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <i className="fas fa-user-tie"></i>
-                      </span>
-                      <select
-                        className="form-select"
-                        id="designation"
-                        name="designation"
-                        value={register.designation}
-                        onChange={handleChange1}
-                      >
-                        <option value="Professor">Professor</option>
-                        <option value="Assistant Professor">
-                          Assistant Professor
-                        </option>
-                        <option value="Lecturer">Lecturer</option>
-                      </select>
-                    </div>
-                  </div>
-                  {!editMode ? (
-                    <div className="mb-3">
-                      <label
-                        htmlFor="exampleInputPassword1"
-                        className="form-label"
-                      >
-                        Password
-                      </label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        id="exampleInputPassword2"
-                        name="password"
-                        value={register.password}
-                        onChange={handleChange1}
-                      />
-                      <small>
-                        password should be of at least 4 characters{" "}
-                      </small>
-                    </div>
-                  ) : (
-                    ""
-                  )}
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      data-dismiss="modal"
-                      onClick={handleClose}
-                    >
-                      Close
-                    </button>
-                    {editMode ? (
-                      <button
-                        type="submit"
-                        className="btn"
-                        style={{ background: "maroon", color: "white" }}
-                      >
-                        Save Changes
-                      </button>
-                    ) : (
-                      <button
-                        type="submit"
-                        className="btn btn-formregister"
-                        disabled={
-                          !register.fname ||
-                          !register.lname ||
-                          !register.username ||
-                          !register.department
-                        }
-                      >
-                        Register
-                      </button>
                     )}
                   </div>
-                </form>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
+              <div className="mb-3">
+                <label
+                  htmlFor="exampleInputusername1"
+                  className="form-label"
+                >
+                  Username
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-user"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="exampleInputusername2"
+                    name="username"
+                    value={register.username}
+                    onChange={handleChange1}
+                  />
+                </div>
+              </div>
+              <div className="col">
+                <label htmlFor="name" className="form-label">
+                  Email
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i class="fa-regular fa-envelope"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="email"
+                    name="email"
+                    value={register.email}
+                    onChange={handleChange1}
+                  />
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="department" className="form-label">
+                  {" "}
+                  Department{" "}
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="fas fa-building"></i></span>
+                  <select
+                    type="text"
+                    className="form-control"
+                    id="department"
+                    name="department"
+                    value={register.department}
+                    onChange={handleChange1}
+                  >
+                    <option value="">Select Department</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Other">other</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="designation" className="form-label">
+                  {" "}
+                  Designation{" "}
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-user-tie"></i>
+                  </span>
+                  <select
+                    className="form-select"
+                    id="designation"
+                    name="designation"
+                    value={register.designation}
+                    onChange={handleChange1}
+                  >
+                    <option value="Professor">Professor</option>
+                    <option value="Assistant Professor">
+                      Assistant Professor
+                    </option>
+                    <option value="Lecturer">Lecturer</option>
+                  </select>
+                </div>
+              </div>
+              {!editMode ? (
+                <div className="mb-3">
+                  <label
+                    htmlFor="exampleInputPassword1"
+                    className="form-label"
+                  >
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    id="exampleInputPassword2"
+                    name="password"
+                    value={register.password}
+                    onChange={handleChange1}
+                  />
+                  <small>
+                    password should be of at least 4 characters{" "}
+                  </small>
+                </div>
+              ) : (
+                ""
+              )}
+              <Modal.Footer className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                  onClick={() => {
+                    handleClose();
+                    setShow(false);
+                  }}
+                >
+                  Close
+                </button>
+                {editMode ? (
+                  <button
+                    type="submit"
+                    className="btn"
+                    style={{ background: "maroon", color: "white" }}
+                    disabled={
+                      !register.fname ||
+                      !register.lname ||
+                      !register.username ||
+                      !register.department || firstNameLastNameEqual
+                    }
+                  >
+                    Save Changes
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="btn btn-formregister"
+                    disabled={
+                      !register.fname ||
+                      !register.lname ||
+                      !register.username ||
+                      !register.department || firstNameLastNameEqual
+                    }
+                  >
+                    Register
+                  </button>
+                )}
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {loading ? (
@@ -741,7 +728,7 @@ const CommitteeMember = (props) => {
                             style={{ cursor: "pointer" }}
                             data-toggle="modal"
                             data-target="#exampleModal"
-                            onClick={() => openEditModal(val)}
+                            onClick={() => { openEditModal(val); setShow(true) }}
                           >
                             <button className="btn" style={{ background: "maroon", color: "white" }}>
                               <i className="fa-solid fa-pen-to-square"></i>
@@ -766,7 +753,6 @@ const CommitteeMember = (props) => {
                       )}
                     </tr>
                   ))}
-
                 </tbody>
               </table>
             ) : (
@@ -801,23 +787,21 @@ const CommitteeMember = (props) => {
               style={{ background: "maroon" }}
               type="button"
               className="btn btn-danger mx-5"
-              data-toggle="modal"
-              data-target="#exampleModal"
               onClick={() => {
                 setEditMode(false);
                 handleClose();
+                setShow(true)
               }}
             >
               Register
             </button>
-             <button
+            <button
               style={{ background: "maroon" }}
               type="button"
               className="btn btn-danger mx-5"
-              data-toggle="modal"
-              data-target="#uploadFile"
               onClick={() => {
                 setFile(null);
+                setShowUpload(true)
               }}
             >
               Register From File

@@ -267,28 +267,38 @@ router.put('/edit/:id', async (req, res) => {
     const updatedDetail = req.body;
 
     try {
-        const updatedAdmin = await Admin.findByIdAndUpdate(
-            id, updatedDetail, { new: true }
-        );
+        const existingAdmin = await Admin.findOne({
+            $or: [
+                { username: updatedDetail.username },
+                { email: updatedDetail.email }
+            ]
+        });
+
+        if (existingAdmin && existingAdmin._id.toString() !== id) {
+            return res.status(400).json({ success: false, message: "Username or Email already exists for another admin." });
+        }
+
+        const updatedAdmin = await Admin.findByIdAndUpdate(id, updatedDetail, { new: true });
+
         if (!updatedAdmin) {
-            const committeeMember = await Committee.findByIdAndUpdate(
-                id, updatedDetail, { new: true }
-            );
+            const committeeMember = await Committee.findByIdAndUpdate(id, updatedDetail, { new: true });
             if (committeeMember) {
                 await committeeMember.save();
-                console.log('comiitte edited')
-                return res.json({ success: true, message: "Edited Sucessfully" });
+                console.log('committee edited');
+                return res.json({ success: true, message: "Edited Successfully" });
             } else {
-                return res.status(404).json({ message: 'Admin Not Found' });
+                return res.status(404).json({ success: false, message: 'Admin Not Found' });
             }
         }
+
         await updatedAdmin.save();
-        return res.json({ success: true, message: "Edited Sucessfully" });
+        return res.json({ success: true, message: "Edited Successfully" });
     } catch (error) {
-        console.error('error is ', error)
-        res.status(500).json({ message: 'Internal Server Error' });
+        console.error('error is ', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 });
+
 
 // Route to get a list of all admins and committee members
 router.get('/get-members', async (req, res) => {

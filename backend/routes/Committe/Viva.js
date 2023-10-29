@@ -99,20 +99,23 @@ router.post('/schedule-viva', async (req, res) => {
         group: group._id,
         projectTitle: project.projectTitle,
         supervisor: group.supervisorId,
-        sup : group.supervisor,
+        sup: group.supervisor,
         students: Array.from(project.students).map(student => ({
           studentId: student.userId,
           name: student.name,
           rollNo: student.rollNo
         })),
         vivaDate: parsedDate, vivaTime: vivaTime,
-        external: external, internal: internal
+        external: external, internal: internal,
+        internalName : internalMember.name, externalName : externalMember.name
       });
       group.viva = viva._id;
       group.vivaDate = parsedDate;
       group.external = external;
+      group.externalName = externalMember.name;
       group.vivaTime = vivaTime;
       group.internal = internal;
+      group.internalName = internalMember.name;
       console.log('viva created')
       await Promise.all([group.save(), viva.save()]);
       console.log('Viva is ', viva)
@@ -152,17 +155,8 @@ router.put('/edit', async (req, res) => {
   try {
     const { projectTitle, vivaDate, vivaTime, external, internal } = req.body;
     // Use findOneAndUpdate to find and update the document
-    console.log('date is ', vivaDate);
-    console.log('internal is ', internal)
-    console.log('external is ', external)
     const parsedDate = moment.utc(vivaDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
     console.log('parsed date is ', parsedDate)
-    const updatedViva = await Viva.findOneAndUpdate(
-      { projectTitle: projectTitle },
-      { vivaDate: parsedDate, vivaTime: vivaTime },
-      { internal : internal , external : external },
-      { new: true }
-    );
 
     if (new Date(vivaDate) < new Date()) {
       return res.json({ success: false, message: "Enter a valid date" })
@@ -232,11 +226,21 @@ router.put('/edit', async (req, res) => {
       console.log('internal save notidication');
       await internalMember.save()
     }
+
+    const updatedViva = await Viva.findOneAndUpdate(
+      { projectTitle: projectTitle },
+      { vivaDate: parsedDate, vivaTime: vivaTime },
+      { internal: internal, external: external },
+      { new: true }
+    );
     updatedViva.external = external;
     updatedViva.internal = internal;
+    updatedViva.internalName = internalMember.name;
+    updatedViva.externalName = externalMember.name;
     await updatedViva.save();
-    group.vivaDate = vivaDate? parsedDate : group.vivaDate; group.vivaTime = vivaTime;
+    group.vivaDate = vivaDate ? parsedDate : group.vivaDate; group.vivaTime = vivaTime;
     group.external = external; group.internal = internal;
+    group.externalName = externalMember.name; group.internalName = internalMember.name;
     await group.save();
 
     group.projects.map(proj => {

@@ -5,6 +5,7 @@ import 'react-clock/dist/Clock.css';
 import 'react-clock/dist/Clock.css';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const Event = (props) => {
   const [data, setData] = useState({ vivas: [] });
@@ -16,7 +17,6 @@ const Event = (props) => {
     external: "", internal: ""
   });
   const [loading, setLoading] = useState(false);
-  const [isFieldsModified, setIsFieldsModified] = useState(false);
 
   const [isInvalidDate, setIsInvalidDate] = useState(false);
 
@@ -40,11 +40,7 @@ const Event = (props) => {
       console.log('error in fetching supervisor ', error);
     }
   }
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
+
   const editViva = async (e) => {
     try {
       e.preventDefault();
@@ -67,7 +63,7 @@ const Event = (props) => {
       if (json.message && json.success) {
         NotificationManager.success(json.message);
         getVivas();
-        handleCloseModal("exampleModal1")
+        setShow(false);
       } else {
         NotificationManager.error(json.message);
       }
@@ -128,80 +124,80 @@ const Event = (props) => {
     setViva({ ...viva, [e.target.name]: e.target.value });
   };
 
+  const [show, setShow] = useState(false);
+
   return (
     <div>
 
       <div className="viva">
-        <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Schedule Viva</h5>
+        <Modal show={show} onHide={() => setShow(false)}>
+          <Modal.Header>
+            <Modal.Title className="modal-title">Schedule Viva</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={(e) => editViva(e)}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">
+                  Project Title
+                </label>
+                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={(e) => editViva(e)}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
-                      Project Title
-                    </label>
-                    <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
-                      Viva Date
-                    </label>
-                    <br />
-                    <input type="date" name='vivaDate' value={viva.vivaDate} onChange={handleChange1} />
-                  </div>
-                  {isInvalidDate && (
-                    <div className="text-danger">Please enter a valid date (not in the past).</div>
-                  )}
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
-                      Viva Time
-                    </label>
-                    <div>
-                      <input type="time" name='vivaTime' value={viva.vivaTime} onChange={handleChange1} />
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="external" className="form-label">
-                      External
-                    </label>
-                    <select className='form-select' name='external' onChange={handleChange1} value={viva.external}>
-                      <option value="">Select External Member</option>
-                      {external.members && external.members.map((member, index) => (
-                        <option key={index} value={member.username}>{member.username}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="internal" className="form-label">
-                      Internal
-                    </label>
-                    <select className='form-select' name='internal' onChange={handleChange1} value={viva.internal}>
-                      <option value="">Select Internal</option>
-                      {committee.members && committee.members.map((member, index) => (
-                        <option key={index} value={member.username}>{member.username}</option>
-                      ))}
-                    </select>
-                  </div>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">
+                  Viva Date
+                </label>
+                <br />
+                <input type="date" name='vivaDate' value={viva.vivaDate} onChange={handleChange1} />
+              </div>
+              {isInvalidDate && (
+                <div className="text-danger">Please enter a valid date (not in the past).</div>
+              )}
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">
+                  Viva Time
+                </label>
+                <div>
+                  <input type="time" name='vivaTime' value={viva.vivaTime} onChange={handleChange1} />
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="external" className="form-label">
+                  External
+                </label>
+                <select className='form-select' name='external' onChange={handleChange1} value={viva.external}>
+                  <option value="">Select External Member</option>
+                  {external.members && external.members.map((member, index) => (
+                    <option key={index} value={member.username}>{member.username}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="internal" className="form-label">
+                  Internal
+                </label>
+                <select className='form-select' name='internal' onChange={handleChange1} value={viva.internal}>
+                  <option value="">Select Internal</option>
+                  {committee.members && committee.members.map((member, index) => (
+                    <option key={index} value={member.username}>{member.username}</option>
+                  ))}
+                </select>
+              </div>
 
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">
-                      Close
-                    </button>
-                    <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                      disabled={!viva.vivaDate || !viva.vivaTime || !viva.projectTitle || !viva.external || !viva.internal}
-                    >
-                      Schedule
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => {
+                  setShow(false);
+                }}>
+                  Close
+                </button>
+                <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
+                  disabled={!viva.vivaDate || !viva.vivaTime || !viva.projectTitle || !viva.external || !viva.internal}
+                >
+                  Schedule
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
       <>
         {loading ? (
@@ -237,16 +233,18 @@ const Event = (props) => {
                           </div>
                         </td>
                         <td>{val.projectTitle}</td>
-                        <td>{val.internal}</td>
-                        <td>{val.external}</td>
+                        <td>{val.internalName}</td>
+                        <td>{val.externalName}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
                         <td data-toggle="modal" data-target="#exampleModal1" onClick={() => {
                           setViva({
                             projectTitle: val.projectTitle, date: val.vivaDate,
                             time: val.vivaTime, external: val.external, internal: val.internal ? val.internal : ""
-                          })
-                        }}><i class="fa-solid fa-pen-to-square"></i></td>
+                          });
+                          setShow(true);
+                        }}
+                          disabled={new Date(val.vivaDate) < new Date()}><i class="fa-solid fa-pen-to-square"></i></td>
                       </tr>
                     ))}
                   </tbody>

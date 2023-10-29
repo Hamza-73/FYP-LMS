@@ -4,7 +4,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
-
+// import Modal from "bootstrap/js/dist/modal";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Button, Modal } from 'react-bootstrap';
 const SupervisorList = (props) => {
   const history = useNavigate();
   const [data, setData] = useState({ members: [] });
@@ -14,11 +16,10 @@ const SupervisorList = (props) => {
   const [editMode, setEditMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
+  const [show, setShow] = useState(false);
+
+  const closeModal = () => setShow(false);
+  const handleShow = () => setShow(true);
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -68,7 +69,7 @@ const SupervisorList = (props) => {
         setRegister({
           name: "", username: "", department: "", designation: "", password: "", slots: "", email: ""
         });
-        handleCloseModal("exampleModal");
+        closeModal();
       } else {
         NotificationManager.error(json.message);
       }
@@ -116,23 +117,18 @@ const SupervisorList = (props) => {
       });
 
       const updatedSupervisor = await response.json(); // Await the response here
-      if (updatedSupervisor) {
-        console.log('updated success')
-        // Update the state immediately with the edited data
-        setData((prevData) => ({
-          ...prevData,
-          members: prevData.members.map((member) =>
-            member._id === updatedSupervisor._id ? updatedSupervisor : member
-          ),
-        }));
-
+      if (updatedSupervisor.success) {
+        getMembers()
         NotificationManager.success('Edited Successfully');
         setEditMode(false); // Disable edit mode after successful edit
         setRegister({
           name: '', username: '', department: '', designation: '', slots: '', email: ''
         });
-        handleCloseModal("exampleModal")
       }
+      else{
+        NotificationManager.error(updatedSupervisor.message);
+      }
+      setShow(false)
     } catch (error) {
       console.log('Error:', error); // Log the error message
       NotificationManager.error('Error in Editing');
@@ -332,6 +328,10 @@ const SupervisorList = (props) => {
   const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
   const style = `
+  .modal-content-custom {
+    border: none;
+    width: 100%; /* You can adjust the width according to your preference */
+  }
   .heading {
     text-align: center;
     margin-top: 40px;
@@ -394,7 +394,7 @@ const SupervisorList = (props) => {
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
         getMembers();
-        handleCloseModal("uploadFile")
+        setShowUpload(false);
       } else {
         NotificationManager.error(json.message, '', 3000);
       }
@@ -403,168 +403,162 @@ const SupervisorList = (props) => {
     }
   };
 
+  const [showUpload, setShowUpload] = useState(false);
+
   return (
     <>
       <div className="UploadFile"  >
-        <div className="modal fade" id="uploadFile" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" >Export Data From File</h5>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={(e) => handleSubmit(e, 'supervisor')}>
+        <Modal show={showUpload} onHide={() => setShowUpload(false)}>
+          <Modal.Header className="modal-header">
+            <h5 className="modal-title" >Export Data From File</h5>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={(e) => handleSubmit(e, 'supervisor')}>
 
-                  <div className="mb-3">
-                    <label htmlFor="remrks" className="form-label">File</label>
-                    <small>File Type should be : .xls/.xlsx</small>
-                    <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setFile(null)}>Close</button>
-                    <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label htmlFor="remrks" className="form-label">File</label>
+                <small>File Type should be : .xls/.xlsx</small>
+                <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
               </div>
-            </div>
-          </div>
-        </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => { setFile(null); setShowUpload(false) }}>Close</button>
+                <button type="submit" className="btn btn-success" disabled={!file}> Upload </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
       {/* REGISTER */}
-      <div className="register">
+      <div className="register" style={{ border: "none" }}>
         <style>{style}</style>
-        <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Register</h5>
+        <Modal show={show} onHide={closeModal} className="modal-content-custom">
+          <Modal.Header  >
+            <Modal.Title  >Register</Modal.Title>
+          </Modal.Header>
+          <Modal.Body >
+            <form onSubmit={editMode ? handleEdit : handleRegister}>
+              <div className="col">
+                <label htmlFor="name" className="form-label">
+                  First Name
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-user"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="name"
+                    name="name"
+                    value={register.name}
+                    onChange={handleChange1}
+                  />
+                </div>
               </div>
-              <div className="modal-body">
-                <form onSubmit={editMode ? handleEdit : handleRegister}>
-                  <div className="col">
-                    <label htmlFor="name" className="form-label">
-                      First Name
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <i className="fas fa-user"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="name"
-                        name="name"
-                        value={register.name}
-                        onChange={handleChange1}
-                      />
-                    </div>
-                  </div>
-                  <div className="col">
-                    <label htmlFor="username" className="form-label">
-                      First Name
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <i className="fas fa-user"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="username"
-                        name="username"
-                        value={register.username}
-                        onChange={handleChange1}
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="department" className="form-label">
-                      {" "}
-                      Department{" "}
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text"><i className="fas fa-building"></i></span>
-                      <select
-                        type="text"
-                        className="form-control"
-                        id="department"
-                        name="department"
-                        value={register.department}
-                        onChange={handleChange1}
-                      >
-                        <option value="">Select Department</option>
-                        <option value="Computer Science">Computer Science</option>
-                        <option value="Other">other</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col">
-                    <label htmlFor="name" className="form-label">
-                      Email
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <i class="fa-regular fa-envelope"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="email"
-                        name="email"
-                        value={register.email}
-                        onChange={handleChange1}
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="designation" className="form-label">
-                      {" "}
-                      Designation{" "}
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <i className="fas fa-user-tie"></i>
-                      </span>
-                      <select
-                        className="form-select"
-                        id="designation"
-                        name="designation"
-                        value={register.designation}
-                        onChange={handleChange1}
-                      >
-                        <option value="Professor">Professor</option>
-                        <option value="Assistant Professor">
-                          Assistant Professor
-                        </option>
-                        <option value="Lecturer">Lecturer</option>
-                        <option value="External">External</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="department" className="form-label">Slots</label>
-                    <input type="number" className="form-control" id="semester" name='slots' value={register.slots} onChange={handleChange1} />
-                  </div>
-                  {!editMode ? <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                    <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
-                    <small>Password should be at least 4 characters</small>
-                  </div> : ''}
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setEditMode(false); handleClose() }}>Close</button>
-                    {editMode ? (
-                      <button type="submit" className="btn btn-primary" disabled={!register.name || !register.username || !register.department || !register.designation || register.slots < 0}>Save Changes</button>
-                    ) : (
-                      <button type="submit" className="btn btn-success" disabled={!register.name || !register.username || !register.department || !register.designation || register.slots < 0}>
-                        Register
-                      </button>
-                    )}
-                  </div>
-                </form>
+              <div className="col">
+                <label htmlFor="username" className="form-label">
+                  Username
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-user"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="username"
+                    name="username"
+                    value={register.username}
+                    onChange={handleChange1}
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
+              <div className="mb-3">
+                <label htmlFor="department" className="form-label">
+                  {" "}
+                  Department{" "}
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text"><i className="fas fa-building"></i></span>
+                  <select
+                    type="text"
+                    className="form-control"
+                    id="department"
+                    name="department"
+                    value={register.department}
+                    onChange={handleChange1}
+                  >
+                    <option value="">Select Department</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Other">other</option>
+                  </select>
+                </div>
+              </div>
+              <div className="col">
+                <label htmlFor="name" className="form-label">
+                  Email
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i class="fa-regular fa-envelope"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="email"
+                    name="email"
+                    value={register.email}
+                    onChange={handleChange1}
+                  />
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="designation" className="form-label">
+                  {" "}
+                  Designation{" "}
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-user-tie"></i>
+                  </span>
+                  <select
+                    className="form-select"
+                    id="designation"
+                    name="designation"
+                    value={register.designation}
+                    onChange={handleChange1}
+                  >
+                    <option value="Professor">Professor</option>
+                    <option value="Assistant Professor">
+                      Assistant Professor
+                    </option>
+                    <option value="Lecturer">Lecturer</option>
+                    <option value="External">External</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="department" className="form-label">Slots</label>
+                <input type="number" className="form-control" id="semester" name='slots' value={register.slots} onChange={handleChange1} />
+              </div>
+              {!editMode ? <div className="mb-3">
+                <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
+                <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
+                <small>Password should be at least 4 characters</small>
+              </div> : ''}
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setEditMode(false); handleClose(); closeModal() }}>Close</button>
+                {editMode ? (
+                  <button type="submit" className="btn btn-primary" disabled={!register.name || !register.username || !register.department || !register.designation || register.slots < 0}>Save Changes</button>
+                ) : (
+                  <button type="submit" className="btn btn-success" disabled={!register.name || !register.username || !register.department || !register.designation || register.slots < 0}>
+                    Register
+                  </button>
+                )}
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {loading ? (<Loading />) : (
@@ -618,12 +612,12 @@ const SupervisorList = (props) => {
                       <td>{val.slots}</td>
                       {(!showSidebar && !userData.member.isAdmin) &&
                         <>
-                          <td style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal" onClick={() => openEditModal(val)}>
+                          <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); handleShow() }}>
                             <button className="btn" style={{ background: "maroon", color: "white" }}>
                               <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                           </td>
-                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}><button className="btn"
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => { handleDelete(val._id);}}><button className="btn"
                             style={{ background: "maroon", color: "white" }}>
                             <i class="fa-solid fa-trash"></i> </button></td>
                           <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
@@ -648,17 +642,16 @@ const SupervisorList = (props) => {
             </div>
           </div>
           {(!showSidebar && !userData.member.isAdmin) && <div className="d-grid gap-2 col-6 mx-auto my-4">
-            <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose() }}>
+            <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" onClick={() => { setEditMode(false); handleClose(); handleShow() }}>
               Register
             </button>
             <button
               style={{ background: "maroon" }}
               type="button"
               className="btn btn-danger mx-5"
-              data-toggle="modal"
-              data-target="#uploadFile"
               onClick={() => {
                 setFile(null);
+                setShowUpload(true)
               }}
             >
               Register From File

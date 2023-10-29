@@ -58,7 +58,9 @@ const groupSchema = new Schema({
     reason: { type: String }
   }],
   external: { type: String },
-  internal: { type: String }
+  externalName: { type: String },
+  internal: { type: String },
+  internalName: { type: String }
 });
 
 module.exports = mongoose.model('Group', groupSchema);

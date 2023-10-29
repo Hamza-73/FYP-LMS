@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const CumDashboard = (props) => {
   const history = useNavigate();
@@ -99,7 +100,7 @@ const CumDashboard = (props) => {
         setModalRules([]);
         setEditRuleIndex(-1);
         getRules();
-        handleCloseModal("exampleModal")
+        setShowEdit(false);
       }
     } catch (error) {
       console.log('error', error);
@@ -267,7 +268,7 @@ const CumDashboard = (props) => {
         NotificationManager.success(json.message);
         getRules();
         getRoles();
-        handleCloseModal("deleteRule")
+        setShowDelete(false)
       } else {
         NotificationManager.error(json.message);
       }
@@ -276,158 +277,152 @@ const CumDashboard = (props) => {
     }
   }
 
+  // states to show modals
+  const [showEdit, setShowEdit] = useState(false);
+  const [showDefine, setShowDefine] = useState(false);
+  const [showDeelet, setShowDelete] = useState(false);
   return (
     <div>
-      <div ref={ref} className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Edit Rules</h1>
+      <Modal
+        show={showEdit} onHide={() => setShowEdit(false)}
+      >
+        <Modal.Header>
+          <Modal.Title>Edit Rules</Modal.Title>
+        </Modal.Header>
+        <Modal.Body >
+          <form>
+            <div className="mb-3">
+              <label htmlFor="role" className="form-label">Rules for :</label>
+              <select
+                className="form-select"
+                id="role"
+                name='role'
+                value={defineRole}
+                onChange={(e) => setDefineRole(e.target.value)}
+              >
+                <option value="">Select...</option>
+                {roles.roles.map((role, roleKey) => {
+                  return <option key={roleKey}>{role}</option>;
+                })}
+              </select>
             </div>
-            <div className="modal-body">
-              <form>
-                <div className="mb-3">
-                  <label htmlFor="role" className="form-label">Rules for :</label>
-                  <select
-                    className="form-select"
-                    id="role"
-                    name='role'
-                    value={defineRole}
-                    onChange={(e) => setDefineRole(e.target.value)}
-                  >
-                    <option value="">Select...</option>
-                    {roles.roles.map((role, roleKey) => {
-                      return <option key={roleKey}>{role}</option>;
-                    })}
-                  </select>
+            {modalRules.map((val, key) => (
+              <div className="mb-3" key={key}>
+                <label htmlFor={`rule-${key}`} className="form-label">Rule {key + 1}</label>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    className="form-control"
+                    id={`rule-${key}`}
+                    value={val}
+                    onChange={(e) => handleRuleChange(key, e.target.value)}
+                  />
+                  <button type="button" className="btn btn-danger" onClick={() => deleteRuleInput(key)}>Delete</button>
                 </div>
-                {modalRules.map((val, key) => (
-                  <div className="mb-3" key={key}>
-                    <label htmlFor={`rule-${key}`} className="form-label">Rule {key + 1}</label>
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        id={`rule-${key}`}
-                        value={val}
-                        onChange={(e) => handleRuleChange(key, e.target.value)}
-                      />
-                      <button type="button" className="btn btn-danger" onClick={() => deleteRuleInput(key)}>Delete</button>
-                    </div>
-                  </div>
-                ))}
-                <button type="button" className="btn btn-success" onClick={addRuleInput} disabled={!modalRules[0]}>Add Rule</button>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => {
-                setLoading(false); resetModalState()
-              }}>Close</button>
-              <button type="button" className="btn btn-warning" onClick={() => getRole(defineRole)} disabled={!defineRole}>Get Rules</button>
-              <button type="button" className="btn" style={{ background: "maroon", color: "white" }} onClick={(e) => editRule(e)} disabled={!modalRules || !check}>Edit Rules</button>
-            </div>
-          </div>
-        </div>
-      </div>
+              </div>
+            ))}
+            <button type="button" className="btn btn-success" onClick={addRuleInput} disabled={!modalRules[0]}>Add Rule</button>
+          </form>
+        </Modal.Body>
+        <Modal.Footer className="modal-footer">
+          <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => {
+            setLoading(false); resetModalState(); setShowEdit(false);
+          }}>Close</button>
+          <button type="button" className="btn btn-warning" onClick={() => getRole(defineRole)} disabled={!defineRole}>Get Rules</button>
+          <button type="button" className="btn" style={{ background: "maroon", color: "white" }} onClick={(e) => editRule(e)} disabled={!modalRules || !check}>Edit Rules</button>
+        </Modal.Footer>
+      </Modal>
 
-      <div className="modal fade" id="deleteRule" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Delete Rules</h1>
+      <Modal show={showDeelet} onHide={() => setShowDelete(false)}>
+        <Modal.Header className="modal-header">
+          <Modal.Title className="modal-title fs-5" id="exampleModalLabel">Delete Rules</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="modal-body">
+          <form>
+            <div className="mb-3">
+              <label htmlFor="role" className="form-label">Delete Rules for :</label>
+              <select
+                className="form-select"
+                id="role"
+                name='role'
+                value={defineRole}
+                onChange={(e) => setDefineRole(e.target.value)}
+              >
+                <option value="">Select...</option>
+                {roles.roles.map((role, roleKey) => {
+                  return <option key={roleKey}>{role}</option>;
+                })}
+              </select>
             </div>
-            <div className="modal-body">
-              <form>
-                <div className="mb-3">
-                  <label htmlFor="role" className="form-label">Delete Rules for :</label>
-                  <select
-                    className="form-select"
-                    id="role"
-                    name='role'
-                    value={defineRole}
-                    onChange={(e) => setDefineRole(e.target.value)}
-                  >
-                    <option value="">Select...</option>
-                    {roles.roles.map((role, roleKey) => {
-                      return <option key={roleKey}>{role}</option>;
-                    })}
-                  </select>
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => {
-                setLoading(false); resetModalState()
-              }}>Close</button>
-              <button type="button" className="btn" style={{ background: "maroon", color: "white" }} onClick={(e) => deleteRules(e)} disabled={!defineRole}>Delete Rules</button>
-            </div>
-          </div>
-        </div>
-      </div>
+          </form>
+        </Modal.Body>
+        <Modal.Footer className="modal-footer">
+          <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => {
+            setLoading(false); resetModalState(); setShowDelete(false);
+          }}>Close</button>
+          <button type="button" className="btn" style={{ background: "maroon", color: "white" }} onClick={(e) => deleteRules(e)} disabled={!defineRole}>Delete Rules</button>
+        </Modal.Footer>
+      </Modal>
 
-      <div className="modal fade" id="defineRoleModal" tabIndex="-1" aria-labelledby="defineRoleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="defineRoleModalLabel">Define New Role</h5>
-            </div>
-            <div className="modal-body">
-              <div className="mb-3">
-                <label htmlFor="newRole" className="form-label">Rules For ....</label>
+      <Modal show={showDefine} onHide={() => { setShowDefine(false) }}>
+        <Modal.Header>
+          <Modal.Title>Define New Role</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <label htmlFor="newRole" className="form-label">Rules For ....</label>
+            <input
+              type="text"
+              className="form-control"
+              id="newRole"
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+            />
+          </div>
+          {Array.from(newRules).map((rule, index) => (
+            <div className="mb-3" key={index}>
+              <label htmlFor={`newRule-${index}`} className="form-label">Rule {index + 1}</label>
+              <div className="input-group">
                 <input
                   type="text"
                   className="form-control"
-                  id="newRole"
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value)}
+                  id={`newRule-${index}`}
+                  value={rule}
+                  onChange={(e) => handleNewRuleChange(index, e.target.value)}
                 />
+                <button className="btn btn-danger" type="button" onClick={() => deleteNewRuleInput(index)}>
+                  Delete
+                </button>
               </div>
-              {Array.from(newRules).map((rule, index) => (
-                <div className="mb-3" key={index}>
-                  <label htmlFor={`newRule-${index}`} className="form-label">Rule {index + 1}</label>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      className="form-control"
-                      id={`newRule-${index}`}
-                      value={rule}
-                      onChange={(e) => handleNewRuleChange(index, e.target.value)}
-                    />
-                    <button className="btn btn-danger" type="button" onClick={() => deleteNewRuleInput(index)}>
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <button type="button" className="btn btn-success" disabled={!newRole} onClick={addNewRuleInput}>
-                Add Rule
-              </button>
             </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
-                onClick={() => {
-                  setNewRole('');
-                  setNewRules(['']);
-                  setShowDefineRoleModal(false);
-                }}
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                className="btn" style={{ background: "maroon", color: "white" }}
-                onClick={defineNewRole}
-                disabled={!newRules[0] || !newRole}
-              >
-                Define Role
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+          ))}
+          <button type="button" className="btn btn-success" disabled={!newRole} onClick={addNewRuleInput}>
+            Add Rule
+          </button>
+        </Modal.Body>
+        <Modal.Footer className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            data-bs-dismiss="modal"
+            onClick={() => {
+              setNewRole('');
+              setNewRules(['']);
+              setShowDefine(false);
+            }}
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            className="btn" style={{ background: "maroon", color: "white" }}
+            onClick={defineNewRole}
+            disabled={!newRules[0] || !newRole}
+          >
+            Define Role
+          </button>
+        </Modal.Footer>
+      </Modal>
 
       <div className='my-2 mx-4' style={{ border: "none" }}>
         {loading ? (
@@ -455,13 +450,19 @@ const CumDashboard = (props) => {
       </div>
 
       {userData.member.isAdmin && <div className='d-grid gap-2 d-md-flex justify-content-md-end' style={{ position: "relative", right: "5.5rem", bottom: "2rem" }}>
-        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#exampleModal">
+        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " onClick={() => {
+          setShowEdit(true)
+        }}>
           Edit Rules
         </button>
-        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#defineRoleModal">
+        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " onClick={() => {
+          setShowDefine(true)
+        }}>
           Define Rules
         </button>
-        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " data-bs-toggle="modal" data-bs-target="#deleteRule">
+        <button style={{ background: "maroon" }} type="button" className="btn btn-danger " onClick={() => {
+          setShowDelete(true)
+        }}>
           Delete Rules
         </button>
       </div>}

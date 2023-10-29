@@ -3,7 +3,7 @@ import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import axios from 'axios';
-import $ from 'jquery'; // Import jQuery
+import { Modal } from 'react-bootstrap';
 
 const ProjectIdeas = () => {
   const [fypIdea, setFypIdea] = useState({
@@ -21,6 +21,7 @@ const ProjectIdeas = () => {
     if (localStorage.getItem('token')) {
       setTimeout(() => {
         getIdeas();
+        getRollNo();
       }, 1000);
       console.log('inside effect ', idea)
     }
@@ -50,7 +51,6 @@ const ProjectIdeas = () => {
   const [editMode, setEditMode] = useState(false);
   const [projectId, setProjectId] = useState('');
 
-  const addIdeaModalRef = useRef(null);
 
   const handleIdea = async () => {
     try {
@@ -74,23 +74,11 @@ const ProjectIdeas = () => {
       }
 
       if (json) {
-        // Create a new idea object from the fypIdea state
-        const newIdea = {
-          projectTitle: fypIdea.projectTitle,
-          description: fypIdea.description,
-          scope: fypIdea.scope,
-          active: fypIdea.active,
-          date: new Date().toISOString(), // Set current date and time
-          time: new Date().toLocaleTimeString() // Set current time
-        };
         NotificationManager.success(json.message);
         // Update the state with the new idea
         getIdeas()
         setFypIdea({ projectTitle: "", scope: "", description: "" });
-        handleCloseModal("exampleModal")
       }
-      // Close the modal
-      $(addIdeaModalRef.current).modal('hide');
       console.log('json in adding idea is ', json)
     } catch (error) {
       console.log('error adding project request', error);
@@ -115,7 +103,6 @@ const ProjectIdeas = () => {
 
       if (json.success) {
         NotificationManager.success(json.message);
-        handleCloseModal("exampleModal1")
       }
       else {
         NotificationManager.error(json.message);
@@ -181,9 +168,11 @@ const ProjectIdeas = () => {
 
       const json = await response.data;
       console.log('response is in editing ', json);
-
       if (json.success) {
-        NotificationManager.success(json.message);
+        NotificationManager.success("Edit Succesful");
+        setEditMode(false);
+        hanldeClose();
+        setShow(false);
         getIdeas()
       }
       else {
@@ -194,15 +183,11 @@ const ProjectIdeas = () => {
       NotificationManager.error('Some Error occurred. Try Again');
     }
   };
-  const handleCloseModal = (id) => {
-    document.getElementById(id).classList.remove("show", "d-block");
-    document.querySelectorAll(".modal-backdrop")
-      .forEach(el => el.classList.remove("modal-backdrop"));
-  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     await handleIdea();
-    handleCloseModal("exampleModal")
+    setShow(false);
   }
 
   const handleChange = (e) => {
@@ -240,87 +225,107 @@ const ProjectIdeas = () => {
     return words.slice(0, maxWords).join(' ') + '....';
   };
 
+  const [show, setShow] = useState(false);
+  const [showStudent, setShowStudent] = useState(false);
+
+  const [rollNo, setRollNo] = useState([])
+
+  const getRollNo = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/student/rollNo`, {
+        method: "GET",
+      });
+      const json = await response.json();
+      console.log('roll No are ', json)
+      setRollNo(json);
+    } catch (error) {
+
+    }
+  }
 
   return (
     <div>
       <div className="fypIdea"  >
-        <div className="modal fade" id="exampleModal" tabIndex="-1" ref={addIdeaModalRef} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" >Register</h5>
+        <Modal show={show} onHide={() => {
+          setShow(false)
+        }}>
+          <Modal.Header>
+            <Modal.Title>Register</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={editMode ? handleEdit : handleSubmit}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Project Title</label>
+                <input type="text" className="form-control" id="projectTitle" name='projectTitle' value={fypIdea.projectTitle} onChange={handleChange} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={editMode ? handleEdit : handleSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Project Title</label>
-                    <input type="text" className="form-control" id="projectTitle" name='projectTitle' value={fypIdea.projectTitle} onChange={handleChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                    <input type="text" className="form-control" id="scope" name='scope' value={fypIdea.scope} onChange={handleChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
-                    <textarea className="form-control" id="description" name='description' value={fypIdea.description} onChange={handleChange} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="isActive" className="form-label">Status</label>
-                    <select className="form-select" id="active" name="active" value={fypIdea.active} onChange={handleChange}>
-                      <option value={true}>Active</option>
-                      <option value={false}>Inactive</option>
-                    </select>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
-                      setEditMode(false);
-                      hanldeClose();
-                    }}>Close</button>
-                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!fypIdea.projectTitle || !fypIdea.scope || !fypIdea.description}>
-                      {editMode ? "Edit" : "Add Idea"}
-                    </button>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
+                <input type="text" className="form-control" id="scope" name='scope' value={fypIdea.scope} onChange={handleChange} />
               </div>
-
-            </div>
-          </div>
-        </div>
+              <div className="mb-3">
+                <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
+                <textarea className="form-control" id="description" name='description' value={fypIdea.description} onChange={handleChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="isActive" className="form-label">Status</label>
+                <select className="form-select" id="active" name="active" value={fypIdea.active} onChange={handleChange}>
+                  <option value={true}>Active</option>
+                  <option value={false}>Inactive</option>
+                </select>
+              </div>
+              <Modal.Footer>
+                <button type="button" className="btn btn-secondary" onClick={() => {
+                  setEditMode(false);
+                  hanldeClose();
+                  setShow(false);
+                }}>Close</button>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!fypIdea.projectTitle || !fypIdea.scope || !fypIdea.description}>
+                  {editMode ? "Edit" : "Add Idea"}
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       <div className="addstudenyt">
-        <div className="modal fade" id="exampleModal1" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel1" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Add Student To Existing Group</h5>
+        <Modal show={showStudent} onHide={() => {
+          setShowStudent(false);
+        }}>
+          <Modal.Header>
+            <Modal.Title>Add Student To Existing Group</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form onSubmit={(e) => { handleAddStudent(e, addStudent.projectTitle, addStudent.rollNo); }}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Project Title</label>
+                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange1} />
               </div>
-              <div className="modal-body">
-                <form onSubmit={(e) => { handleAddStudent(e, addStudent.projectTitle, addStudent.rollNo); }}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Project Title</label>
-                    <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange1} />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="rollNo" className="form-label">Student Roll No</label>
-                    <input type="text" className="form-control" id="rollNo" name="rollNo" value={addStudent.rollNo} onChange={handleChange1} />
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
-                      setAddStudent({
-                        projectTitle: "", rollNo: ""
-                      })
-                    }}>Close</button>
-                    <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!addStudent.projectTitle || !addStudent.rollNo}>
-                      Add Student
-                    </button>
-                  </div>
-                </form>
+              <div className="mb-3">
+                <label htmlFor="rollNo" className="form-label">Student Roll No</label>
+                <select name="rollNo" id="" className='form-select' value={addStudent.rollNo} onChange={handleChange1}>
+                  <option value="">Select Student By Roll No</option>
+                  {
+                    rollNo && rollNo.map((student, studentKey) => {
+                      return (<option key={studentKey} value={student}>{student}</option>)
+                    })
+                  }
+                </select>
               </div>
-            </div>
-          </div>
-        </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                  setAddStudent({
+                    projectTitle: "", rollNo: ""
+                  });
+                  setShowStudent(false);
+                }}>Close</button>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!addStudent.projectTitle || !addStudent.rollNo}>
+                  Add Student
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
       </div>
 
       {!loading ? (
@@ -391,6 +396,7 @@ const ProjectIdeas = () => {
                                   scope: group.scope,
                                   active: group.active // Set active property from the group to fypIdea
                                 });
+                                setShowStudent(true);
                               }} disabled={!group.active}>
                               Add Student
                             </button>
@@ -398,8 +404,6 @@ const ProjectIdeas = () => {
                           <td>
                             <button style={{ background: "maroon", color: "white" }}
                               className="btn"
-                              data-toggle="modal"
-                              data-target="#exampleModal"
                               onClick={() => {
                                 setEditMode(true);
                                 setProjectId(group.projectId);
@@ -409,6 +413,7 @@ const ProjectIdeas = () => {
                                   scope: group.scope,
                                   active: group.active // Set active property from the group to fypIdea
                                 });
+                                setShow(true);
                               }} // Disable the button if group or fypIdea is not active
                             >
                               <i className="fa-solid fa-pen-to-square"></i>
@@ -434,7 +439,9 @@ const ProjectIdeas = () => {
           )}
 
           <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-            <button className="btn" data-toggle="modal" data-target="#exampleModal" style={{ background: "maroon", color: "white", position: "relative", right: "7rem" }} type="button">
+            <button className="btn" onClick={() => {
+              setShow(true);
+            }} style={{ background: "maroon", color: "white", position: "relative", right: "7rem" }} type="button">
               Add FYP Idea
             </button>
           </div>

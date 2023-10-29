@@ -174,21 +174,37 @@ router.get('/get-supervisors', async (req, res) => {
 });
 
 
-// Route to update student details
+// Route to update supervisor details
 router.put('/edit/:id', async (req, res) => {
-  const studentId = req.params.id;
+  const supervisorId = req.params.id;
   const updatedDetails = req.body;
 
   try {
-    const updatedStudent = await Supervisor.findByIdAndUpdate(studentId, updatedDetails, { new: true });
-    if (!updatedStudent) {
-      return res.status(404).json({ message: 'Student not found' });
+    // Check if the updated username or email already exists for another supervisor
+    const existingSupervisor = await Supervisor.findOne({
+      $or: [
+        { username: updatedDetails.username },
+        { email: updatedDetails.email }
+      ]
+    });
+
+    if (existingSupervisor && existingSupervisor._id.toString() !== supervisorId) {
+      return res.status(400).json({ message: "Username or Email already exists for another supervisor." });
     }
-    res.status(200).json(updatedStudent);
+
+    // Update supervisor details
+    const updatedSupervisor = await Supervisor.findByIdAndUpdate(supervisorId, updatedDetails, { new: true });
+
+    if (!updatedSupervisor) {
+      return res.status(404).json({ message: 'Supervisor not found' });
+    }
+
+    return res.status(200).json({ success: true, updatedSupervisor });
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 // Supervisor accepts a user's project request and adds user to the relevant group
@@ -341,6 +357,16 @@ router.post('/improve-request/:requestId', authenticateUser, async (req, res) =>
 
       // Decrease supervisor slots
       supervisor.slots--;
+      // In Active all supervisor ideas
+      if (supervisor.slots <= 0) {
+        supervisor.myIdeas.forEach(async (ideas) => {
+          const idea = await projectRequest.findById(ideas.projectId);
+          if (idea) {
+            idea.active = false;
+            await idea.save();
+          }
+        })
+      }
       const newRequest = supervisor.myIdeas.filter(idea => {
         return !idea.projectId.equals(check._id)
       });
@@ -570,6 +596,16 @@ router.post('/accept-request/:requestId', authenticateUser, async (req, res) => 
 
       // Decrease supervisor slots
       supervisor.slots--;
+      // In Active all supervisor ideas
+      if (supervisor.slots <= 0) {
+        supervisor.myIdeas.forEach(async (ideas) => {
+          const idea = await projectRequest.findById(ideas.projectId);
+          if (idea) {
+            idea.active = false;
+            await idea.save();
+          }
+        })
+      }
       const newRequest = supervisor.myIdeas.filter(idea => {
         return !idea.projectId.equals(check._id)
       });
