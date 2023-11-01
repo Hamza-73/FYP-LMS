@@ -244,7 +244,7 @@ const Event = (props) => {
                           });
                           setShow(true);
                         }}
-                          disabled={new Date(val.vivaDate) < new Date()}><i class="fa-solid fa-pen-to-square"></i></td>
+                          disabled={val.isViva}><i class="fa-solid fa-pen-to-square"></i></td>
                       </tr>
                     ))}
                   </tbody>

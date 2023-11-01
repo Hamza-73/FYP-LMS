@@ -15,6 +15,7 @@ const Admin = require('../models/Admin');
 const Committee = require('../models/Committee');
 const nodemailer = require('nodemailer');
 const { RequestPageOutlined } = require('@mui/icons-material');
+const Viva = require('../models/Viva');
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -57,9 +58,15 @@ router.post('/create', [
   }
 
   try {
-    const existingSupervisor = await Supervisor.findOne({ username });
+    // Check if the updated username or email already exists for another supervisor
+    const existingSupervisor = await Supervisor.findOne({
+      $or: [
+        { username: username },
+        { email: email }
+      ]
+    });
     if (existingSupervisor) {
-      return res.status(409).json({ success: false, message: 'username already exists' });
+      return res.status(400).json({ message: "Username or Email already exists for another supervisor." });
     } else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
@@ -830,6 +837,7 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
     }
 
     group.marks = marks; group.externalMarks = external; group.hodMarks = hod, group.internalMarks = internal;
+    group.isViva = true;
     group.projects.map(project => {
       console.log(' project is ', project);
       project.students.map(async student => {
@@ -846,6 +854,11 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
         await studentObj.save();
       });
     });
+    const viva = await Viva.findById(group.viva);
+    if (viva) {
+      viva.isViva = true;
+      await viva.save()
+    }
 
     await group.save(); // Save the group separately after updating students' marks
     res.json({ success: true, message: `Marks uploaded successfully` });

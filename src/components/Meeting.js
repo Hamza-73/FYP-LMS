@@ -131,28 +131,29 @@ const Meeting = (props) => {
   const [dateError, setDateError] = useState(null);
 
   const handleInputChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  if (name === 'meetingDate') {
-    const selectedDate = new Date(value);
-    const currentDate = new Date();
+    if (name === 'meetingDate') {
+      const selectedDate = new Date(value);
+      const currentDate = new Date();
 
-    if (selectedDate < currentDate) {
-      setDateError("Meeting date cannot be in the past.");
-    } else {
-      setDateError(null);
+      if (selectedDate < currentDate) {
+        setDateError("Meeting date cannot be in the past.");
+      } else {
+        setDateError(null);
+      }
     }
-  }
 
-  if (name === 'meetingLink') {
-    // Use a regular expression to check if the input value is a valid link
-    const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
-    const isValid = linkRegex.test(value);
-    setIsLinkValid(isValid);
-  }
+    if (name === 'meetingLink') {
+      // Use a regular expression to check if the input value is a valid link
+      const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+      const isValid = linkRegex.test(value);
+      setIsLinkValid(isValid);
+    }
 
-  setMeeting({ ...meeting, [name]: value });
-};
+    setMeeting({ ...meeting, [name]: value });
+    console.log('meeting is ', meeting);
+  };
 
 
   const deleteMeeting = async (id) => {
@@ -294,7 +295,7 @@ const Meeting = (props) => {
 
   function showDiv(divId, element) {
     document.getElementById(divId).style.display =
-      element.value == 1 ? "block" : "none";
+      element.value == "Online" ? "block" : "none";
   }
   const handleEditMeeting = async (e) => {
     e.preventDefault();
@@ -461,19 +462,18 @@ const Meeting = (props) => {
               <h4>Select a meeting type</h4>{" "}
               <select
                 id="test"
-                name="form-select"
-                onChange={(e) => showDiv("link", e.target)}
+                name="meetingType"
+                value={meeting.meetingType}
+                onChange={(e) => { handleInputChange(e); showDiv("link", e.target); }}
               >
                 <option id="test">None</option>
                 <option
                   id="test"
-                  value="0"
-                  checked={meeting.type === "In Person"}
-                  onChange={handleInputChange}
+                  value="In Person"
                 >
                   In Person
                 </option>
-                <option id="test" value="1" checked={meeting.type === "Online"} onChange={handleInputChange}>
+                <option id="test" value="Online">
                   Online
                 </option>
               </select>{" "}
@@ -484,14 +484,14 @@ const Meeting = (props) => {
                   <i class="fas fa-video" style={{ fontSize: "24px" }}></i>
                   &ensp;Using
                 </h4>
-                <select id="test" name="form-select">
-                  <option value="0" checked={meeting.type === "Google Meet"}>
+                <select id="test" name="meetingType" onChange={handleInputChange} value={meeting.meetingType}>
+                  <option value="Google Meet">
                     Google Meet
                   </option>
-                  <option value="1" checked={meeting.type === "Microsoft Teams"}>
+                  <option value="Microsoft Teams">
                     Microsoft Teams
                   </option>
-                  <option value="2" checked={meeting.type === "Zoom"}>
+                  <option value="Zoom">
                     Zoom
                   </option>
                 </select>{" "}
@@ -500,7 +500,7 @@ const Meeting = (props) => {
                   name="meetingLink"
                   class="purpose"
                   placeholder="Enter the link of the meeting"
-                  disabled={meeting.type === "In Person"}
+                  disabled={meeting.meetingType === "In Person"}
                   onChange={handleInputChange}
                   value={meeting.meetingLink}
                 ></textarea>
@@ -536,11 +536,11 @@ const Meeting = (props) => {
                 <h1>Link</h1>
                 <textarea name="meetingLink" id="" disabled={meeting.meetingType === 'In Person'} cols="35" rows="2" onChange={handleInputChange} value={meeting.meetingLink} style={myStyle}></textarea>
               </div>
-                {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
+              {!isLinkValid && <div className="text-danger">Please enter a valid link.</div>}
 
               <button className="btn btn-danger" style={{ background: "maroon" }}
-              disabled={dateError || !meeting.meetingLink || !meeting.meetingType || !meeting.meetingDate || !meeting.meetingGroup || !meeting.meetingTime}
-              onClick={scheduleMeeting} >Schedule Metting</button>
+                disabled={dateError || !meeting.meetingType || !meeting.meetingDate || !meeting.meetingGroup || !meeting.meetingTime}
+                onClick={scheduleMeeting} >Schedule Meeting</button>
 
             </div>
 

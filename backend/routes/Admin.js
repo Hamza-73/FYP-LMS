@@ -28,10 +28,15 @@ router.post('/register', [
 
     try {
         // Check if the username or email already exists in the database
-        const existingUser = await Admin.findOne({ $or: [{ username }, { email }] });
+        const existingAdmin = await Admin.findOne({
+            $or: [
+                { username: username },
+                { email: email }
+            ]
+        });
 
-        if (existingUser) {
-            return res.status(409).json({ success: false, message: 'Username or email already exists' });
+        if (existingAdmin) {
+            return res.status(400).json({ success: false, message: "Username or Email already exists for another admin." });
         } else {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
@@ -75,8 +80,8 @@ router.post('/login', async (req, res) => {
             } else {
                 res.status(401).json({ success: false, message: 'Invalid username or password' });
             }
-        } else{
-            return res.json({ success: false , message:"User doesnot exist"});
+        } else {
+            return res.json({ success: false, message: "User doesnot exist" });
         }
     } catch (err) {
         console.error('Error in admin login', err);

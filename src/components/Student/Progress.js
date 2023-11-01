@@ -166,6 +166,7 @@ const Progress = (props) => {
             setTimeout(() => {
                 groupDetail();
                 setLoading(false);
+                getMembers();
             }, 1300);
         }
     }, []);
@@ -195,6 +196,28 @@ const Progress = (props) => {
 
     const [show, setShow] = useState(false);
 
+    const [data, setData] = useState({ members: [] });
+    const getMembers = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Authorization token not found', 'danger');
+                return;
+            }
+            const response = await fetch("http://localhost:5000/supervisor/get-supervisors", {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const json = await response.json();
+            console.log('supervisors are ', json); // Log the response data to see its structure
+            setData(json);
+        } catch (error) {
+            NotificationManager.error('Error in fetching Supervisors');
+        }
+    }
+
     return (
         <>
             {!loading ? (
@@ -214,8 +237,16 @@ const Progress = (props) => {
                                         <label htmlFor="exampleInputEmail163" className="form-label">
                                             Supervisor Username
                                         </label>
-                                        <input type="text" className="form-control" id="username" name="username" value={request.username} onChange={handleChange}
-                                        />
+                                        <select name="username" value={request.username} onChange={handleChange} className='form-select' id="">
+                                            <option value="">Select Supervisor</option>
+                                            {
+                                                data.members && data.members.filter((sup) =>
+                                                    sup.slots > 0
+                                                ).map((supervisor, key) => {
+                                                    return (<><option key={key} value={supervisor.username}>{supervisor.name}</option></>)
+                                                })
+                                            }
+                                        </select>
                                     </div>
                                     <div className="mb-3">
                                         <label htmlFor="exampleInputPassword331" className="form-label">
@@ -321,7 +352,7 @@ const Progress = (props) => {
                                                 {
                                                     groupDetails.group.vivaDate ?
                                                         (
-                                                            new Date() < new Date(groupDetails.group.vivaDate) ?
+                                                            !groupDetails.group.isViva ?
                                                                 new Date(groupDetails.group.vivaDate).toISOString().split('T')[0] :
                                                                 "Taken"
                                                         ) :

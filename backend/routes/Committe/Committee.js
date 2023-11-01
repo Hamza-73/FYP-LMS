@@ -36,11 +36,16 @@ router.post('/register', [
   }
 
   try {
-    // Check if the username or the combination of first and last name already exists in the database
-    const existingUser = await Committee.findOne({ username: username });
+    // Check if the updated username or email already exists for another student
+    const existingStudent = await Committee.findOne({
+      $or: [
+        { username: username },
+        { email: email }
+      ]
+    });
 
-    if (existingUser) {
-      return res.status(409).json({ success: false, message: 'Username or name already exists' });
+    if (existingStudent) {
+      return res.status(400).json({ message: "Username or Email already exists for another Committee Member." });
     } else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
@@ -267,7 +272,7 @@ router.put('/edit/:id', async (req, res) => {
     });
 
     if (existingStudent && existingStudent._id.toString() !== studentId) {
-      return res.status(400).json({ message: "Username or Email already exists for another student." });
+      return res.status(400).json({ message: "Username or Email already exists for another Committee." });
     }
 
     // Update student details
@@ -409,6 +414,9 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
     const supervisor = await Supervisor.findById(req.user.id);
     if (!supervisor) {
       const committee = await Committee.findById(req.user.id);
+      if (type === 'proposal' && committee.docDate) {
+        return res.json({ success: false, message: "Proposals are Submitted" })
+      }
       if (type === 'proposal') {
         if (new Date(committee.propDate) < new Date()) {
           return res.json({ success: false, message: "Proposal Are Submitted" })
@@ -419,6 +427,9 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
         }
       }
     } else {
+      if (type === 'proposal' && supervisor.docDate) {
+        return res.json({ success: false, message: "Proposals are Submitted" })
+      }
       if (type === 'proposal') {
         if (new Date(supervisor.propDate) < new Date()) {
           return res.json({ success: false, message: "Proposal Are Submitted" })

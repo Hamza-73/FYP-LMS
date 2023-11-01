@@ -68,7 +68,7 @@ const CommitteeMember = (props) => {
         setShow(false);
       }
       else {
-        NotificationManager.error('Register According to the standard of Registration');
+        NotificationManager.error(json.message);
       }
     } catch (error) {
       NotificationManager.error('Error in Registering');

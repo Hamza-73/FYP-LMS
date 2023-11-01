@@ -69,23 +69,15 @@ const MyGroup = (props) => {
 
     // Check if a file is selected
     if (selectedFile) {
-      // Check file type
-      const allowedTypes = ['application/pdf']; // Only allow PDF files
-      if (allowedTypes.includes(selectedFile.type)) {
         // Check file size (in bytes)
         const maxSize = 3 * 1024 * 1024; // 3MB
         if (selectedFile.size <= maxSize) {
           setFile(selectedFile);
         } else {
           // File size exceeds the limit
-          NotificationManager.error('File size must be less than 3MB.');
+          NotificationManager.error('File size must be less than 5MB.');
           e.target.value = null; // Clear the file input
         }
-      } else {
-        // Invalid file type
-        NotificationManager.error('Invalid file format. Please select a PDF file.');
-        e.target.value = null; // Clear the file input
-      }
     }
   }
 
@@ -305,14 +297,15 @@ const MyGroup = (props) => {
       }}>
         <Modal.Header>
           <Modal.Title>Extension Request</Modal.Title>
-          <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </Modal.Header>
         <Modal.Body>
           <>
             <form onSubmit={requestextension}>
               <textarea className='form-control' value={reason} onChange={(e) => setReason(e.target.value)} />
               <Modal.Footer>
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                <button type="button" className="btn btn-secondary" onClick={()=>{
+                  setShow(false);
+                }}> Close</button>
                 <button className="btn" style={{ background: "maroon", color: "white" }} disabled={!reason}>Request</button>
               </Modal.Footer>
             </form>

@@ -60,7 +60,8 @@ const groupSchema = new Schema({
   external: { type: String },
   externalName: { type: String },
   internal: { type: String },
-  internalName: { type: String }
+  internalName: { type: String },
+  isViva: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Group', groupSchema);

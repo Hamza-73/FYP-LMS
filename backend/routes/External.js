@@ -20,9 +20,16 @@ router.post('/create', [
     }
 
     try {
-        const existingSupervisor = await External.findOne({ username });
-        if (existingSupervisor) {
-            return res.status(409).json({ success: false, message: 'username already exists' });
+        // Check if the updated username or email already exists for another external student
+        const existingExternalStudent = await External.findOne({
+            $or: [
+                { username: username },
+                { email: email }
+            ]
+        });
+
+        if (existingExternalStudent) {
+            return res.status(400).json({ success: false, message: "Username or Email already exists for another external." });
         } else {
             const external = new External({ name, username, email });
             await external.save();
@@ -40,7 +47,7 @@ router.post('/create', [
 router.put('/edit/:id', async (req, res) => {
     const studentId = req.params.id;
     const updatedDetails = req.body;
-    
+
     try {
         // Check if the updated username or email already exists for another external student
         const existingExternalStudent = await External.findOne({
@@ -51,7 +58,7 @@ router.put('/edit/:id', async (req, res) => {
         });
 
         if (existingExternalStudent && existingExternalStudent._id.toString() !== studentId) {
-            return res.status(400).json({ success: false, message: "Username or Email already exists for another external student." });
+            return res.status(400).json({ success: false, message: "Username or Email already exists for another external." });
         }
 
         // Update external student details

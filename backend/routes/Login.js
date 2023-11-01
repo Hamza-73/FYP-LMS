@@ -221,12 +221,19 @@ router.post('/register', [
   }
 
   try {
-    // Check if the username already exists in the database
-    const existingUser = await User.findOne({ rollNo });
 
-    if (existingUser) {
-      return res.status(409).json({ success: false, message: 'Username already exists' });
-    } else {
+    // Check if the updated username or email already exists for another student
+    const existingStudent = await User.findOne({
+      $or: [
+        { email: email },
+        { rollNo: rollNo },
+        { cnic: cnic }
+      ]
+    });
+
+    if (existingStudent) {
+      return res.status(400).json({ success: false, message: "Roll No., Cnic, Email should be unique." });
+    }else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(cnic, salt);
 
@@ -593,7 +600,6 @@ router.put('/edit/:id', async (req, res) => {
     // Check if the updated username or email already exists for another student
     const existingStudent = await User.findOne({
       $or: [
-        { username: updatedDetails.username },
         { email: updatedDetails.email },
         { rollNo: updatedDetails.rollNo },
         { cnic: updatedDetails.cnic }
@@ -601,7 +607,7 @@ router.put('/edit/:id', async (req, res) => {
     });
 
     if (existingStudent && existingStudent._id.toString() !== studentId) {
-      return res.status(400).json({ success: false, message: "Roll No., Cnic, Email, Username should be unique." });
+      return res.status(400).json({ success: false, message: "Roll No., Cnic, Email should be unique." });
     }
 
     // Update student details
@@ -670,7 +676,7 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       meetingDate: group.meetingDate,
       meetingLink: group.meetingLink ? group.meetingLink : "",
       meetingTime: group.meetingTime,
-      meetingId: group.meetingid
+      meetingId: group.meetingid, isViva: group.isViva
     }
     return res.json({ success: true, group: groupDetail })
   } catch (error) {
@@ -1041,10 +1047,6 @@ router.post('/extension', authenticateUser, async (req, res) => {
     const group = await Group.findById(student.group);
     if (!group) {
       return res.status(404).json({ success: false, message: 'Group Not found' });
-    }
-
-    if (!group.propDate) {
-      return res.status(500).json({ success: false, message: 'No Date for Submission has been announced yet.' });
     }
 
     if (!group.docDate) {

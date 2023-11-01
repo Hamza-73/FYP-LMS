@@ -21,6 +21,7 @@ const vivaSchema = new Schema({
     type: String,
     match: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, // Validate as HH:mm format
   },
+  isViva: { type: Boolean, default: false }
 });
 
 vivaSchema.methods.populateDocumentation = async function () {

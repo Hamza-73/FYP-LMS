@@ -734,7 +734,7 @@ const StudentList = (props) => {
             className="btn btn-danger mx-5"
             onClick={() => {
               setFile(null);
-              setShow(true);
+              setShowUpload(true);
             }}
           >
             Register From File

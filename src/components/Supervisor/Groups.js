@@ -245,9 +245,8 @@ const Groups = (props) => {
                             {
                               group.vivaDate ?
                                 (
-                                  new Date() < new Date(group.vivaDate) ?
-                                    new Date(group.vivaDate).toISOString().split('T')[0] :
-                                    "Taken"
+                                  !group.isViva ? 
+                                    new Date(group.vivaDate).toISOString().split('T')[0] : "Taken"
                                 ) :
                                 "Pending"
                             }
