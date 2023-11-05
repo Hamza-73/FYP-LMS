@@ -74,10 +74,7 @@ const StudentList = (props) => {
       const json = await response.json();
       console.log(json);
       if (json.success) {
-        // Save the auth token and redirect
-        localStorage.setItem('token', json.token);
         NotificationManager.success('Registration Successful');
-        // history("/");
         setData(prevData => ({
           ...prevData,
           members: [...prevData.members, {
@@ -98,7 +95,7 @@ const StudentList = (props) => {
         NotificationManager.error(json.message);
       }
     } catch (error) {
-      NotificationManager.error('Error in Registering');
+      console.log('error in registering', error);
     }
   }
 
@@ -467,6 +464,7 @@ const StudentList = (props) => {
                   </span>
                   <input
                     type="text"
+                    minLength={3}
                     className="form-control"
                     id="name"
                     name="name"
@@ -485,6 +483,7 @@ const StudentList = (props) => {
                   </span>
                   <input
                     type="text"
+                    minLength={3}
                     className="form-control"
                     id="father"
                     name="father"

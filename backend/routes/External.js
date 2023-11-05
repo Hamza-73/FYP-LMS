@@ -7,40 +7,40 @@ const JWT_KEY = 'hamzakhan1';
 const bcrypt = require('bcryptjs');
 var jwt = require("jsonwebtoken");
 
-// Create a new supervisor
 router.post('/create', [
     body('name', 'Name is required').exists(),
-    body('username', 'username should not be blank').exists(),
+    body('username', 'Username is required').exists(),
     body('email', 'Enter a valid email').isEmail(),
-], async (req, res) => {
+  ], async (req, res) => {
     const { name, username, email } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
-
+  
     try {
-        // Check if the updated username or email already exists for another external student
-        const existingExternalStudent = await External.findOne({
-            $or: [
-                { username: username },
-                { email: email }
-            ]
-        });
-
-        if (existingExternalStudent) {
-            return res.status(400).json({ success: false, message: "Username or Email already exists for another external." });
-        } else {
-            const external = new External({ name, username, email });
-            await external.save();
-            return res.json({ success: true, external });
-        }
-
+      // Check if email already exists
+      const existingEmail = await External.findOne({ email: email });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: "Email already exists for another external." });
+      }
+  
+      // Check if username already exists
+      const existingUsername = await External.findOne({ username: username });
+      if (existingUsername) {
+        return res.status(400).json({ success: false, message: "Username already exists for another external." });
+      }
+  
+      // Create a new external student
+      const external = new External({ name, username, email });
+      await external.save();
+      return res.json({ success: true, external });
     } catch (err) {
-        console.error('error in creating ', err)
-        res.status(500).json({ success: false, message: 'Internal server error' });
+      console.error('error in creating ', err);
+      res.status(500).json({ success: false, message: 'Internal server error' });
     }
-});
+  });
+  
 
 
 // Route to update external student details
@@ -49,16 +49,20 @@ router.put('/edit/:id', async (req, res) => {
     const updatedDetails = req.body;
 
     try {
-        // Check if the updated username or email already exists for another external student
-        const existingExternalStudent = await External.findOne({
-            $or: [
-                { username: updatedDetails.username },
-                { email: updatedDetails.email }
-            ]
-        });
+        // Check if the updated email already exists for another external student
+        const existingEmail = await External.findOne({ email: updatedDetails.email });
 
-        if (existingExternalStudent && existingExternalStudent._id.toString() !== studentId) {
-            return res.status(400).json({ success: false, message: "Username or Email already exists for another external." });
+        // Check if the updated username already exists for another external student
+        const existingUsername = await External.findOne({ username: updatedDetails.username });
+
+        // Check if the updated email exists for another external student
+        if (existingEmail && existingEmail._id.toString() !== studentId) {
+            return res.status(400).json({ success: false, message: "Email already exists for another external student." });
+        }
+
+        // Check if the updated username exists for another external student
+        if (existingUsername && existingUsername._id.toString() !== studentId) {
+            return res.status(400).json({ success: false, message: "Username already exists for another external student." });
         }
 
         // Update external student details
@@ -73,7 +77,6 @@ router.put('/edit/:id', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-
 
 //delete supervisor
 router.delete('/delete/:id', async (req, res) => {

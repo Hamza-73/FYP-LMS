@@ -439,7 +439,7 @@ const SupervisorList = (props) => {
             <form onSubmit={editMode ? handleEdit : handleRegister}>
               <div className="col">
                 <label htmlFor="name" className="form-label">
-                  First Name
+                  Name
                 </label>
                 <div className="input-group">
                   <span className="input-group-text">
@@ -450,6 +450,7 @@ const SupervisorList = (props) => {
                     className="form-control"
                     id="name"
                     name="name"
+                    minLength={3}
                     value={register.name}
                     onChange={handleChange1}
                   />
@@ -468,6 +469,7 @@ const SupervisorList = (props) => {
                     className="form-control"
                     id="username"
                     name="username"
+                    minLength={3}
                     value={register.username}
                     onChange={handleChange1}
                   />
@@ -543,7 +545,7 @@ const SupervisorList = (props) => {
               </div>
               {!editMode ? <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
+                <input type="password" minLength={6} className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
                 <small>Password should be at least 4 characters</small>
               </div> : ''}
               <Modal.Footer className="modal-footer">

@@ -37,16 +37,18 @@ router.post('/register', [
 
   try {
     // Check if the updated username or email already exists for another student
-    const existingStudent = await Committee.findOne({
-      $or: [
-        { username: username },
-        { email: email }
-      ]
-    });
+    const existingStudent = await Committee.findOne(
+      { email: email });
 
     if (existingStudent) {
-      return res.status(400).json({ message: "Username or Email already exists for another Committee Member." });
-    } else {
+      return res.status(400).json({ message: "Email already exists for another Committee Member." });
+    }
+    const existUsename = await Committee.findOne(
+      { username: username });
+    if (existUsename) {
+      return res.status(400).json({ message: "Username already exists for another Committee Member." });
+    }
+    else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
       // Create a new user if the username is unique
@@ -261,18 +263,20 @@ router.get('/detail', authenticateUser, async (req, res) => {
 router.put('/edit/:id', async (req, res) => {
   const studentId = req.params.id;
   const updatedDetails = req.body;
+  const updatedEmail = updatedDetails.email;
+  const updatedUsername = updatedDetails.username;
 
   try {
-    // Check if the updated username or email already exists for another student
-    const existingStudent = await Committee.findOne({
-      $or: [
-        { username: updatedDetails.username },
-        { email: updatedDetails.email }
-      ]
-    });
+    // Check if the updated email already exists for another student
+    const existingEmail = await Committee.findOne({ email: updatedEmail });
+    if (existingEmail && existingEmail._id.toString() !== studentId) {
+      return res.status(400).json({ message: "Email already exists for another Committee." });
+    }
 
-    if (existingStudent && existingStudent._id.toString() !== studentId) {
-      return res.status(400).json({ message: "Username or Email already exists for another Committee." });
+    // Check if the updated username already exists for another student
+    const existingUsername = await Committee.findOne({ username: updatedUsername });
+    if (existingUsername && existingUsername._id.toString() !== studentId) {
+      return res.status(400).json({ message: "Username already exists for another Committee." });
     }
 
     // Update student details
@@ -287,7 +291,6 @@ router.put('/edit/:id', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
 
 
 // give remarks to students
@@ -568,8 +571,18 @@ router.put('/allocate-group', async (req, res) => {
     // Add the group ID to the new supervisor's groups
     supervisor.groups.push(group._id);
     supervisor.slots -= 1;
+    group.projects[0].students.forEach(async stu => {
+      const studentObj = await User.findById(stu.userId);
+      if (studentObj) {
+        studentObj.unseenNotifications.push({
+          type: "Important", message: `You've been assigned a new supervisor ${supervisor.name}`
+        });
+        await studentObj.save()
+      }
+    })
     // Create an allocation object
     const currentDateTime = new Date();
+    await group.save();
 
     // Extract date and time from the current date and time object
     const currentDate = currentDateTime.toISOString().split('T')[0];
@@ -609,9 +622,8 @@ router.put('/allocate-group', async (req, res) => {
   }
 });
 
-router.post('/make-extension/:requestId', authenticateUser, async (req, res) => {
+router.post('/make-extension', authenticateUser, async (req, res) => {
   try {
-    const { requestId } = req.params;
     const { date } = req.body;
     console.log('date is ', date)
     const formattedDate = moment.utc(date, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
@@ -624,41 +636,33 @@ router.post('/make-extension/:requestId', authenticateUser, async (req, res) => 
         return res.json({ success: false, message: "user Not Found" });
       }
     }
-    const request = supervisor.requests.filter(request => {
-      return request._id.equals(requestId);
-    });
-    if (request.length <= 0) {
-      return res.json({ success: false, message: "Request Not Found" });
+    if (supervisor.requests.length === 0) {
+      return res.json({ success: false, message: "No Extension Requests Yet" });
     }
-    const group = await Group.findOne({
-      'projects.projectTitle': request[0].group
-    });
-    if (!group) {
-      return res.json({ success: false, message: "Group Not Found" });
-    }
-    group.docDate = formattedDate;
-    await group.save();
-    group.projects[0].students.forEach(async stu => {
-      const stuObj = await User.findById(stu.userId)
-      stuObj.unseenNotifications.push({
-        type: "Important", message: `Time extended for Documentation`
+    supervisor.requests.forEach(async request => {
+      const group = await Group.findOne({
+        'projects.projectTitle': request.group
       });
-      await stuObj.save();
-    });
+      group.docDate = formattedDate;
+      await group.save();
+      group.projects[0].students.forEach(async stu => {
+        const stuObj = await User.findById(stu.userId)
+        stuObj.unseenNotifications.push({
+          type: "Important", message: `Time extended for Documentation`
+        });
+        await stuObj.save();
+      });
+
+    })
+
     const supervisors = await Supervisor.find({ isAdmin: true });
     const committeeMembers = await Committee.find({ isAdmin: true });
     supervisors.forEach(async sup => {
-      const filteredRequest = sup.requests.filter(req => {
-        return !req._id.equals(requestId);
-      });
-      sup.requests = filteredRequest
+      sup.requests = []
       await sup.save()
     });
     committeeMembers.forEach(async sup => {
-      const filteredRequest = sup.requests.filter(req => {
-        return !req._id.equals(requestId);
-      });
-      sup.requests = filteredRequest
+      sup.requests = []
       await sup.save()
     });
     return res.json({
@@ -667,7 +671,6 @@ router.post('/make-extension/:requestId', authenticateUser, async (req, res) => 
   } catch (error) {
     console.error('error in handling extenion', error);
     return res.json({ message: "Internal Server Error" });
-
   }
 })
 

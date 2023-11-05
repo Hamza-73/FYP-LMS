@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
@@ -92,19 +92,24 @@ const ExtensionRequest = (props) => {
         }
     };
 
-    const [id, setId] = useState('');
-
     const extendDate = async (e) => {
         try {
             e.preventDefault();
-            alert(date);
+
+            const selectedDate = new Date(date);
+            const currentDate = new Date();
+
+            if (selectedDate < currentDate) {
+                NotificationManager.error('Selected date cannot be behind the current date', 'Error');
+                return;
+            }
             const token = localStorage.getItem('token');
             if (!token) {
                 console.log('token not found');
                 return;
             }
             console.log('date again ', date)
-            const response = await fetch(`http://localhost:5000/committee/make-extension/${id}`, {
+            const response = await fetch(`http://localhost:5000/committee/make-extension`, {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -125,12 +130,6 @@ const ExtensionRequest = (props) => {
             console.log('error in extending : ', err);
         }
     };
-
-    const location = useLocation();
-    const pathsWithoutSidebar = ['/', '/committeeMain', '/committeeMain/members', '/committeeMain/student', '/committeeMain/external'];
-
-    // Check if the current location is in the pathsWithoutSidebar array
-    const showSidebar = pathsWithoutSidebar.includes(location.pathname);
 
     const style = `
   .heading {
@@ -198,7 +197,7 @@ const ExtensionRequest = (props) => {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => setDate('')}>Close</button>
+                                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setDate(''); setShow(false) }}>Close</button>
                                 <button type="submit" className="btn btn-success">
                                     Extend
                                 </button>
@@ -242,9 +241,6 @@ const ExtensionRequest = (props) => {
                                         <th scope="col">Supervisor</th>
                                         <th scope="col">Group</th>
                                         <th scope="col">Reason</th>
-                                        {(!showSidebar || userData.member.isAdmin) && <>
-                                            <th scope="col">Extend</th>
-                                        </>}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -253,22 +249,12 @@ const ExtensionRequest = (props) => {
                                             <td>{val.supervisor}</td>
                                             <td>{val.group}</td>
                                             <td>{val.reason ? val.reason : "---"}</td>
-                                            {(userData.member.isAdmin) &&
-                                                <td><button className="btn btn-sm" style={{
-                                                    color: "white", background: "maroon", cursor: "pointer"
-                                                }}
-                                                    onClick={() => {
-                                                        setId(val._id);
-                                                        setShow(true);
-                                                    }}
-                                                >Extend</button></td>
-                                            }
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         ) : (
-                            <div>No matching members found.</div>
+                            <div>No Extension Requests.</div>
                         )}
                         <div className="d-flex justify-content-between">
                             <button type="button" className="btn btn-success" disabled={currentPage === 1} onClick={handlePrevPage}
@@ -277,6 +263,12 @@ const ExtensionRequest = (props) => {
                             >  Next </button>
                         </div>
                     </div>
+                    {userData.member.isAdmin && <button className="btn btn-danger d-grid gap-2 col-6 mx-auto my-4" style={{ background: "maroon", color: "white" }}
+                        onClick={() => {
+                            setShow(true);
+                        }}
+                        disabled={!(filteredDataPaginated.length > 0)}
+                    >Extend</button>}
                     <NotificationContainer />
                 </>
             )}

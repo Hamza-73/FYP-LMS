@@ -58,21 +58,24 @@ router.post('/create', [
   }
 
   try {
-    // Check if the updated username or email already exists for another supervisor
-    const existingSupervisor = await Supervisor.findOne({
-      $or: [
-        { username: username },
-        { email: email }
-      ]
-    });
-    if (existingSupervisor) {
-      return res.status(400).json({ message: "Username or Email already exists for another supervisor." });
+
+    // Check if the updated username or email already exists for another student
+    const existingStudent = await Supervisor.findOne(
+      { email: email });
+
+    if (existingStudent) {
+      return res.status(400).json({ message: "Email already exists for another Supervisor" });
+    }
+    const existUsename = await Supervisor.findOne(
+      { username: username });
+    if (existUsename) {
+      return res.status(400).json({ message: "Username already exists for another Supervisor" });
     } else {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
       const supervisor = new Supervisor({ name, designation, username, password: secPass, slots, department, email });
       await supervisor.save();
-      return res.json({ success: true, supervisor });
+      return res.json({ success: true, message: 'Registeraion Successful' });
     }
 
   } catch (err) {
@@ -180,23 +183,24 @@ router.get('/get-supervisors', async (req, res) => {
 
 });
 
-
-// Route to update supervisor details
+// edit detail
 router.put('/edit/:id', async (req, res) => {
   const supervisorId = req.params.id;
   const updatedDetails = req.body;
+  const updatedEmail = updatedDetails.email;
+  const updatedUsername = updatedDetails.username;
 
   try {
-    // Check if the updated username or email already exists for another supervisor
-    const existingSupervisor = await Supervisor.findOne({
-      $or: [
-        { username: updatedDetails.username },
-        { email: updatedDetails.email }
-      ]
-    });
+    // Check if the updated email already exists for another supervisor
+    const existingEmail = await Supervisor.findOne({ email: updatedEmail });
+    if (existingEmail && existingEmail._id.toString() !== supervisorId) {
+      return res.status(400).json({ success: false, message: "Email already exists for another supervisor." });
+    }
 
-    if (existingSupervisor && existingSupervisor._id.toString() !== supervisorId) {
-      return res.status(400).json({ message: "Username or Email already exists for another supervisor." });
+    // Check if the updated username already exists for another supervisor
+    const existingUsername = await Supervisor.findOne({ username: updatedUsername });
+    if (existingUsername && existingUsername._id.toString() !== supervisorId) {
+      return res.status(400).json({ success: false, message: "Username already exists for another supervisor." });
     }
 
     // Update supervisor details
@@ -206,13 +210,12 @@ router.put('/edit/:id', async (req, res) => {
       return res.status(404).json({ message: 'Supervisor not found' });
     }
 
-    return res.status(200).json({ success: true, updatedSupervisor });
+    return res.status(200).json({ success: true, message: "Edit Successful", updatedSupervisor });
   } catch (error) {
+    console.error('error in editing ', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-
 
 // Supervisor accepts a user's project request and adds user to the relevant group
 router.post('/improve-request/:requestId', authenticateUser, async (req, res) => {

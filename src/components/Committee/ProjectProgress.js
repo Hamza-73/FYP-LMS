@@ -43,13 +43,15 @@ const ProjectProgress = (props) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization" : localStorage.getItem("token")
+          "Authorization": localStorage.getItem("token")
         },
         body: JSON.stringify({ dueDate: deadline.date, type: deadline.type, instructions: deadline.instructions })
       });
       const json = await response.json();
       if (json)
         alert(json.message);
+      // to show dealine history immediately after due date
+      getDetail()
       setShow(false);
     } catch (error) {
       console.log(`Some error occurred: ${error}`);

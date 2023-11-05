@@ -389,9 +389,11 @@ const External = (props) => {
                                     </span>
                                     <input
                                         type="text"
+                                        minLength={3}
                                         className="form-control"
                                         id="name"
                                         name="name"
+                                        required={true}
                                         value={register.name}
                                         onChange={handleChange1}
                                     />
@@ -407,9 +409,11 @@ const External = (props) => {
                                     </span>
                                     <input
                                         type="text"
+                                        minLength={3}
                                         className="form-control"
                                         id="username"
                                         name="username"
+                                        required={true}
                                         value={register.username}
                                         onChange={handleChange1}
                                     />
@@ -425,6 +429,7 @@ const External = (props) => {
                                     </span>
                                     <input
                                         type="text"
+                                        required={true}
                                         className="form-control"
                                         id="email"
                                         name="email"

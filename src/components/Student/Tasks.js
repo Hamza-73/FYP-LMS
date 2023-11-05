@@ -66,12 +66,12 @@ const Tasks = (props) => {
     if (selectedFile) {
       // Check file type
         // Check file size (in bytes)
-        const maxSize = 3 * 1024 * 1024; // 3MB
+        const maxSize = 5 * 1024 * 1024; // 5MB
         if (selectedFile.size <= maxSize) {
           setFile(selectedFile);
         } else {
           // File size exceeds the limit
-          NotificationManager.error('File size must be less than 3MB.');
+          NotificationManager.error('File size must be less than 5MB.');
           e.target.value = null; // Clear the file input 
       }
     }

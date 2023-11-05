@@ -277,9 +277,9 @@ const CommitteeMember = (props) => {
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue === register.lname.toLowerCase() && trimmedValue !== '' && register.lname !== '') {
+      if (name === 'fname' && trimmedValue.toLowerCase() === register.lname.toLowerCase() && trimmedValue !== '' && register.lname.toLowerCase() !== '') {
         setFirstNameLastNameEqual(true);
-      } else if (name === 'lname' && trimmedValue === register.fname.toLowerCase() && trimmedValue !== '' && register.fname !== '') {
+      } else if (name === 'lname' && trimmedValue.toLowerCase() === register.fname.toLowerCase() && trimmedValue !== '' && register.fname.toLowerCase() !== '') {
         setFirstNameLastNameEqual(true);
       } else {
         setFirstNameLastNameEqual(false);
@@ -479,6 +479,7 @@ const CommitteeMember = (props) => {
                     </span>
                     <input
                       type="text"
+                      minLength={3}
                       className="form-control"
                       id="name"
                       name="fname"
@@ -497,6 +498,7 @@ const CommitteeMember = (props) => {
                     </span>
                     <input
                       type="text"
+                      minLength={3}
                       className="form-control"
                       id="name"
                       name="lname"
@@ -524,6 +526,7 @@ const CommitteeMember = (props) => {
                   </span>
                   <input
                     type="text"
+                    minLength={3}
                     className="form-control"
                     id="exampleInputusername2"
                     name="username"
@@ -605,6 +608,7 @@ const CommitteeMember = (props) => {
                   </label>
                   <input
                     type="password"
+                    minLength={6}
                     className="form-control"
                     id="exampleInputPassword2"
                     name="password"

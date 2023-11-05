@@ -197,7 +197,7 @@ const EligibleGroup = (props) => {
                 <select className='form-select' name='internal' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.internal}>
                   <option value="">Select Internal</option>
                   {committee.members && committee.members.map((member, index) => (
-                    <option key={index} value={member.username}>{member.username}</option>
+                    <option key={index} value={member.username}>{member.name}</option>
                   ))}
                 </select>
               </div>
@@ -208,7 +208,7 @@ const EligibleGroup = (props) => {
                 <select className='form-select' name='external' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.external}>
                   <option value="">Select External Member</option>
                   {external.members && external.members.map((member, index) => (
-                    <option key={index} value={member.username}>{member.username}</option>
+                    <option key={index} value={member.username}>{member.name}</option>
                   ))}
                 </select>
               </div>

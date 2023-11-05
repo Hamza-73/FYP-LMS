@@ -42,6 +42,8 @@ const GroupDetail = () => {
       const json = await response.json();
       if (json.success) {
         alert(json.message);
+        // Update the reviews state with the new review
+        setReview([...review, review.text]);
         handleCloseModal("exampleModal")
       }
     } catch (error) {
@@ -154,21 +156,18 @@ const GroupDetail = () => {
                         <label htmlFor="exampleInputEmail163" className="form-label">
                           Review
                         </label>
-                        <textarea className="form-control" id="text" name="text" value={review.text} onChange={handleChange}
-                        />
+                        <textarea className="form-control" id="text" name="text" value={review.text} onChange={handleChange} />
                       </div>
                       <div className="modal-footer">
                         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close" onClick={handleClose}> Close</button>
-                        <button type="submit"
-                          className="btn"
-                          style={{ background: 'maroon', color: 'white' }}
-                        >
+                        <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }}>
                           Give Review
                         </button>
                       </div>
                     </form>
                   </>
                 </div>
+
               </div>
             </div>
           </div>

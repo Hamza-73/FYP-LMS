@@ -20,7 +20,7 @@ router.post('/meeting', authenticateUser, async (req, res) => {
     const meetingDate = new Date(date); // Parse the date from the request body
 
     if (meetingDate < currentDate) {
-      return res.status(200).json({ success: false ,message: `Invalid Date Format` });
+      return res.status(200).json({ success: false, message: `Invalid Date Format` });
     }
     // Check if a meeting with the same projectTitle and future meeting time exists
     const existingMeeting = await Meeting.findOne({ projectTitle: projectTitle });
@@ -169,7 +169,7 @@ router.get('/get-meeting', authenticateUser, async (req, res) => {
       return {
         meetingId: meet._id, meetingGroup: meet.projectTitle,
         meetingTime: meet.time, meetingDate: meet.date,
-        meetingLink: meet.meetingLink,
+        meetingLink: meet.meetingLink, purpose: meet.purpose
       };
     });
 
@@ -201,7 +201,7 @@ router.delete('/delete-meeting/:id', async (req, res) => {
     if (!deletedMeeting) {
       return res.status(404).json({ message: 'Meeting not found' });
     }
-    console.log('meeting is ',deletedMeeting );
+    console.log('meeting is ', deletedMeeting);
     const group = await Group.findOne({ 'projects.projectTitle': deletedMeeting.projectTitle });
     if (group) {
       group.projects[0].students.map(async stu => {
@@ -218,17 +218,18 @@ router.delete('/delete-meeting/:id', async (req, res) => {
 
     group.meetingLink = ''; group.meetingDate = '';
     group.meetingTime = ''; group.meetingid = null;
-    group.meetingReport = group.meetingReport.filter(meet => { 
+    group.meetingReport = group.meetingReport.filter(meet => {
       console.log('meet is ', meet);
-      return !meet.id.equals(id) });
-      console.log(" group.meetingReport  ",  group.meetingReport )
-      await group.save();
+      return !meet.id.equals(id)
+    });
+    console.log(" group.meetingReport  ", group.meetingReport)
+    await group.save();
 
     const meetingToBeDelete = await Meeting.findByIdAndDelete(id);
-    if(!meetingToBeDelete){
-      return res.json({success:false , message:"Meeting Not Found"});
+    if (!meetingToBeDelete) {
+      return res.json({ success: false, message: "Meeting Not Found" });
     }
-    return res.json({success:true , message:"Canceled"})
+    return res.json({ success: true, message: "Canceled" })
 
   } catch (error) {
     console.error('error in deleting ', error);
@@ -274,9 +275,9 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
 
     // Update the review
     group.meetings.push({
-      date : group.meetingReport[index].date ,
-      review : review,
-      value: review? 5 : 3
+      date: group.meetingReport[index].date,
+      review: review,
+      value: review ? 5 : 3
     })
     group.meetingReport[index].review = review;
     if (review) {
@@ -298,7 +299,7 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
 });
 
 router.get('/supervisor', authenticateUser, async (req, res) => {
-  const supervisorId  = req.user.id;
+  const supervisorId = req.user.id;
 
   try {
     const groups = await Group.find({ supervisorId: supervisorId });

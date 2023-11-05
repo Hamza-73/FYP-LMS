@@ -197,21 +197,17 @@ router.post('/register', [
   body('name', 'Name should be at least 4 characters').isLength({ min: 4 }),
   body('father', 'Father Name should be at least 4 characters').isLength({ min: 4 }),
   body('rollNo', 'Invalid Roll Number format').custom((value) => {
-    // Define a regular expression pattern for the desired format
     const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
-
-    // Check if the provided roll number matches the pattern
     if (!rollNoPattern.test(value)) {
       throw new Error('Invalid Roll Number format');
     }
-
-    // If it matches, it's valid, so return true
     return true;
   }),
   body('department', 'Department cannot be left blank').exists(),
   body('batch', 'Batch cannot be left blank').exists(),
   body('cnic', 'CNIC cannot be left blank').exists(),
   body('semester', 'Semester cannot be left blank').exists(),
+  body('email', 'Invalid email').isEmail(),
 ], async (req, res) => {
   const { name, father, rollNo, batch, cnic, semester, department, email } = req.body;
 
@@ -221,38 +217,48 @@ router.post('/register', [
   }
 
   try {
+    // Check if email already exists
+    const existingEmail = await User.findOne({ email: email });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "Email should be unique." });
+    }
 
-    // Check if the updated username or email already exists for another student
-    const existingStudent = await User.findOne({
-      $or: [
-        { email: email },
-        { rollNo: rollNo },
-        { cnic: cnic }
-      ]
+    // Check if roll number (rollNo) already exists
+    const existingRollNo = await User.findOne({ rollNo: rollNo });
+    if (existingRollNo) {
+      return res.status(400).json({ success: false, message: "Roll No. should be unique." });
+    }
+
+    // Check if CNIC already exists
+    const existingCnic = await User.findOne({ cnic: cnic });
+    if (existingCnic) {
+      return res.status(400).json({ success: false, message: "CNIC should be unique." });
+    }
+
+    // Hash the CNIC for storing in the database
+    const salt = await bcrypt.genSalt(10);
+    const hashedCnic = await bcrypt.hash(cnic, salt);
+
+    // Create a new user with the provided details
+    const newUser = new User({
+      name, father, rollNo, batch, cnic, password: hashedCnic, semester, department, email
     });
 
-    if (existingStudent) {
-      return res.status(400).json({ success: false, message: "Roll No., Cnic, Email should be unique." });
-    }else {
-      const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(cnic, salt);
+    // Save the new user to the database
+    await newUser.save();
 
-      // Create a new user with the formatted roll number
-      const newUser = new User({
-        name, father, rollNo, batch, cnic, semester, department, password: secPass, email
-      });
-
-      await newUser.save();
-      const data = {
-        user: {
-          id: newUser.id
-        }
+    // Generate JWT token for the new user
+    const data = {
+      user: {
+        id: newUser.id
       }
-      const token = jwt.sign(data, JWT_KEY);
-      res.json({ success: true, token, message: 'Registration successful' });
-    }
+    };
+    const token = jwt.sign(data, JWT_KEY);
+
+    // Return success message and token
+    res.json({ success: true, token, message: 'Registration successful' });
   } catch (err) {
-    console.error('errir in ', err)
+    console.error('error in registration: ', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -590,24 +596,30 @@ router.post('/request-to-join/:projectTitle', authenticateUser, async (req, res)
   }
 });
 
-
-// Route to update student details
+// route to edit
 router.put('/edit/:id', async (req, res) => {
   const studentId = req.params.id;
   const updatedDetails = req.body;
+  const updatedEmail = updatedDetails.email;
+  const updatedRollNo = updatedDetails.rollNo;
+  const updatedCnic = updatedDetails.cnic;
 
   try {
-    // Check if the updated username or email already exists for another student
-    const existingStudent = await User.findOne({
-      $or: [
-        { email: updatedDetails.email },
-        { rollNo: updatedDetails.rollNo },
-        { cnic: updatedDetails.cnic }
-      ]
-    });
+    // Check if the updated email, rollNo, or cnic already exists for another student
+    const existingEmail = await User.findOne({ email: updatedEmail });
+    const existingRollNo = await User.findOne({ rollNo: updatedRollNo });
+    const existingCnic = await User.findOne({ cnic: updatedCnic });
 
-    if (existingStudent && existingStudent._id.toString() !== studentId) {
-      return res.status(400).json({ success: false, message: "Roll No., Cnic, Email should be unique." });
+    if (existingEmail && existingEmail._id.toString() !== studentId) {
+      return res.status(400).json({ success: false, message: "Email already exists for another student." });
+    }
+
+    if (existingRollNo && existingRollNo._id.toString() !== studentId) {
+      return res.status(400).json({ success: false, message: "Roll No. already exists for another student." });
+    }
+
+    if (existingCnic && existingCnic._id.toString() !== studentId) {
+      return res.status(400).json({ success: false, message: "CNIC already exists for another student." });
     }
 
     // Update student details
@@ -639,6 +651,7 @@ router.put('/edit/:id', async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 
@@ -795,9 +808,6 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
     const filterRequests = user.requests.filter(reqId => !reqId.equals(projectId));
     user.requests = filterRequests;
     await user.save();
-    if (supervisor.slots <= 0) {
-      return res.json({ success: false, message: "Superisor's Slots Are Full So Look For Another Supervisor" })
-    }
     if (action === 'accept') {
       console.log('accape code starts');
       // Check if a group with the same title exists
@@ -852,6 +862,10 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
         } else {
           return res.json({ success: false, message: "Group is Already Filled." });
         }
+      }
+      // if supervisor slots are full and no group is created then return
+      if (supervisor.slots <= 0) {
+        return res.json({ success: false, message: "Superisor's Slots Are Full So Look For Another Supervisor" })
       }
 
       // If no existing group or group is full, create a new group
@@ -961,6 +975,10 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           return res.json({ success: true, message: 'Student added to the existing group after improving the request' });
         }
       }
+      // if slots are full and new group is to be formed then do this
+      if (supervisor.slots <= 0) {
+        return res.json({ success: false, message: "Superisor's Slots Are Full So Look For Another Supervisor" })
+      }
 
       // If no existing group or group is full, create a new group
       const newGroup = new Group({
@@ -1057,8 +1075,8 @@ router.post('/extension', authenticateUser, async (req, res) => {
       return res.status(500).json({ success: false, message: `You've already submitted documentation` });
     }
 
-    if (new Date(group.docDate) > new Date()) {
-      return res.json({ success: false, message: "You cannot send extension request untill the documentation date has not been passed" })
+    if (new Date(group.docDate) < new Date()) {
+      return res.json({ success: false, message: "You cannot send extension request documentation deadline has been passed" })
     }
 
     if (group.extensionRequest.length > 0) {

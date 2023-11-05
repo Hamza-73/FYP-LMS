@@ -27,17 +27,43 @@ router.post('/register', [
     }
 
     try {
-        // Check if the username or email already exists in the database
-        const existingAdmin = await Admin.findOne({
+        // Check if the updated username or email already exists for another student
+        const existingStudent = await Admin.findOne(
+            { email: email });
+
+        if (existingStudent) {
+            return res.status(400).json({ message: "Email already exists for another Admin" });
+        }
+        const existUsename = await Admin.findOne(
+            { username: username });
+        if (existUsename) {
+            return res.status(400).json({ message: "Username already exists for another Admin" });
+        }
+
+        const committee = await Committee.findOne({
             $or: [
                 { username: username },
-                { email: email }
+                { email: email },
+                { isAdmin: true }
             ]
         });
 
-        if (existingAdmin) {
-            return res.status(400).json({ success: false, message: "Username or Email already exists for another admin." });
-        } else {
+        if (committee) {
+            return res.status(400).json({ success: false, message: "Username/Email Already Exist for the Co-Admin" });
+        }
+
+        const supervisor = await Supervisor.findOne({
+            $or: [
+                { username: username },
+                { email: email },
+                { isAdmin: true }
+            ]
+        });
+
+        if (supervisor) {
+            return res.status(400).json({ success: false, message: "Username/Email Already Exist for the Co-Admin" });
+        }
+        else {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -152,6 +178,11 @@ router.post('/make-admin', async (req, res) => {
     const { username } = req.body;
     console.log('usernam eis', username)
     try {
+
+        const admin = await Admin.findOne({ username });
+        if (admin) {
+            return res.json({ success: false, message: "Admin with this username already exists/ change username and try again " });
+        }
         // Find the committee member by username
         const committeeMember = await Committee.findOne({ username });
 
@@ -194,6 +225,10 @@ router.post('/make-committee', async (req, res) => {
 
         if (!committeeMember) {
             return res.status(404).json({ success: false, message: "Supervisor not found" });
+        }
+        const admin = await Committee.findOne({ username });
+        if (admin) {
+            return res.json({ success: false, message: "Committe Member With The username already exists change the username" })
         }
         if (committeeMember.isCommittee) {
             return res.status(201).json({ success: true, message: "Supervisor is Already Committee Member" });
@@ -272,28 +307,39 @@ router.put('/edit/:id', async (req, res) => {
     const updatedDetail = req.body;
 
     try {
-        const existingAdmin = await Admin.findOne({
-            $or: [
-                { username: updatedDetail.username },
-                { email: updatedDetail.email }
-            ]
+
+        // Check if the updated email already exists for another student
+        const existingEmail = await Admin.findOne({ email: updatedDetail.email });
+        if (existingEmail && existingEmail._id.toString() !== id) {
+            return res.status(400).json({ message: "Email already exists for another Admin." });
+        }
+
+        // Check if the updated username already exists for another student
+        const existingUsername = await Admin.findOne({ username: updatedDetail.username });
+        if (existingUsername && existingUsername._id.toString() !== id) {
+            return res.status(400).json({ message: "Username already exists for another Admin." });
+        }
+
+        const committee = await Committee.findOne({
+            username: updatedDetail.username, isAdmin: true
         });
 
-        if (existingAdmin && existingAdmin._id.toString() !== id) {
-            return res.status(400).json({ success: false, message: "Username or Email already exists for another admin." });
+        if (committee) {
+            return res.status(400).json({ success: false, message: "Username Already Exist for the Co-Admin" });
+        }
+
+        const supervisor = await Supervisor.findOne({
+            username: updatedDetail.username, isAdmin: true
+        });
+
+        if (supervisor) {
+            return res.status(400).json({ success: false, message: "Username Already Exist for the Co-Admin" });
         }
 
         const updatedAdmin = await Admin.findByIdAndUpdate(id, updatedDetail, { new: true });
 
         if (!updatedAdmin) {
-            const committeeMember = await Committee.findByIdAndUpdate(id, updatedDetail, { new: true });
-            if (committeeMember) {
-                await committeeMember.save();
-                console.log('committee edited');
-                return res.json({ success: true, message: "Edited Successfully" });
-            } else {
-                return res.status(404).json({ success: false, message: 'Admin Not Found' });
-            }
+            return res.status(404).json({ success: false, message: `Admin not found/ check if it's Co-Admin` });
         }
 
         await updatedAdmin.save();

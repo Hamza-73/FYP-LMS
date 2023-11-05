@@ -136,13 +136,29 @@ const Meeting = (props) => {
     if (name === 'meetingDate') {
       const selectedDate = new Date(value);
       const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for comparison
 
       if (selectedDate < currentDate) {
-        setDateError("Meeting date cannot be in the past.");
-      } else {
-        setDateError(null);
+        alert("Meeting date cannot be in the past.");
+        return;
       }
     }
+
+    if (name === 'meetingTime') {
+      const currentDate = new Date();
+      currentDate.setSeconds(0); // Set seconds to 0 for comparison
+
+      const [hours, minutes] = value.split(':');
+      const selectedTime = new Date(meeting.meetingDate);
+      selectedTime.setHours(hours, minutes);
+      selectedTime.setSeconds(0); // Set seconds to 0 for comparison
+
+      if (selectedTime < currentDate) {
+        alert("Meeting time cannot be in the past.");
+        return;
+      }
+    }
+
 
     if (name === 'meetingLink') {
       // Use a regular expression to check if the input value is a valid link
@@ -184,6 +200,32 @@ const Meeting = (props) => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'meetingDate') {
+      const selectedDate = new Date(value);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for comparison
+
+      if (selectedDate < currentDate) {
+        alert("Meeting date cannot be in the past.");
+        return;
+      }
+    }
+
+    if (name === 'meetingTime') {
+      const currentDate = new Date();
+      currentDate.setSeconds(0); // Set seconds to 0 for comparison
+
+      const [hours, minutes] = value.split(':');
+      const selectedTime = new Date(edit.meetingDate);
+      selectedTime.setHours(hours, minutes);
+      selectedTime.setSeconds(0); // Set seconds to 0 for comparison
+
+      if (selectedTime < currentDate) {
+        alert("Meeting time cannot be in the past.");
+        return;
+      }
+    }
 
     if (name === 'meetingLink') {
       // Use a regular expression to check if the input value is a valid link
@@ -337,13 +379,13 @@ const Meeting = (props) => {
                 <input type="text" className="form-control" id="name" name='meetingGroup' value={edit.meetingGroup} onChange={handleEditChange} />
               </div>
               <div className="mb-3">
-                <label htmlFor="time" className="form-label">Time</label>
-                <input type="time" className="form-control" id="time" name='meetingTime' value={edit.meetingTime} onChange={handleEditChange} />
-              </div>
-              <div className="mb-3">
                 <label htmlFor="date" className="form-label">Date</label>
                 <input type="date" className="form-control" id="meetingDate" name='meetingDate' value={edit.meetingDate} onChange={handleEditChange} />
                 {dateError && <div className="text-danger">Select a valid Date</div>}
+              </div>
+              <div className="mb-3">
+                <label htmlFor="time" className="form-label">Time</label>
+                <input type="time" className="form-control" id="time" name='meetingTime' value={edit.meetingTime} onChange={handleEditChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="type" className="form-label">Type</label>
@@ -509,6 +551,16 @@ const Meeting = (props) => {
               <div style={{ marginTop: "20px" }}>
                 <h6 for="appt">Choose a time and date for your meeting:</h6>{" "}
                 <input
+                  type="date"
+                  class="purpose1"
+                  for="appt"
+                  placeholder="Meeting Date"
+                  onChange={handleInputChange}
+                  name="meetingDate"
+                  value={meeting.meetingDate}
+                />{" "}
+                <br />
+                <input
                   class="purpose1"
                   type="time"
                   id="appt"
@@ -519,16 +571,6 @@ const Meeting = (props) => {
                   onChange={handleInputChange}
                   required
                 />{" "}
-                <br />
-                <input
-                  type="date"
-                  class="purpose1"
-                  for="appt"
-                  placeholder="Meeting Date"
-                  onChange={handleInputChange}
-                  name="meetingDate"
-                  value={meeting.meetingDate}
-                />
                 {dateError && <div className="text-danger">Select a valid Date</div>}
               </div>{" "}
               <br />
@@ -544,103 +586,105 @@ const Meeting = (props) => {
 
             </div>
 
-            <div className="meeting-schedule">
+            {data.meeting.length > 0 && <div className="meeting-schedule">
               <style>{meetingStyle}</style>
               <h3 className="text-center">Scheduled Meetings</h3>
               <div className="my-3">
                 <div className="meeting-row">
-                  {data.meeting.length > 0 ? (
-                    data.meeting.map((meeting, index) => (
-                      <div className="meeting-box" key={index}>
-                        <div className="contaner">
-                          {/* Meeting details */}
-                          <div className="item">
-                            <h5>Group</h5>
-                            <h6>{meeting.meetingGroup}</h6>
-                          </div>
-                          <div className="item">
-                            <h5>Time</h5>
-                            <h6>{meeting.meetingTime}</h6>
-                          </div>
-                          <div className="item">
-                            <h5>Date</h5>
-                            <h6>
-                              {meeting && meeting.meetingDate
-                                ? new Date(meeting.meetingDate).toLocaleDateString(
-                                  'en-US'
-                                )
-                                : '----'}
-                            </h6>
-                          </div>
-                          {meeting && meeting.meetingLink && (
-                            <div className="item meeting-link">
-                              <h5>Link</h5>
-                              <a
-                                href={
-                                  meeting.meetingLink.startsWith('http')
-                                    ? meeting.meetingLink
-                                    : `http://${meeting.meetingLink}`
-                                }
-                                target="_blank"
-                              >
-                                Link
-                              </a>
-                            </div>
-                          )}
-                          <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
-                            {(new Date(meeting.meetingDate) > new Date()) && <button
-                              className="btn btn-danger btn-sm"
-                              data-toggle="modal"
-                              data-target="#exampleModal"
-                              onClick={() => {
-                                setMeetingId(meeting.meetingId);
-                                setEdit({
-                                  meetingGroup: meeting.meetingGroup || '', // Ensure it's defined or set to an empty string
-                                  meetingLink: meeting.meetingLink,
-                                  meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
-                                  meetingDate: meeting.meetingDate,
-                                });
-                                setShow(true);
-                              }}
-                            >
-                              Edit
-                            </button>}
-                            {
-                              new Date(meeting.meetingDate) > new Date() ? (
-                                <button
-                                  className="btn btn-danger btn-sm"
-                                  onClick={() => {
-                                    setMeetingId(meeting.meetingId);
-                                    deleteMeeting(meeting.meetingId);
-                                  }}
-                                >
-                                  Cancel
-                                </button>
-                              ) : (
-                                <button
-                                  className="btn btn-danger btn-sm"
-                                  onClick={() => {
-                                    setMeetingId(meeting.meetingId);
-                                    setShowreview(true);
-                                  }}
-                                >
-                                  Review
-                                </button>
+                  {data.meeting.map((meeting, index) => (
+                    <div className="meeting-box" key={index}>
+                      <div className="contaner">
+                        {/* Meeting details */}
+                        <div className="item">
+                          <h5>Group</h5>
+                          <p style={{fontSize:"15px"}}>{meeting.meetingGroup}</p>
+                        </div>
+                        <div className="item">
+                          <h5>Time</h5>
+                          <p>{meeting.meetingTime}</p>
+                        </div>
+                        <div className="item">
+                          <h5>Date</h5>
+                          <p>
+                            {meeting && meeting.meetingDate
+                              ? new Date(meeting.meetingDate).toLocaleDateString(
+                                'en-US'
                               )
-                            }
+                              : '----'}
+                          </p>
+                        </div>
+                        {meeting && meeting.purpose && <div className="item">
+                          <h5>Purpose</h5>
+                          <p>
+                            {meeting.purpose}
+                          </p>
+                        </div>}
+                        {meeting && meeting.meetingLink && (
+                          <div className="item meeting-link">
+                            <h5>Link</h5>
+                            <a
+                              href={
+                                meeting.meetingLink.startsWith('http')
+                                  ? meeting.meetingLink
+                                  : `http://${meeting.meetingLink}`
+                              }
+                              target="_blank"
+                            >
+                              Link
+                            </a>
                           </div>
+                        )}
+                        <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
+                          {(new Date(meeting.meetingDate) > new Date()) && <button
+                            className="btn btn-danger btn-sm"
+                            data-toggle="modal"
+                            data-target="#exampleModal"
+                            onClick={() => {
+                              setMeetingId(meeting.meetingId);
+                              setEdit({
+                                meetingGroup: meeting.meetingGroup || '', // Ensure it's defined or set to an empty string
+                                meetingLink: meeting.meetingLink,
+                                meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
+                                meetingDate: meeting.meetingDate,
+                              });
+                              setShow(true);
+                            }}
+                          >
+                            Edit
+                          </button>}
+                          {
+                            new Date(meeting.meetingDate) > new Date() ? (
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => {
+                                  setMeetingId(meeting.meetingId);
+                                  deleteMeeting(meeting.meetingId);
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            ) : (
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => {
+                                  setMeetingId(meeting.meetingId);
+                                  setShowreview(true);
+                                }}
+                              >
+                                Review
+                              </button>
+                            )
+                          }
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <h4 className="text-center my-5">You have no meetings scheduled</h4>
-                  )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            </div>}
 
           </div>
-        </div> : <Loading />
+        </div > : <Loading />
       }</>
   )
 }

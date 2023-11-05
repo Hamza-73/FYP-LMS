@@ -21,39 +21,39 @@ const MyGroup = (props) => {
   const [file, setFile] = useState();
 
 
+  const groupDetail = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Authorization token not found', 'danger');
+        return;
+      }
+      console.log('before fetch')
+      const response = await fetch("http://localhost:5000/student/my-group", {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": token
+        }
+      });
+      console.log('after fetch')
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const json = await response.json();
+      if (!json) {
+        console.log('group response is ', response);
+      } else {
+        console.log('json is ', json);
+        setGroupDetails(json);
+      }
+    } catch (error) {
+      console.log('error fetching group ', error)
+    }
+  }
   useEffect(() => {
 
-    const groupDetail = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) {
-          alert('Authorization token not found', 'danger');
-          return;
-        }
-        console.log('before fetch')
-        const response = await fetch("http://localhost:5000/student/my-group", {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            "Authorization": token
-          }
-        });
-        console.log('after fetch')
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const json = await response.json();
-        if (!json) {
-          console.log('group response is ', response);
-        } else {
-          console.log('json is ', json);
-          setGroupDetails(json);
-        }
-      } catch (error) {
-        console.log('error fetching group ', error)
-      }
-    }
     if (localStorage.getItem('token')) {
       setLoading(true)
       setTimeout(() => {
@@ -69,15 +69,15 @@ const MyGroup = (props) => {
 
     // Check if a file is selected
     if (selectedFile) {
-        // Check file size (in bytes)
-        const maxSize = 3 * 1024 * 1024; // 3MB
-        if (selectedFile.size <= maxSize) {
-          setFile(selectedFile);
-        } else {
-          // File size exceeds the limit
-          NotificationManager.error('File size must be less than 5MB.');
-          e.target.value = null; // Clear the file input
-        }
+      // Check file size (in bytes)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (selectedFile.size <= maxSize) {
+        setFile(selectedFile);
+      } else {
+        // File size exceeds the limit
+        NotificationManager.error('File size must be less than 5MB.');
+        e.target.value = null; // Clear the file input
+      }
     }
   }
 
@@ -140,9 +140,9 @@ const MyGroup = (props) => {
         const newDocument = {
           docLink: json.url, // Document URL
           review: '', // Empty review,
-          comment: ""
+          comment: comment
         };
-
+        setnewComment(comment)
         setGroupDetails((prevGroup) => ({
           ...prevGroup,
           group: {
@@ -150,7 +150,8 @@ const MyGroup = (props) => {
             docs: [...(prevGroup.group.docs || []), newDocument],
           },
         }));
-        setFile();
+        setFile(null);
+        setComment('')
       }
     } catch (error) {
       console.log('error in uploading file', error);
@@ -253,7 +254,7 @@ const MyGroup = (props) => {
                 </div>
               </div>
               <br />
-              <input type="file" onChange={(e) => { handleFileChange(e) }} accept=".zip, .pdf, .png, .jpeg, .jpg, .mp4, .mkv, .docx, .xlsx, .doc, .ppt, .pptx" />
+              <input type="file" onChange={(e) => { handleFileChange(e) }} accept=".zip, .pdf, .png, .jpg, .jpeg, .webp" />
               <Modal.Footer>
                 <button className="btn btn-secondary" onClick={() => {
                   setShowUpload(false);
@@ -279,9 +280,9 @@ const MyGroup = (props) => {
             <div className="modal-body">
               <>
                 <form>
-                  <textarea className='form-control' value={review ? review : "No Reviews Yet"} />
+                  <textarea className='form-control' value={review ? review : "No Reviews Yet"} disabled={true} />
                   <br />
-                  <textarea className='form-control' value={newComment ? newComment : ""} />
+                  <textarea className='form-control' value={newComment ? newComment : ""} disabled={true} />
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
                   </div>
@@ -303,7 +304,7 @@ const MyGroup = (props) => {
             <form onSubmit={requestextension}>
               <textarea className='form-control' value={reason} onChange={(e) => setReason(e.target.value)} />
               <Modal.Footer>
-                <button type="button" className="btn btn-secondary" onClick={()=>{
+                <button type="button" className="btn btn-secondary" onClick={() => {
                   setShow(false);
                 }}> Close</button>
                 <button className="btn" style={{ background: "maroon", color: "white" }} disabled={!reason}>Request</button>
@@ -372,81 +373,83 @@ const MyGroup = (props) => {
             </div>
 
             <div className="last">
-              {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
-                <div className="notify">
-                  <style>{myStyle}</style>
-                  <div>
+              <div className='d-flex'>
+                {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
+                  <div className="notify">
+                    <style>{myStyle}</style>
                     <div>
                       <div>
-                        <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
-                          <div className="contaner">
-                            <h4 className='text-center'>Meeting</h4>
-                            <div className="items">
-                              <h5>Time</h5>
-                              <h6>{group.group.meetingTime ? group.group.meetingTime : "==="}</h6>
-                            </div>
-                            <div className="items">
-                              <h5>Date</h5>
-                              <h6>
-                                {group.group.meetingDate
-                                  ? new Date(group.group.meetingDate).toLocaleDateString(
-                                    'en-US'
-                                  )
-                                  : '----'}
-                              </h6>
-                            </div>
-                            <div className="items">
-                              <h5>Purpose</h5>
-                              <textarea name="" id="" value={group.group.purpose ? group.group.purpose : ""}></textarea>
-                            </div>
-                            {group.group.meetingLink && (
+                        <div>
+                          <div className="meeting-box" style={{ width: "200px", height: "210px" }}>
+                            <div className="contaner">
+                              <h4 className='text-center'>Meeting</h4>
                               <div className="items">
-                                <h5>Link</h5>
-                                <a
-                                  href={
-                                    group.group.meetingLink.startsWith('http')
-                                      ? group.group.meetingLink
-                                      : `http://${group.group.meetingLink}`
-                                  }
-                                  target="_blank"
-                                >
-                                  Link
-                                </a>
+                                <h5>Time</h5>
+                                <h6>{group.group.meetingTime ? group.group.meetingTime : "==="}</h6>
                               </div>
-                            )}
+                              <div className="items">
+                                <h5>Date</h5>
+                                <h6>
+                                  {group.group.meetingDate
+                                    ? new Date(group.group.meetingDate).toLocaleDateString(
+                                      'en-US'
+                                    )
+                                    : '----'}
+                                </h6>
+                              </div>
+                              <div className="items">
+                                <h5>Purpose</h5>
+                                <textarea style={{ marginLeft: "4px" }} className='form-control' disabled={true} name="" id="" value={group.group.purpose ? group.group.purpose : ""}></textarea>
+                              </div>
+                              {group.group.meetingLink && (
+                                <div className="items">
+                                  <h5>Link</h5>
+                                  <a
+                                    href={
+                                      group.group.meetingLink.startsWith('http')
+                                        ? group.group.meetingLink
+                                        : `http://${group.group.meetingLink}`
+                                    }
+                                    target="_blank"
+                                  >
+                                    Link
+                                  </a>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>}
-              {group.group.viva && group.group.viva.vivaDate &&
-                <div className="notify">
-                  <style>{myStyle}</style>
-                  <div>
-                    <div className="meeting-box" style={{ width: "200px", height: "180px" }}>
-                      <div className="contaner">
-                        <h4 className='text-center'>Viva</h4>
-                        <div className="items">
-                          <h5>Date</h5>
-                          <h6>{group.group.viva.vivaDate && new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</h6>
-                        </div>
-                        <div className="items">
-                          <h5>Time</h5>
-                          <h6>{group.group.viva.vivaTime && group.group.viva.vivaTime} </h6>
-                        </div><div className="items">
-                          <h5>Internal</h5>
-                          <h6>{group.group.viva.internalName} </h6>
-                        </div><div className="items">
-                          <h5>External</h5>
-                          <h6>{group.group.viva.externalName} </h6>
+                </div>}
+                {group.group.viva && group.group.viva.vivaDate &&
+                  <div className="notify">
+                    <style>{myStyle}</style>
+                    <div>
+                      <div className="meeting-box" style={{ width: "200px", height: "210px" }}>
+                        <div className="contaner">
+                          <h4 className='text-center'>Viva</h4>
+                          <div className="items">
+                            <h6>Date</h6>
+                            <p>{group.group.viva.vivaDate && new Date(group.group.viva.vivaDate).toLocaleDateString('en-US')}</p>
+                          </div>
+                          <div className="items">
+                            <h6>Time</h6>
+                            <p>{group.group.viva.vivaTime && group.group.viva.vivaTime} </p>
+                          </div><div className="items">
+                            <h6>Internal</h6>
+                            <p style={{fontSize:"14px"}}>{group.group.viva.internalName} </p>
+                          </div><div className="items">
+                            <h6>External</h6>
+                            <p style={{fontSize:"14px", position:"relative", marginLeft:"3px"}}>{group.group.viva.externalName} </p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              }
+                }
+              </div>
               <div className="meeting-row">
                 {group.group &&
                   group.group.docs &&

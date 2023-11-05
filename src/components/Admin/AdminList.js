@@ -244,12 +244,12 @@ const CommitteeMember = (props) => {
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue === register.lname.toLowerCase() && trimmedValue !== '' && register.lname !== '') {
+      if (name === 'fname' && trimmedValue.toLowerCase() === register.lname.toLowerCase() && trimmedValue !== '' && register.lname.toLowerCase() !== '') {
         setFirstNameLastNameEqual(true);
         // Display an error message
         NotificationManager.error('First name and last name should not be equal.');
 
-      } else if (name === 'lname' && trimmedValue === register.fname.toLowerCase() && trimmedValue !== '' && register.fname !== '') {
+      } else if (name === 'lname' && trimmedValue.toLowerCase() === register.fname.toLowerCase() && trimmedValue !== '' && register.fname.toLowerCase() !== '') {
         setFirstNameLastNameEqual(true);
         // Display an error message
         NotificationManager.error('First name and last name should not be equal.');
@@ -432,11 +432,11 @@ const CommitteeMember = (props) => {
             <form onSubmit={editMode ? handleEdit : handleRegister}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">First Name</label>
-                <input type="text" className="form-control" id="name" name='fname' value={register.fname} onChange={handleChange1} />
+                <input type="text" className="form-control" minLength={3} id="name" name='fname' value={register.fname} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Last Name</label>
-                <input type="text" className="form-control" id="name" name='lname' value={register.lname} onChange={handleChange1} />
+                <input type="text" className="form-control" minLength={3} id="name" name='lname' value={register.lname} onChange={handleChange1} />
                 {firstNameLastNameEqual && (
                   <div className="alert alert-danger" role="alert">
                     First name and last name should not be equal.
@@ -445,7 +445,7 @@ const CommitteeMember = (props) => {
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                <input type="text" className="form-control" id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
+                <input type="text" className="form-control"  minLength={3} id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="email" className="form-label"> Email </label>
@@ -453,8 +453,8 @@ const CommitteeMember = (props) => {
               </div>
               {!editMode ? <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                <input type="password" className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
-                <small>password should be of at least 4 characters </small>
+                <input type="password" className="form-control" minLength={6} id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
+                <small>password should be of at least 6 characters </small>
               </div> : ''}
               <Modal.Footer className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {

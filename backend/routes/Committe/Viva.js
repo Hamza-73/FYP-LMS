@@ -58,8 +58,8 @@ router.post('/schedule-viva', async (req, res) => {
       let count = 0;
       if (new Date(grp.date) === parsedDate) {
         count += 1;
-      } if (count >= 2) {
-        return res.json({ success: false, message: "External Member Already have 2 Vivas Schduled on this Date" });
+      } if (count >= 5) {
+        return res.json({ success: false, message: "External Member Already have 5 Vivas Schduled on this Date" });
       }
     });
 
@@ -67,8 +67,8 @@ router.post('/schedule-viva', async (req, res) => {
       let count = 0;
       if (new Date(grp.date) === parsedDate) {
         count += 1;
-      } if (count >= 2) {
-        return res.json({ success: false, message: "Internal Member Already have 2 Vivas Schduled on this Date" });
+      } if (count >= 5) {
+        return res.json({ success: false, message: "Internal Member Already have 5 Vivas Schduled on this Date" });
       }
     });
 
@@ -107,7 +107,7 @@ router.post('/schedule-viva', async (req, res) => {
         })),
         vivaDate: parsedDate, vivaTime: vivaTime,
         external: external, internal: internal,
-        internalName : internalMember.name, externalName : externalMember.name
+        internalName: internalMember.name, externalName: externalMember.name
       });
       group.viva = viva._id;
       group.vivaDate = parsedDate;
@@ -126,22 +126,20 @@ router.post('/schedule-viva', async (req, res) => {
       project.students.forEach(async (student) => {
         const user = await User.findById(student.userId);
         if (user) {
-          user.unseenNotifications.push({ type: "Reminder", message: notificationMessage });
+          user.unseenNotifications.push({ type: "Reminder", message: `${notificationMessage} Internal : ${internalMember.name}, External : ${externalMember.name}` });
           user.vivaTime = vivaTime;
           user.vivaDate = parsedDate;
           user.viva = viva._id;
           await user.save();
         }
       });
-
-      // Send notification to supervisor
-      const supervisor = await Supervisor.findById(group.supervisor._id);
-      console.log('Super visor is ', supervisor)
-      if (supervisor) {
-        supervisor.unseenNotifications.push({ type: "Reminder", message: notificationMessage });
-        await supervisor.save();
-      }
     });
+
+
+    // Send notification to supervisor
+    const supervisor = await Supervisor.findById(group.supervisor._id);
+    supervisor.unseenNotifications.push({ type: "Reminder", message: `${notificationMessage} Internal : ${internalMember.name}, External : ${externalMember.name}` });
+    await supervisor.save();
 
     res.json({ success: true, message: 'Viva scheduled and notifications sent' });
 
