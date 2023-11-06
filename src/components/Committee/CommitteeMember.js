@@ -277,9 +277,9 @@ const CommitteeMember = (props) => {
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue.toLowerCase() === register.lname.toLowerCase() && trimmedValue !== '' && register.lname.toLowerCase() !== '') {
+      if (name === 'fname' && trimmedValue.toLowerCase().trim() === register.lname.toLowerCase().trim() && trimmedValue !== '' && register.lname.toLowerCase().trim() !== '') {
         setFirstNameLastNameEqual(true);
-      } else if (name === 'lname' && trimmedValue.toLowerCase() === register.fname.toLowerCase() && trimmedValue !== '' && register.fname.toLowerCase() !== '') {
+      } else if (name === 'lname' && trimmedValue.toLowerCase().trim() === register.fname.toLowerCase().trim() && trimmedValue !== '' && register.fname.toLowerCase().trim() !== '') {
         setFirstNameLastNameEqual(true);
       } else {
         setFirstNameLastNameEqual(false);
@@ -479,7 +479,7 @@ const CommitteeMember = (props) => {
                     </span>
                     <input
                       type="text"
-                      minLength={3}
+                      minLength={3} required={true}
                       className="form-control"
                       id="name"
                       name="fname"
@@ -501,7 +501,7 @@ const CommitteeMember = (props) => {
                       minLength={3}
                       className="form-control"
                       id="name"
-                      name="lname"
+                      name="lname" required={true}
                       value={register.lname}
                       onChange={handleChange1}
                     />
@@ -529,7 +529,7 @@ const CommitteeMember = (props) => {
                     minLength={3}
                     className="form-control"
                     id="exampleInputusername2"
-                    name="username"
+                    name="username" required={true}
                     value={register.username}
                     onChange={handleChange1}
                   />
@@ -547,7 +547,7 @@ const CommitteeMember = (props) => {
                     type="text"
                     className="form-control"
                     id="email"
-                    name="email"
+                    name="email" required={true}
                     value={register.email}
                     onChange={handleChange1}
                   />
@@ -564,7 +564,7 @@ const CommitteeMember = (props) => {
                     type="text"
                     className="form-control"
                     id="department"
-                    name="department"
+                    name="department" required={true}
                     value={register.department}
                     onChange={handleChange1}
                   >
@@ -586,7 +586,7 @@ const CommitteeMember = (props) => {
                   <select
                     className="form-select"
                     id="designation"
-                    name="designation"
+                    name="designation" required={true}
                     value={register.designation}
                     onChange={handleChange1}
                   >
@@ -611,7 +611,7 @@ const CommitteeMember = (props) => {
                     minLength={6}
                     className="form-control"
                     id="exampleInputPassword2"
-                    name="password"
+                    name="password" required={true}
                     value={register.password}
                     onChange={handleChange1}
                   />

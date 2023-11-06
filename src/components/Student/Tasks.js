@@ -138,22 +138,30 @@ const Tasks = (props) => {
   }
 
   // Function to calculate time remaining
-  function calculateTimeRemaining(dueDate) {
-    const currentDate = new Date();
-    const timeDifference = dueDate - currentDate;
-
+  function calculateTimeRemaining(isoDueDate) {
+    const dueDate = new Date(isoDueDate); // Assuming isoDueDate is in UTC format
+    const now = new Date(); // Current date and time in client's local time zone
+    const timeZoneOffset = 5 * 60 * 60 * 1000; // UTC+5 in milliseconds
+  
+    // Adjust due date to Pakistan Standard Time (PKT)
+    const localDueDate = new Date(dueDate.getTime() - timeZoneOffset);
+  
+    // Calculate time difference in PKT
+    const timeDifference = localDueDate - now;
+  
     if (timeDifference <= 0) {
       return '0d 0h 0m 0s';
     }
+  
+    // Calculate days, hours, minutes, and seconds
     const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(
-      (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-    );
+    const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
+  
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   }
+
 
   const [remainingTime, setRemainingTime] = useState('');
 
@@ -259,7 +267,7 @@ const Tasks = (props) => {
                         type="file"
                         onChange={(e) => handleFileChange(e)}
                         name="proposal"
-                        accept=".zip, .pdf"
+                        accept=".pdf"
                       />
                       <button
                         className="btn"
@@ -326,7 +334,7 @@ const Tasks = (props) => {
                         type="file"
                         onChange={(e) => handleFileChange(e)}
                         name="documentation"
-                        accept=".zip, .pdf"
+                        accept=".pdf"
                       />
                       <button
                         className="btn"

@@ -254,7 +254,7 @@ const MyGroup = (props) => {
                 </div>
               </div>
               <br />
-              <input type="file" onChange={(e) => { handleFileChange(e) }} accept=".zip, .pdf, .png, .jpg, .jpeg, .webp" />
+              <input type="file" onChange={(e) => { handleFileChange(e) }} accept=".pdf, .png, .jpg, .jpeg, .webp" />
               <Modal.Footer>
                 <button className="btn btn-secondary" onClick={() => {
                   setShowUpload(false);

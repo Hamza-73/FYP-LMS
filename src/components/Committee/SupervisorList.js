@@ -450,7 +450,7 @@ const SupervisorList = (props) => {
                     className="form-control"
                     id="name"
                     name="name"
-                    minLength={3}
+                    minLength={3} required={true}
                     value={register.name}
                     onChange={handleChange1}
                   />
@@ -469,7 +469,7 @@ const SupervisorList = (props) => {
                     className="form-control"
                     id="username"
                     name="username"
-                    minLength={3}
+                    minLength={3} required={true}
                     value={register.username}
                     onChange={handleChange1}
                   />
@@ -486,7 +486,7 @@ const SupervisorList = (props) => {
                     type="text"
                     className="form-control"
                     id="department"
-                    name="department"
+                    name="department" required={true}
                     value={register.department}
                     onChange={handleChange1}
                   >
@@ -508,7 +508,7 @@ const SupervisorList = (props) => {
                     type="text"
                     className="form-control"
                     id="email"
-                    name="email"
+                    name="email" required={true}
                     value={register.email}
                     onChange={handleChange1}
                   />
@@ -526,7 +526,7 @@ const SupervisorList = (props) => {
                   <select
                     className="form-select"
                     id="designation"
-                    name="designation"
+                    name="designation" required={true}
                     value={register.designation}
                     onChange={handleChange1}
                   >
@@ -541,7 +541,7 @@ const SupervisorList = (props) => {
               </div>
               <div className="mb-3">
                 <label htmlFor="department" className="form-label">Slots</label>
-                <input type="number" className="form-control" id="semester" name='slots' value={register.slots} onChange={handleChange1} />
+                <input type="number" className="form-control" required={true} id="semester" name='slots' value={register.slots} onChange={handleChange1} />
               </div>
               {!editMode ? <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Password</label>

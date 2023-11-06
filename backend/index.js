@@ -101,6 +101,15 @@ app.post('/upload/:userType', async (req, res) => {
   } else if (userType === 'user') {
     // For users, hash 'cnic' and add it to 'password'
     excelData = excelData.map((user) => {
+      if(user.password){
+        const password = user.password.toString();
+  
+        // Validate password length
+        if (password.toString().length < 6) {
+          return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+        }
+      }
+
       if (user.cnic) {
         // Hash the 'cnic' using bcrypt and add it to 'password'
         const saltRounds = 10;

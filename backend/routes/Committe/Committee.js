@@ -282,8 +282,9 @@ router.put('/edit/:id', async (req, res) => {
     // Update student details
     const updatedStudent = await Committee.findByIdAndUpdate(studentId, updatedDetails, { new: true });
 
+
     if (!updatedStudent) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: 'Committee not found' });
     }
 
     res.status(200).json({ success: true, updatedStudent });

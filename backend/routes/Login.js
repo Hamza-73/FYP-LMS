@@ -853,10 +853,6 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           }
           request.markModified('students');
           await request.save();
-          // console.log('request is ', request)
-          // console.log('request student ', request.students);
-          // console.log('request student length ', request.students.length);
-
           await Promise.all([existingGroup.save(), user.save(), request.save()]);
           return res.json({ success: true, message: 'Student added to the existing group' });
         } else {
@@ -900,6 +896,15 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
         supervisor.myIdeas = filteredIdea;
         supervisor.groups.push(newGroup._id);
         supervisor.slots = supervisor.slots - 1;
+        if (supervisor.slots <= 0) {
+          supervisor.myIdeas.forEach(async (ideas) => {
+            const idea = await ProjectRequest.findById(ideas.projectId);
+            if (idea) {
+              idea.active = false;
+              await idea.save();
+            }
+          })
+        }
         await supervisor.save();
       }
       request.students.push(user._id)
@@ -967,9 +972,6 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           if (projectTitle) request.projectTitle = projectTitle;
           if (scope) request.scope = scope;
           if (description) request.description = description;
-          console.log('request is ', request)
-          console.log('request is ', request.students);
-          console.log('request is ', request.students.length);
 
           await Promise.all([existingGroup.save(), user.save(), request.save()]);
           return res.json({ success: true, message: 'Student added to the existing group after improving the request' });
@@ -1001,7 +1003,6 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
       user.isMember = true;
 
       // Notify the supervisor
-      // const supervisor = await Supervisor.findById(request.supervisor);
       if (supervisor) {
         supervisor.unseenNotifications.push({
           type: 'Important',
@@ -1011,6 +1012,16 @@ router.put('/process-request/:projectId/:action', authenticateUser, async (req, 
           return !idea.projectId.equals(request);
         })
         supervisor.myIdeas = filteredIdea;
+        supervisor.slots = supervisor.slots - 1;
+        if (supervisor.slots <= 0) {
+          supervisor.myIdeas.forEach(async (ideas) => {
+            const idea = await ProjectRequest.findById(ideas.projectId);
+            if (idea) {
+              idea.active = false;
+              await idea.save();
+            }
+          })
+        }
         await supervisor.save();
       }
 

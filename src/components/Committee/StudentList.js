@@ -467,7 +467,7 @@ const StudentList = (props) => {
                     minLength={3}
                     className="form-control"
                     id="name"
-                    name="name"
+                    name="name" required={true}
                     value={register.name}
                     onChange={handleChange1}
                   />
@@ -486,7 +486,7 @@ const StudentList = (props) => {
                     minLength={3}
                     className="form-control"
                     id="father"
-                    name="father"
+                    name="father" required={true}
                     value={register.father}
                     onChange={handleChange1}
                   />
@@ -503,7 +503,7 @@ const StudentList = (props) => {
                     type="text"
                     className="form-control"
                     id="department"
-                    name="department"
+                    name="department" required={true}
                     value={register.department}
                     onChange={handleChange1}
                   >
@@ -525,7 +525,7 @@ const StudentList = (props) => {
                     type="text"
                     className="form-control"
                     id="email"
-                    name="email"
+                    name="email" required={true}
                     value={register.email}
                     onChange={handleChange1}
                   />
@@ -542,7 +542,7 @@ const StudentList = (props) => {
                     type="text"
                     className="form-control"
                     id="batch"
-                    name="batch"
+                    name="batch" required={true}
                     value={register.batch}
                     onChange={handleChange1}
                   >
@@ -566,7 +566,7 @@ const StudentList = (props) => {
                     type="text"
                     className="form-control"
                     id="rollNo"
-                    name="rollNo"
+                    name="rollNo" required={true}
                     value={register.rollNo}
                     onChange={handleChange1}
                   />
@@ -588,7 +588,7 @@ const StudentList = (props) => {
                     type="text"
                     className="form-control"
                     id="cnic"
-                    name="cnic"
+                    name="cnic" required={true}
                     value={register.cnic}
                     onChange={handleChange1}
                   />
@@ -607,7 +607,7 @@ const StudentList = (props) => {
                     type="text"
                     className="form-control"
                     id="semester"
-                    name="semester"
+                    name="semester" required={true}
                     value={register.semester}
                     onChange={handleChange1}
                   >

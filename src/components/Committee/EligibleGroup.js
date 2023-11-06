@@ -61,7 +61,8 @@ const EligibleGroup = (props) => {
 
       if (json.message && json.success) {
         NotificationManager.success(json.message);
-        setShow(false)
+        setShow(false);
+        getProjects()
       } else {
         NotificationManager.error(json.message);
       }
@@ -245,7 +246,7 @@ const EligibleGroup = (props) => {
               <tbody style={{ textAlign: "center" }}>
                 {group.groups
                   .filter((group) =>
-                    group.proposal && group.documentation && !group.viva
+                    group.proposal && group.documentation && !group.vivaDate
                   )
                   .map((group, groupIndex) => (
                     group.projects.map((project, projectKey) => (
@@ -275,7 +276,7 @@ const EligibleGroup = (props) => {
                         </td>
                         <td>{
                           group.vivaDate ? (userData.member.isAdmin && <>{
-                            (new Date() > new Date(group.vivaDate)) ? 'Taken' : (<>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
+                            (group.isViva) ? 'Taken' : (<>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
                           }</>) : <> <button className='btn btn-sm' data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} onClick={() => {
                             setSelectedGroupId(group._id);
                             setViva({ projectTitle: project.projectTitle });

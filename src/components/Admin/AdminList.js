@@ -244,12 +244,12 @@ const CommitteeMember = (props) => {
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue.toLowerCase() === register.lname.toLowerCase() && trimmedValue !== '' && register.lname.toLowerCase() !== '') {
+      if (name === 'fname' && trimmedValue.toLowerCase().trim() === register.lname.toLowerCase().trim() && trimmedValue !== '' && register.lname.toLowerCase().trim() !== '') {
         setFirstNameLastNameEqual(true);
         // Display an error message
         NotificationManager.error('First name and last name should not be equal.');
 
-      } else if (name === 'lname' && trimmedValue.toLowerCase() === register.fname.toLowerCase() && trimmedValue !== '' && register.fname.toLowerCase() !== '') {
+      } else if (name === 'lname' && trimmedValue.toLowerCase().trim() === register.fname.toLowerCase().trim() && trimmedValue !== '' && register.fname.toLowerCase().trim() !== '') {
         setFirstNameLastNameEqual(true);
         // Display an error message
         NotificationManager.error('First name and last name should not be equal.');
@@ -432,11 +432,11 @@ const CommitteeMember = (props) => {
             <form onSubmit={editMode ? handleEdit : handleRegister}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">First Name</label>
-                <input type="text" className="form-control" minLength={3} id="name" name='fname' value={register.fname} onChange={handleChange1} />
+                <input type="text" className="form-control" required={true} minLength={3} id="name" name='fname' value={register.fname} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Last Name</label>
-                <input type="text" className="form-control" minLength={3} id="name" name='lname' value={register.lname} onChange={handleChange1} />
+                <input type="text" className="form-control" required={true} minLength={3} id="name" name='lname' value={register.lname} onChange={handleChange1} />
                 {firstNameLastNameEqual && (
                   <div className="alert alert-danger" role="alert">
                     First name and last name should not be equal.
@@ -445,15 +445,15 @@ const CommitteeMember = (props) => {
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                <input type="text" className="form-control"  minLength={3} id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
+                <input type="text" className="form-control" required={true}  minLength={3} id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="email" className="form-label"> Email </label>
-                <input type="email" className="form-control" id="email" name="email" value={register.email} onChange={handleChange1} />
+                <input type="email" className="form-control" required={true} id="email" name="email" value={register.email} onChange={handleChange1} />
               </div>
               {!editMode ? <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                <input type="password" className="form-control" minLength={6} id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
+                <input type="password" className="form-control" required={true} minLength={6} id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
                 <small>password should be of at least 6 characters </small>
               </div> : ''}
               <Modal.Footer className="modal-footer">

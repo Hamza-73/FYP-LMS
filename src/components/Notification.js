@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import Loading from './Loading';
-import SideBar from './SideBar';
 
 const Notification = (props) => {
     const [notification, setNotification] = useState({ notification: [] });
@@ -69,7 +68,7 @@ const Notification = (props) => {
                         const originalIndex = notification.notification.length - 1 - index;
                         return (
                             <div style={{ position: "relative", left: "50px" }} key={originalIndex}>
-                                <div style={{ height: "50px", width: "70%" }} class={`alert alert-${elm.type === 'Important' || elm.type === 'important' ? 'danger' : 'primary'} alert-dismissible fade show`} role="alert">
+                                <div style={{ height: "60px", width: "90%" }} class={`alert alert-${elm.type === 'Important' || elm.type === 'important' ? 'danger' : 'primary'} alert-dismissible fade show`} role="alert">
                                     <strong style={{ border: `2px solid ${elm.type === 'Important' || elm.type === 'important' ? '#f6abb6' : "blue"}`, borderRadius: "6px", padding: "5px" }}>{elm.type}</strong>    {elm.message}
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onClick={() => { seenNotification(originalIndex) }}></button>
                                 </div>

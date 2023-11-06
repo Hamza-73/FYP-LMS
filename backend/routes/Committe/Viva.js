@@ -86,7 +86,7 @@ router.post('/schedule-viva', async (req, res) => {
     });
     console.log('internal save 1');
     internalMember.unseenNotifications.push({
-      type: "Important", message: `You have a viva scheduled with ${projectTitle} on ${parsedDate}`
+      type: "Important", message: `You have a viva scheduled with ${projectTitle} on ${parsedDate} at ${vivaTime}`
     })
     console.log('internal save notidication');
     await Promise.all([internalMember.save(), externalMember.save()])
@@ -126,7 +126,7 @@ router.post('/schedule-viva', async (req, res) => {
       project.students.forEach(async (student) => {
         const user = await User.findById(student.userId);
         if (user) {
-          user.unseenNotifications.push({ type: "Reminder", message: `${notificationMessage} Internal : ${internalMember.name}, External : ${externalMember.name}` });
+          user.unseenNotifications.push({ type: "Reminder", message: `${notificationMessage} at ${vivaTime} Internal : ${internalMember.name}, External : ${externalMember.name}` });
           user.vivaTime = vivaTime;
           user.vivaDate = parsedDate;
           user.viva = viva._id;
@@ -137,9 +137,9 @@ router.post('/schedule-viva', async (req, res) => {
 
 
     // Send notification to supervisor
-    const supervisor = await Supervisor.findById(group.supervisor._id);
-    supervisor.unseenNotifications.push({ type: "Reminder", message: `${notificationMessage} Internal : ${internalMember.name}, External : ${externalMember.name}` });
-    await supervisor.save();
+    const supervisor = await Supervisor.findById(group.supervisorId);
+      supervisor.unseenNotifications.push({ type: "Reminder", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} Internal : ${internalMember.name}, External : ${externalMember.name}` });
+      await supervisor.save();
 
     res.json({ success: true, message: 'Viva scheduled and notifications sent' });
 
