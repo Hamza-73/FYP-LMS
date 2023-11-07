@@ -159,7 +159,7 @@ const Tasks = (props) => {
     const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
   
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    return `${days+1}d ${hours}h ${minutes}m ${seconds}s`;
   }
 
 
@@ -168,14 +168,14 @@ const Tasks = (props) => {
   useEffect(() => {
     // Function to update the remaining time
     function updateRemainingTime() {
-      if (group.group.propDate && new Date(group.group.propDate) > new Date()) {
+      if (group.group.propDate && new Date(group.group.propDate) >= new Date()) {
         const newRemainingTime = calculateTimeRemaining(
           parseISODate(group.group.propDate)
         );
         setRemainingTime(newRemainingTime);
       } else if (
         group.group.docDate &&
-        new Date(group.group.docDate) > new Date()
+        new Date(group.group.docDate) >= new Date()
       ) {
         const newRemainingTime = calculateTimeRemaining(
           parseISODate(group.group.docDate)
@@ -256,7 +256,7 @@ const Tasks = (props) => {
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>
                     <div>
-                      {new Date(group.group.propDate) > new Date()
+                      {new Date(group.group.propDate) >= new Date()
                         ? remainingTime
                         : '-----'}
                     </div>
@@ -323,7 +323,7 @@ const Tasks = (props) => {
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>
                     <div>
-                      {new Date(group.group.docDate) > new Date()
+                      {new Date(group.group.docDate) >= new Date()
                         ? remainingTime
                         : '-----'}
                     </div>
