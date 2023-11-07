@@ -293,9 +293,9 @@ const Progress = (props) => {
                         <>
                             <div className="container d-flex">
                                 <div className="d-flex mx-6" style={{ position: "relative", marginLeft: "10%" }}>
-                                    <div className="my-3 box mx-4" style={{height:"300px"}}>
-                                        <h3>Meeting Progress</h3> { meetingReport.length > 0 && <small>Meeting : {meetingReport.length + 1}</small>}
-                                        {meetingReport.length > 0 ? <BarChart width={350} height={200} data={chartData} maxBarSize={50}>
+                                    <div className="my-3 box mx-4 text-center" style={{height:"300px"}}>
+                                        <h3>Meeting Progress</h3> { meetingReport.length > 0 && <small>Meeting {meetingReport.length}</small>}
+                                        {meetingReport.length > 0 ? <BarChart style={{marginLeft:"20px"}} width={350} height={200} data={chartData} maxBarSize={50}>
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis dataKey="monthYear" />
                                             <Tooltip />

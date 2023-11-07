@@ -26,7 +26,7 @@ router.post('/create', [
       }
   
       // Check if username already exists
-      const existingUsername = await External.findOne({ username: username });
+      const existingUsername = await External.findOne({ username : username.toLowerCase() });
       if (existingUsername) {
         return res.status(400).json({ success: false, message: "Username already exists for another external." });
       }
@@ -53,7 +53,7 @@ router.put('/edit/:id', async (req, res) => {
         const existingEmail = await External.findOne({ email: updatedDetails.email });
 
         // Check if the updated username already exists for another external student
-        const existingUsername = await External.findOne({ username: updatedDetails.username });
+        const existingUsername = await External.findOne({ username: updatedDetails.username.toLowerCase() });
 
         // Check if the updated email exists for another external student
         if (existingEmail && existingEmail._id.toString() !== studentId) {

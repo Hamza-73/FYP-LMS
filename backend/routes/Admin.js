@@ -35,7 +35,7 @@ router.post('/register', [
             return res.status(400).json({ message: "Email already exists for another Admin" });
         }
         const existUsename = await Admin.findOne(
-            { username });
+            { username : username.toLowerCase() });
         if (existUsename) {
             return res.status(400).json({ message: "Username already exists for another Admin" });
         }
@@ -313,14 +313,14 @@ router.put('/edit/:id', async (req, res) => {
         }
 
         // Check if the updated username already exists for another student
-        const existingUsername = await Admin.findOne({ username: updatedDetail.username });
+        const existingUsername = await Admin.findOne({ username: updatedDetail.username.toLowerCase() });
         if (existingUsername && existingUsername._id.toString() !== id) {
             return res.status(400).json({ message: "Username already exists for another Admin." });
         }
 
         const committee = await Committee.findOne({
             $or: [
-                { username: updatedDetail.username },
+                { username: updatedDetail.username.toLowerCase() },
                 { email: updatedDetail.email }
             ]
         });

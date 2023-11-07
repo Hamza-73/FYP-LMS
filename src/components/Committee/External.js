@@ -333,10 +333,10 @@ const External = (props) => {
             if (json.success) {
                 NotificationManager.success(json.message, '', 3000);
                 getMembers();
-                setShowUpload(false)
             } else {
                 NotificationManager.error(json.message, '', 3000);
             }
+            setShowUpload(false)
         } catch (error) {
             console.error('Error:', error);
         }
@@ -375,7 +375,7 @@ const External = (props) => {
                     setShow(false);
                 }}>
                     <Modal.Header className="modal-header">
-                        <Modal.Title className="modal-title">Register</Modal.Title>
+                        <Modal.Title className="modal-title">{!editMode ? "Register" : "Edit"}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="modal-body">
                         <form onSubmit={editMode ? handleEdit : handleRegister}>

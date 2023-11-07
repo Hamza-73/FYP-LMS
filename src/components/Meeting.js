@@ -102,7 +102,7 @@ const Meeting = (props) => {
         },
         body: JSON.stringify({
           projectTitle: edit.meetingGroup, meetingLink: edit.meetingLink,
-          time: edit.meetingTime, date: edit.meetingDate, type: edit.meetingType
+          time: edit.meetingTime, date: edit.meetingDate, type: edit.meetingType, purpose : edit.purpose
         })
       });
       console.log('fetch ends');
@@ -149,7 +149,7 @@ const Meeting = (props) => {
       currentDate.setSeconds(0); // Set seconds to 0 for comparison
 
       const [hours, minutes] = value.split(':');
-      const selectedTime = new Date(meeting.meetingDate);
+      const selectedTime = new Date(edit.meetingDate);
       selectedTime.setHours(hours, minutes);
       selectedTime.setSeconds(0); // Set seconds to 0 for comparison
 
@@ -158,7 +158,6 @@ const Meeting = (props) => {
         return;
       }
     }
-
 
     if (name === 'meetingLink') {
       // Use a regular expression to check if the input value is a valid link
@@ -377,6 +376,10 @@ const Meeting = (props) => {
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Project Title</label>
                 <input type="text" className="form-control" id="name" name='meetingGroup' value={edit.meetingGroup} onChange={handleEditChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Purpose</label>
+                <input type="text" className="form-control" id="purpose" name='purpose' value={edit.purpose} onChange={handleEditChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="date" className="form-label">Date</label>
@@ -615,9 +618,8 @@ const Meeting = (props) => {
                         </div>
                         {meeting && meeting.purpose && <div className="item">
                           <h5>Purpose</h5>
-                          <p>
-                            {meeting.purpose}
-                          </p>
+                          <textarea className='form-select' value={meeting.purpose} disabled={true}>
+                          </textarea>
                         </div>}
                         {meeting && meeting.meetingLink && (
                           <div className="item meeting-link">
@@ -646,6 +648,7 @@ const Meeting = (props) => {
                                 meetingLink: meeting.meetingLink,
                                 meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
                                 meetingDate: meeting.meetingDate,
+                                purpose : meeting.purpose
                               });
                               setShow(true);
                             }}

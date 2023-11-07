@@ -44,7 +44,7 @@ router.post('/register', [
       return res.status(400).json({ message: "Email already exists for another Committee Member." });
     }
     const existUsename = await Committee.findOne(
-      { username: username });
+      { username : username.toLowerCase() });
     if (existUsename) {
       return res.status(400).json({ message: "Username already exists for another Committee Member." });
     }
@@ -274,7 +274,7 @@ router.put('/edit/:id', async (req, res) => {
     }
 
     // Check if the updated username already exists for another student
-    const existingUsername = await Committee.findOne({ username: updatedUsername });
+    const existingUsername = await Committee.findOne({ username: updatedUsername.toLowerCase() });
     if (existingUsername && existingUsername._id.toString() !== studentId) {
       return res.status(400).json({ message: "Username already exists for another Committee." });
     }

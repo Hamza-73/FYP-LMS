@@ -75,14 +75,7 @@ const StudentList = (props) => {
       console.log(json);
       if (json.success) {
         NotificationManager.success('Registration Successful');
-        setData(prevData => ({
-          ...prevData,
-          members: [...prevData.members, {
-            name: register.name, father: register.father,
-            department: register.department, batch: register.batch,
-            semester: register.semester, cnic: register.cnic, rollNo: register.rollNo,
-          }]
-        }));
+        getMembers()
 
         // Clear the register form fields
         setRegister({
@@ -410,10 +403,10 @@ const StudentList = (props) => {
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
         getMembers();
-        setShowUpload(false)
       } else {
         NotificationManager.error(json.message, '', 3000);
       }
+      setShowUpload(false)
     } catch (error) {
       console.error('Error:', error);
     }
@@ -450,7 +443,7 @@ const StudentList = (props) => {
         <style>{style}</style>
         <Modal show={show} onHide={() => setShow(false)}>
           <Modal.Header >
-            <Modal.Title >Register</Modal.Title>
+            <Modal.Title >{!editMode ? "Register" : "Edit"}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={editMode ? handleEdit : handleRegister}>

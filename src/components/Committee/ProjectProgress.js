@@ -175,7 +175,7 @@ const ProjectProgress = (props) => {
       {loading ? <Loading /> : <>
         {group.groups.length > 0 ? (
           <>
-            {(userData.member.propDate || userData.member.docDate) && <button
+            {<button
               className="btn btn-secondary"
               style={{ position: "absolute", top: "82px", right: "15rem", background: "maroon", color: "white" }}
               onClick={toggleDeadlineHistory}

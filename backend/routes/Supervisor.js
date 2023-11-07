@@ -67,7 +67,7 @@ router.post('/create', [
       return res.status(400).json({ message: "Email already exists for another Supervisor" });
     }
     const existUsename = await Supervisor.findOne(
-      { username: username });
+      { username : username.toLowerCase() });
     if (existUsename) {
       return res.status(400).json({ message: "Username already exists for another Supervisor" });
     } else {
@@ -198,7 +198,7 @@ router.put('/edit/:id', async (req, res) => {
     }
 
     // Check if the updated username already exists for another supervisor
-    const existingUsername = await Supervisor.findOne({ username: updatedUsername });
+    const existingUsername = await Supervisor.findOne({ username: updatedUsername.toLowerCase() });
     if (existingUsername && existingUsername._id.toString() !== supervisorId) {
       return res.status(400).json({ success: false, message: "Username already exists for another supervisor." });
     }

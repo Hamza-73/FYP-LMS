@@ -85,14 +85,7 @@ const CommitteeMember = (props) => {
         // Save the auth token and redirect
         localStorage.setItem('token', json.token);
         NotificationManager.success('Registration Successful');
-        setData(prevData => ({
-          ...prevData,
-          members: [...prevData.members, {
-            fname: register.fname, lname: register.lname, username: register.username,
-            designation: register.designation, password: register.password, department: register.department, email: register.email
-          }]
-        }));
-
+        getMembers();
         // Clear the register form fields
         setRegister({
           fname: "", lname: "", username: "", department: "", designation: "", password: "", email: ""
@@ -414,10 +407,10 @@ const CommitteeMember = (props) => {
       if (json.success) {
         NotificationManager.success(json.message, '', 3000);
         getMembers();
-        setShowUpload(false);
       } else {
         NotificationManager.error(json.message, '', 3000);
       }
+      setShowUpload(false);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -464,7 +457,7 @@ const CommitteeMember = (props) => {
           onHide={() => { setEditMode(false); setShow(false) }}
         >
           <Modal.Header className="modal-header">
-            <Modal.Title className="modal-title">Register</Modal.Title>
+            <Modal.Title className="modal-title">{!editMode ? "Register" : "Edit"}</Modal.Title>
           </Modal.Header>
           <Modal.Body className="modal-body">
             <form onSubmit={editMode ? handleEdit : handleRegister}>

@@ -83,51 +83,43 @@ app.post('/upload/:userType', async (req, res) => {
   let excelData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
   console.log('data is ', excelData)
 
-  // Hash passwords before storing
-  if (userType === 'committee' || userType === 'supervisor' || userType === 'admin') {
-    excelData = excelData.map((user) => {
-      
-      const password = user.password.toString();
-
-      // Hash the password using bcrypt
-      const saltRounds = 10;
-      const hashedPassword = bcrypt.hashSync(password, saltRounds);
-
-      return {
-        ...user,
-        password: hashedPassword,
-      };
-    });
-  } else if (userType === 'user') {
-    // For users, hash 'cnic' and add it to 'password'
-    excelData = excelData.map((user) => {
-      if(user.password){
-        const password = user.password.toString();
-  
-        // Validate password length
-        if (password.toString().length < 6) {
-          return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
-        }
-      }
-
-      if (user.cnic) {
-        // Hash the 'cnic' using bcrypt and add it to 'password'
-        const saltRounds = 10;
-        const cnic = user.cnic.toString()
-        const hashedCnic = bcrypt.hashSync(cnic, saltRounds);
-
-        return {
-          ...user,
-          password: hashedCnic,
-        };
-      }
-      return user;
-    });
-  } else {
-    return res.status(400).json({ success: false, message: 'Invalid schema type.' });
-  }
-
   try {
+    // Hash passwords before storing
+    if (userType === 'committee' || userType === 'supervisor' || userType === 'admin') {
+      excelData = excelData.map((user) => {
+        if (user.password) {
+          let password = user.password.toString();
+          // Validate password length
+          if (password.length < 6) {
+            throw new Error('Password must be at least 6 characters.');
+          }
+          // Hash the password using bcrypt
+          const saltRounds = 10;
+          const hashedPassword = bcrypt.hashSync(password, saltRounds);
+          return {
+            ...user,
+            password: hashedPassword,
+          };
+        }
+      });
+    } else if (userType === 'user') {
+      // For users, hash 'cnic' and add it to 'password'
+      excelData = excelData.map((user) => {
+        if (user.cnic) {
+          // Hash the 'cnic' using bcrypt and add it to 'password'
+          const saltRounds = 10;
+          const cnic = user.cnic.toString();
+          const hashedCnic = bcrypt.hashSync(cnic, saltRounds);
+          return {
+            ...user,
+            password: hashedCnic,
+          };
+        }
+      });
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid schema type.' });
+    }
+
     switch (userType) {
       case 'user':
         await User.insertMany(excelData);
@@ -141,14 +133,17 @@ app.post('/upload/:userType', async (req, res) => {
       case 'admin':
         await Admin.insertMany(excelData);
         break;
+      case 'external':
+        await External.insertMany(excelData);
+        break;
       default:
         return res.status(400).json({ success: false, message: 'Invalid schema type.' });
     }
 
     return res.json({ success: true, message: 'File uploaded and data imported to MongoDB.' });
-  } catch (err) {
-    console.error('Error occurred while inserting data:', err);
-    return res.status(500).json({ success: false, message: 'Some Error occurred. Check if your excel file data is valid.' });
+  } catch (error) {
+    console.error('Error occurred while processing data:', error);
+    return res.status(400).json({ success: false, message: error.message });
   }
 });
 
