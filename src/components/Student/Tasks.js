@@ -65,14 +65,14 @@ const Tasks = (props) => {
     // Check if a file is selected
     if (selectedFile) {
       // Check file type
-        // Check file size (in bytes)
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (selectedFile.size <= maxSize) {
-          setFile(selectedFile);
-        } else {
-          // File size exceeds the limit
-          NotificationManager.error('File size must be less than 5MB.');
-          e.target.value = null; // Clear the file input 
+      // Check file size (in bytes)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (selectedFile.size <= maxSize) {
+        setFile(selectedFile);
+      } else {
+        // File size exceeds the limit
+        NotificationManager.error('File size must be less than 5MB.');
+        e.target.value = null; // Clear the file input 
       }
     }
   }
@@ -142,26 +142,51 @@ const Tasks = (props) => {
     const dueDate = new Date(isoDueDate); // Assuming isoDueDate is in UTC format
     const now = new Date(); // Current date and time in client's local time zone
     const timeZoneOffset = 5 * 60 * 60 * 1000; // UTC+5 in milliseconds
-  
+
     // Adjust due date to Pakistan Standard Time (PKT)
     const localDueDate = new Date(dueDate.getTime() - timeZoneOffset);
-  
+
     // Calculate time difference in PKT
     const timeDifference = localDueDate - now;
-  
+
     if (timeDifference <= 0) {
       return '0d 0h 0m 0s';
     }
-  
+
     // Calculate days, hours, minutes, and seconds
-    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24)) + 1;
     const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-  
-    return `${days+1}d ${hours}h ${minutes}m ${seconds}s`;
+
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   }
 
+  // Determine if the current task is still active based on the due date
+  const isTaskActive = (dueDate) => {
+    const dueDateUTC = new Date(dueDate); // Assuming dueDate format: '10-november-2023'
+    const currentDateUTC = new Date(); // Current date
+
+    // Extract year, month, and day components of the dates
+    const dueYear = dueDateUTC.getFullYear();
+    const dueMonth = dueDateUTC.getMonth();
+    const dueDay = dueDateUTC.getDate();
+
+    const currentYear = currentDateUTC.getFullYear();
+    const currentMonth = currentDateUTC.getMonth();
+    const currentDay = currentDateUTC.getDate();
+    console.log(dueYear > currentYear ||
+      (dueYear === currentYear && dueMonth > currentMonth) ||
+      (dueYear === currentYear && dueMonth === currentMonth && dueDay >= currentDay))
+    // Compare only the dates (year, month, and day)
+    return (
+      dueYear > currentYear ||
+      (dueYear === currentYear && dueMonth > currentMonth) ||
+      (dueYear === currentYear && dueMonth === currentMonth && dueDay >= currentDay)
+    );
+  };
+
+  isTaskActive('Thu Nov 09 2023 05:00:00 GMT+0500 (Pakistan Standard Time)')
 
   const [remainingTime, setRemainingTime] = useState('');
 
@@ -203,11 +228,16 @@ const Tasks = (props) => {
   // Determine the current task type based on dates
   let currentTaskType = '';
 
-  if (group.group.propDate && new Date(group.group.propDate) > new Date()) {
+  const currentDate = new Date().toLocaleDateString(); // Get current date in 'YYYY-MM-DD' format
+
+  if (
+    group.group.propDate &&
+    new Date(group.group.propDate).toLocaleDateString() >= currentDate
+  ) {
     currentTaskType = 'proposal';
   } else if (
     group.group.docDate &&
-    new Date(group.group.docDate) > new Date()
+    new Date(group.group.docDate).toLocaleDateString() >= currentDate
   ) {
     currentTaskType = 'documentation';
   }
@@ -230,7 +260,7 @@ const Tasks = (props) => {
         <div className={!currentTaskType ? '' : 'container'}>
           {group.group ? (
             <>
-              {currentTaskType === 'proposal' && (
+              {currentTaskType === 'proposal' && group.group.propDate && isTaskActive(group.group.propDate) && (
                 // Show task propDate and upload proposal
                 <div className="task">
                   <h1>Task Submission</h1>
@@ -295,7 +325,7 @@ const Tasks = (props) => {
                 </div>
               )}
 
-              {currentTaskType === 'documentation' && (
+              {currentTaskType === 'documentation' && group.group.docDate && isTaskActive(group.group.docDate) && (
                 // Show docDate and upload document
                 <div className="task">
                   <h1>Task Submission</h1>

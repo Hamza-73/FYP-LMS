@@ -16,12 +16,7 @@ const moment = require('moment');
 router.post('/meeting', authenticateUser, async (req, res) => {
   try {
     const { meetingLink, projectTitle, date, time, type, purpose } = req.body;
-    const currentDate = new Date();
-    const meetingDate = new Date(date); // Parse the date from the request body
-
-    if (meetingDate < currentDate) {
-      return res.status(200).json({ success: false, message: `Invalid Date Format` });
-    }
+    
     // Check if a meeting with the same projectTitle and future meeting time exists
     const existingMeeting = await Meeting.findOne({ projectTitle: projectTitle });
 

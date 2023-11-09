@@ -106,7 +106,7 @@ const Progress = (props) => {
                 },
                 body: JSON.stringify({
                     username: request.username,
-                    projectTitle: request.projectTitle, description: request.description,
+                    projectTitle: request.projectTitle.toLowerCase(), description: request.description,
                     scope: request.scope, status: false,
                 }),
             });
@@ -380,7 +380,7 @@ const Progress = (props) => {
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls">
                         <button
                             type="button"
-                            style={{ background: 'maroon' }}
+                            style={{ background: 'maroon', position:"relative", marginTop:"45px" }}
                             className="btn btn-danger"
                             disabled={groupDetails.group}
                             onClick={() => {

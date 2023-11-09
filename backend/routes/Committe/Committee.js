@@ -21,17 +21,18 @@ const moment = require('moment')
 
 // Registration route
 router.post('/register', [
-  body('fname', 'First name should be at least 3 characters').exists(),
-  body('lname', 'Last name should not be blank').exists(),
-  body('username', 'Enter a valid username').isLength({ min: 4 }),
-  body('department', 'Department should only contain alphabetic characters').isAlpha(),
+  body('fname', 'First name should be at least 3 characters').isLength({ min: 3 }).exists(),
+  body('lname', 'Last name should be at least 3 characters').isLength({ min: 3 }).exists(),
+  body('username', 'Enter a valid username').isLength({ min: 3 }),
+  body('department', 'Department should only be blank').exists(),
   body('designation', 'Designation cannot be left blank').exists(),
-  body('password', 'Password must be at least 4 characters').isLength({ min: 4 }),
+  body('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
 ], async (req, res) => {
   const { fname, lname, username, department, designation, password, email } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('errors are ', errors.array())
     return res.status(400).json({ errors: errors.array() });
   }
 
@@ -44,7 +45,7 @@ router.post('/register', [
       return res.status(400).json({ message: "Email already exists for another Committee Member." });
     }
     const existUsename = await Committee.findOne(
-      { username : username.toLowerCase() });
+      { username: username.toLowerCase() });
     if (existUsename) {
       return res.status(400).json({ message: "Username already exists for another Committee Member." });
     }
@@ -408,10 +409,15 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
   try {
     console.log('due datw starts')
     const { type, dueDate, instructions } = req.body;
-    const currentDate = new Date();
-    const newDate = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();;
+    const newDate = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
     // Validate if the due date is not behind the current date
-    if (newDate < currentDate) {
+    const currentDate = moment().startOf('day'); // Current date without time, using moment.js
+
+    // Parse dueDate and ignore the time component
+    const dueDateWithoutTime = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').startOf('day');
+
+    // Validate if the due date is not behind the current date
+    if (dueDateWithoutTime.isBefore(currentDate)) {
       return res.status(400).json({ message: "Due Date cannot be behind the current date" });
     }
 
@@ -427,7 +433,7 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
         }
       } else if (type === 'documentation') {
         if (new Date(committee.docDate) < new Date()) {
-          return res.json({ success: false, message: "Documentations Sre Submitted now Schedule Vivas" })
+          return res.json({ success: false, message: "Documentations are Submitted now Schedule Vivas" })
         }
       }
     } else {
@@ -440,7 +446,7 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
         }
       } else if (type === 'documentation') {
         if (new Date(supervisor.docDate) < new Date()) {
-          return res.json({ success: false, message: "Documentations Sre Submitted now Schedule Vivas" })
+          return res.json({ success: false, message: "Documentations are Submitted now Schedule Vivas" })
         }
       }
     }

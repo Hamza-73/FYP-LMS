@@ -424,7 +424,7 @@ const StudentList = (props) => {
             <Modal.Title >Export Data From File</Modal.Title>
           </Modal.Header>
           <Modal.Body >
-            <form onSubmit={(e) => handleSubmit(e, 'user')}>
+            <form onSubmit={(e) => handleSubmit(e, 'User')}>
               <div className="mb-3">
                 <label htmlFor="remrks" className="form-label">File</label>
                 <small>File Type should be : .xls/.xlsx</small>

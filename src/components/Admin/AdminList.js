@@ -398,7 +398,7 @@ const CommitteeMember = (props) => {
             <Modal.Title>Export Data From File</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <form onSubmit={(e) => handleSubmit(e, 'admin')}>
+            <form onSubmit={(e) => handleSubmit(e, 'Admin')}>
               <div className="mb-3">
                 <label htmlFor="remrks" className="form-label">File</label>
                 <small>File Type should be : .xls/.xlsx</small>

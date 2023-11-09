@@ -8,39 +8,39 @@ const bcrypt = require('bcryptjs');
 var jwt = require("jsonwebtoken");
 
 router.post('/create', [
-    body('name', 'Name is required').exists(),
+    body('name', 'Name is required at least 3 characters').isLength({ min: 3 }).exists(),
     body('username', 'Username is required').exists(),
     body('email', 'Enter a valid email').isEmail(),
-  ], async (req, res) => {
+], async (req, res) => {
     const { name, username, email } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ errors: errors.array() });
     }
-  
+
     try {
-      // Check if email already exists
-      const existingEmail = await External.findOne({ email: email });
-      if (existingEmail) {
-        return res.status(400).json({ success: false, message: "Email already exists for another external." });
-      }
-  
-      // Check if username already exists
-      const existingUsername = await External.findOne({ username : username.toLowerCase() });
-      if (existingUsername) {
-        return res.status(400).json({ success: false, message: "Username already exists for another external." });
-      }
-  
-      // Create a new external student
-      const external = new External({ name, username, email });
-      await external.save();
-      return res.json({ success: true, external });
+        // Check if email already exists
+        const existingEmail = await External.findOne({ email: email });
+        if (existingEmail) {
+            return res.status(400).json({ success: false, message: "Email already exists for another external." });
+        }
+
+        // Check if username already exists
+        const existingUsername = await External.findOne({ username: username.toLowerCase() });
+        if (existingUsername) {
+            return res.status(400).json({ success: false, message: "Username already exists for another external." });
+        }
+
+        // Create a new external student
+        const external = new External({ name, username, email });
+        await external.save();
+        return res.json({ success: true, external });
     } catch (err) {
-      console.error('error in creating ', err);
-      res.status(500).json({ success: false, message: 'Internal server error' });
+        console.error('error in creating ', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
-  });
-  
+});
+
 
 
 // Route to update external student details

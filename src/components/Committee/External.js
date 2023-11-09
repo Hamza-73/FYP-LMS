@@ -353,7 +353,7 @@ const External = (props) => {
                         <Modal.Title className="modal-title" >Export Data From File</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="modal-body">
-                        <form onSubmit={(e) => handleSubmit(e, 'external')}>
+                        <form onSubmit={(e) => handleSubmit(e, 'External')}>
 
                             <div className="mb-3">
                                 <label htmlFor="remrks" className="form-label">File</label>

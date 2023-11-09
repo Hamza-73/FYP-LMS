@@ -102,7 +102,7 @@ const Meeting = (props) => {
         },
         body: JSON.stringify({
           projectTitle: edit.meetingGroup, meetingLink: edit.meetingLink,
-          time: edit.meetingTime, date: edit.meetingDate, type: edit.meetingType, purpose : edit.purpose
+          time: edit.meetingTime, date: edit.meetingDate, type: edit.meetingType, purpose: edit.purpose
         })
       });
       console.log('fetch ends');
@@ -600,7 +600,7 @@ const Meeting = (props) => {
                         {/* Meeting details */}
                         <div className="item">
                           <h5>Group</h5>
-                          <p style={{fontSize:"15px"}}>{meeting.meetingGroup}</p>
+                          <p style={{ fontSize: "15px" }}>{meeting.meetingGroup}</p>
                         </div>
                         <div className="item">
                           <h5>Time</h5>
@@ -618,8 +618,11 @@ const Meeting = (props) => {
                         </div>
                         {meeting && meeting.purpose && <div className="item">
                           <h5>Purpose</h5>
-                          <textarea className='form-select' value={meeting.purpose} disabled={true}>
-                          </textarea>
+                          <p
+                            style={{ cursor: "pointer", fontSize:"15px" }}
+                            onClick={() => {
+                              alert(meeting.purpose)
+                            }}>Click Here To View</p>
                         </div>}
                         {meeting && meeting.meetingLink && (
                           <div className="item meeting-link">
@@ -648,7 +651,7 @@ const Meeting = (props) => {
                                 meetingLink: meeting.meetingLink,
                                 meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
                                 meetingDate: meeting.meetingDate,
-                                purpose : meeting.purpose
+                                purpose: meeting.purpose
                               });
                               setShow(true);
                             }}

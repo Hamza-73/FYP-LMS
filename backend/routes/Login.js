@@ -79,6 +79,14 @@ router.post('/upload', authenticateUser, async (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid file type' });
       }
 
+      groupUpdate.projects[0].students.map(async stu => {
+        const studentObj = await User.findById(stu.userId);
+        studentObj.unseenNotifications.push({
+          type: "Important", message: `${type} has been submitted`
+        });
+        await studentObj.save();
+      })
+
       // Save groupUpdate object after the update
       await groupUpdate.save();
 
@@ -117,7 +125,19 @@ router.post('/doc', authenticateUser, async (req, res) => {
     groupUpdate.docs.push({
       docLink: result.url, review: "", comment: comment
     });
-    await groupUpdate.save();
+    groupUpdate.projects[0].students.map(async stu => {
+      const studentObj = await User.findById(stu.userId);
+      studentObj.unseenNotifications.push({
+        type: "Important", message: `Document has been uploaded`
+      })
+      await studentObj.save();
+    })
+
+    const Superisor = await Supervisor.findById(group.supervisorId);
+    Superisor.unseenNotifications.push({
+      type: "Reminder", message: `A document has been uploaded by group : ${group.projects[0].projectTitle}`
+    })
+    await Promise.all([Superisor.save(), groupUpdate.save()]);
 
     // Return the Cloudinary URL in the response
     return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
@@ -194,8 +214,8 @@ router.post('/login', async (req, res) => {
 
 // Registration route
 router.post('/register', [
-  body('name', 'Name should be at least 4 characters').isLength({ min: 4 }),
-  body('father', 'Father Name should be at least 4 characters').isLength({ min: 4 }),
+  body('name', 'Name should be at least 3 characters').isLength({ min: 3 }).exists(),
+  body('father', 'Father Name should be at least 3 characters').isLength({ min: 3 }).exists(),
   body('rollNo', 'Invalid Roll Number format').custom((value) => {
     const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
     if (!rollNoPattern.test(value)) {
@@ -480,7 +500,6 @@ router.post('/send-project-request', authenticateUser, async (req, res) => {
     if (!pendingProject) {
       // Create a new project request and add it to the user's pendingRequests
       const projectRequest = new ProjectRequest({
-        student: user._id,
         projectTitle, description,
         scope, status: false
       });
@@ -1055,6 +1074,11 @@ router.post('/request-meeting', authenticateUser, async (req, res) => {
       type: "Important",
       message: `${student.name} has requested a meeting with you for group ${project}`,
     });
+    group.projects[0].students.map(async stu => {
+      let s = await User.findById(stu.userId);
+      s.unseenNotifications.push({ type: "Important", message: `Request sent to supervisor for meeting on ${new Date().getDate()}` });
+      await s.save();
+    })
     await supervisor.save();
     return res.json({ success: true, message: "Request sent to supervisor for meeting" });
 
@@ -1113,6 +1137,14 @@ router.post('/extension', authenticateUser, async (req, res) => {
       reason: reason
     });
     console.log('group', group.extensionRequest)
+
+    group.projects[0].students.map(async stu => {
+      const studentObj = await User.findById(stu.userId);
+      studentObj.unseenNotifications.push({
+        type: "Important", message: `Extension Request sent to Supervisor`
+      });
+      await studentObj.save()
+    })
 
     await group.save();
     const requestId = group.extensionRequest[group.extensionRequest.length - 1]._id;

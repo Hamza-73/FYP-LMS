@@ -397,10 +397,15 @@ const MyGroup = (props) => {
                                     : '----'}
                                 </h6>
                               </div>
-                              <div className="items">
+                              {group.group.purpose && <div className="items">
                                 <h5>Purpose</h5>
-                                <textarea style={{ marginLeft: "4px" }} className='form-control' disabled={true} name="" id="" value={group.group.purpose ? group.group.purpose : ""}></textarea>
-                              </div>
+                                <p
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => {
+                                    alert(group.group.purpose)
+                                  }}
+                                >Click here to view</p>
+                              </div>}
                               {group.group.meetingLink && (
                                 <div className="items">
                                   <h5>Link</h5>
@@ -439,10 +444,10 @@ const MyGroup = (props) => {
                             <p>{group.group.viva.vivaTime && group.group.viva.vivaTime} </p>
                           </div><div className="items">
                             <h6>Internal</h6>
-                            <p style={{fontSize:"14px"}}>{group.group.viva.internalName} </p>
+                            <p style={{ fontSize: "14px" }}>{group.group.viva.internalName} </p>
                           </div><div className="items">
                             <h6>External</h6>
-                            <p style={{fontSize:"14px", position:"relative", marginLeft:"3px"}}>{group.group.viva.externalName} </p>
+                            <p style={{ fontSize: "14px", position: "relative", marginLeft: "3px" }}>{group.group.viva.externalName} </p>
                           </div>
                         </div>
                       </div>

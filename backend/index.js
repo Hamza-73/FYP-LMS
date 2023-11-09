@@ -70,6 +70,56 @@ const External = require('./models/External')
 
 const bcrypt = require('bcrypt');
 
+const userExist = async (user, userType) => {
+
+  if (userType === 'External') {
+    if (user && (user.username || user.email)) {
+      const external = await External.findOne({
+        $or: [
+          { username: user.username },
+          { email: user.email }
+        ]
+      });
+      return external ? true : false;
+    }
+  }
+  if (userType === 'Admin') {
+    if (user && (user.username || user.email)) {
+      const admin = await Admin.findOne({
+        $or: [
+          { username: user.username },
+          { email: user.email }
+        ]
+      });
+      return admin ? true : false;
+    }
+  }
+  if (userType === 'Committee') {
+    if (user && (user.username || user.email)) {
+      const committee = await Committee.findOne({
+        $or: [
+          { username: user.username },
+          { email: user.email }
+        ]
+      });
+      return committee ? true : false;
+    }
+  }
+  if (userType === 'User') {
+    if (user && (user.cnic || user.rollNo || user.email)) {
+      const committee = await Committee.findOne({
+        $or: [
+          { rollNo: user.rollNo },
+          { email: user.email },
+          { cnic: user.cnic }
+        ]
+      });
+      return committee ? true : false;
+    }
+  }
+
+}
+
 app.post('/upload/:userType', async (req, res) => {
   const { userType } = req.params;
   if (!req.files || !req.files.excelFile) {
@@ -84,15 +134,102 @@ app.post('/upload/:userType', async (req, res) => {
   console.log('data is ', excelData)
 
   try {
+    // to chcek for unique email and password
+    const uniqueEmails = new Set();
+    const uniqueUsernames = new Set();
+    const uniqueRollNos = new Set();
+    const uniqueCnics = new Set();
+
+
+    // Validate all entries against the schema
+    for (let i = 0; i < excelData.length; i++) {
+      const user = excelData[i];
+
+      // Check for duplicate email and username for Admin, Committee, External, and Supervisor
+      if (userType === 'Admin' || userType === 'Committee' || userType === 'External' || userType === 'Supervisor') {
+        if (uniqueEmails.has(user.email)) {
+          return res.status(400).json({ success: false, message: 'Duplicate email found.' });
+        }
+        uniqueEmails.add(user.email);
+
+        if (user.username && uniqueUsernames.has(user.username)) {
+          return res.status(400).json({ success: false, message: 'Duplicate username found.' });
+        }
+        uniqueUsernames.add(user.username);
+      }
+
+      if (userType === 'User') {
+        if (uniqueRollNos.has(user.rollNo)) {
+          return res.status(400).json({ success: false, message: 'Duplicate roll number found.' });
+        }
+        uniqueRollNos.add(user.rollNo);
+
+        if (uniqueEmails.has(user.email)) {
+          return res.status(400).json({ success: false, message: 'Duplicate email found.' });
+        }
+        uniqueEmails.add(user.email);
+
+        if (uniqueCnics.has(user.cnic)) {
+          return res.status(400).json({ success: false, message: 'Duplicate CNIC found.' });
+        }
+        uniqueCnics.add(user.cnic);
+      }
+
+      const isValid = await userExist(user, userType);
+      if (isValid) {
+        return res.status(400).json({ success: false, message: 'Invalid data in the excel sheet.' });
+      }
+    }
+
     // Hash passwords before storing
-    if (userType === 'committee' || userType === 'supervisor' || userType === 'admin') {
+    if (userType === 'Committee' || userType === 'Supervisor' || userType === 'Admin' || userType === 'External') {
       excelData = excelData.map((user) => {
+
+        if (userType === 'External' || userType === 'Supervisor') {
+          if (!user.name) {
+            throw new Error("Name can not be empty");
+          }
+
+          if ((user.name && user.name.toString().length < 3)) {
+            throw new Error('Name be atleast 3 characters');
+          }
+        }
+
+        if (userType === 'Committee' || userType === 'Admin') {
+          if (!user.fname || !user.lname) {
+            throw new Error("First name and Last Name can not be empty")
+          }
+          if ((user.fname && user.fname.toString().length < 3) || (user.lname && user.lname.toString().length < 3)) {
+            throw new Error('Name be atleast 3 characters');
+          }
+          if (user.fname.trim().toLowerCase() === user.lname.trim().toLowerCase()) {
+            throw new Error('First name and last name should be different')
+          }
+        }
+
+        if (!user.email || !user.password) {
+          throw new Error('Check out every field no entry should be null in other');
+        }
+
         if (user.password) {
           let password = user.password.toString();
           // Validate password length
           if (password.length < 6) {
             throw new Error('Password must be at least 6 characters.');
           }
+
+          if (user.username) {
+            let username = user.username.toString();
+            if (username.indexOf('_') === -1) {
+              throw new Error('Username should contain underscore');
+            }
+          }
+
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(user.email)) {
+            throw new Error('Invalid email address format.');
+          }
+
           // Hash the password using bcrypt
           const saltRounds = 10;
           const hashedPassword = bcrypt.hashSync(password, saltRounds);
@@ -102,9 +239,31 @@ app.post('/upload/:userType', async (req, res) => {
           };
         }
       });
-    } else if (userType === 'user') {
+    } else if (userType === 'User') {
       // For users, hash 'cnic' and add it to 'password'
       excelData = excelData.map((user) => {
+        if (!user.name || !user.email || !user.cnic || !user.rollNo || !user.father || !user.semester) {
+          throw new Error('Check every field no entry should be null');
+        }
+        const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
+        if (!rollNoPattern.test(user.rollNo)) {
+          throw new Error('Roll Number should be in the format XXXX-BSCS-XX');
+        }
+
+        if ((user.name && user.name.toString().length < 3) || (user.father && user.father.toString().length < 3)) {
+          throw new Error('Name/Father Name should be atleast 3 characters');
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(user.email)) {
+          throw new Error('Invalid email address format.');
+        }
+        if (isNaN(user.semester)) {
+          throw new Error('Semester should be a number');
+        }
+        if (!(user.semester >= 1 && user.semester <= 8)) {
+          throw new Error('Semester should be between 1 and 8.');
+        }
+
         if (user.cnic) {
           // Hash the 'cnic' using bcrypt and add it to 'password'
           const saltRounds = 10;
@@ -115,25 +274,26 @@ app.post('/upload/:userType', async (req, res) => {
             password: hashedCnic,
           };
         }
+
       });
     } else {
       return res.status(400).json({ success: false, message: 'Invalid schema type.' });
     }
 
     switch (userType) {
-      case 'user':
+      case 'User':
         await User.insertMany(excelData);
         break;
-      case 'supervisor':
+      case 'Supervisor':
         await Supervisor.insertMany(excelData);
         break;
-      case 'committee':
+      case 'Committee':
         await Committee.insertMany(excelData);
         break;
-      case 'admin':
+      case 'Admin':
         await Admin.insertMany(excelData);
         break;
-      case 'external':
+      case 'External':
         await External.insertMany(excelData);
         break;
       default:

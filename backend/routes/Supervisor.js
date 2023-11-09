@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
 
 // Create a new supervisor
 router.post('/create', [
-  body('name', 'Name is required').exists(),
+  body('name', 'Name is required').isLength({ min: 3 }).exists(),
   body('designation', 'Designation is required').exists(),
   body('password', 'Password is required').exists(),
 ], async (req, res) => {
@@ -67,7 +67,7 @@ router.post('/create', [
       return res.status(400).json({ message: "Email already exists for another Supervisor" });
     }
     const existUsename = await Supervisor.findOne(
-      { username : username.toLowerCase() });
+      { username: username.toLowerCase() });
     if (existUsename) {
       return res.status(400).json({ message: "Username already exists for another Supervisor" });
     } else {
@@ -854,6 +854,9 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
         studentObj.externalMarks = external;
         studentObj.internalMarks = internal;
         studentObj.hodMarks = hod;
+        studentObj.unseenNotifications.push({
+          type: "Important", message: `Marks have been uploaded`
+        })
         await studentObj.save();
       });
     });
@@ -863,7 +866,14 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
       await viva.save()
     }
 
-    await group.save(); // Save the group separately after updating students' marks
+    const internalMember = await Supervisor.findById(group.internal);
+    if (internalMember) {
+      internalMember.unseenNotifications.push({
+        type: "Important", message: `Marks of group ${group.projects[0].projectTitle} have been uploaded`
+      })
+    }
+
+    await Promise.all([internalMember.save(), group.save()]); // Save the group separately after updating students' marks
     res.json({ success: true, message: `Marks uploaded successfully` });
 
   } catch (error) {
@@ -1099,6 +1109,13 @@ router.put('/reviews/:groupId/:index', authenticateUser, async (req, res) => {
       return res.json({ message: "invalid index" })
     }
     group.docs[index].review = review;
+    group.projects[0].students.map(async stu => {
+      const studentObj = await User.findById(stu.userId);
+      studentObj.unseenNotifications.push({
+        type: "Important", message: `Reviews has been given by the supervisor to you document`
+      });
+      await studentObj.save();
+    })
     await group.save();
 
     return res.json({ success: true, message: `Reviews Given Sucessfully` });
@@ -1188,6 +1205,48 @@ router.post('/extension/:requestId/:action', authenticateUser, async (req, res) 
   } catch (error) {
     console.error('error in handling extension', error);
     return res.json({ message: 'Internal Server Error' });
+  }
+});
+
+
+// Change Group Name
+router.post('/changeName/:groupId', authenticateUser, async (req, res) => {
+  try {
+    const { oldtitle, title } = req.body;
+    const { groupId } = req.params;
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.json({ success: false, message: "Group Not Found" });
+    }
+    if (group.supervisorId.equals(req.user.id)) {
+      if (group.proposal) {
+        return res.json({ success: false, message: "You cannot change group name after proposal submission" });
+      }
+      const projectRequest = await ProjectRequest.findOne({ projectTitle: oldtitle });
+      if (!projectRequest) {
+        return res.json({ success: false, message: "Project Not Found" })
+      }
+      projectRequest.projectTitle = title;
+      group.projects[0].projectTitle = title;
+      group.projects[0].students.map(async stu => {
+        const s = await User.findById(stu.userId);
+        s.unseenNotifications.push({
+          type: "Important", message: "You're Group Title has been change by the supervisor"
+        });
+        await s.save();
+      });
+      const supervisor = await Supervisor.findById(group.supervisorId);
+      supervisor.unseenNotifications.push({
+        type: "Important", message: `You changed ${oldtitle} name to ${title}`
+      })
+      await Promise.all([group.save(), projectRequest.save()]);
+      return res.json({ success: true, message: "Message Edoed SuccessFully" })
+    } else {
+      return re.json({ success: false, message: "Group doennot belong to you" });
+    }
+  } catch (error) {
+    console.error('error in changing name ', error);
+    return res.json({ success: false, message: "Some Error Ocuured Reload Page and try again" })
   }
 });
 

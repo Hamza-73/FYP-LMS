@@ -93,7 +93,7 @@ const CommitteeMember = (props) => {
         setShow(false);
       }
       else {
-        NotificationManager.error('Register According to the standard of Registration');
+        NotificationManager.error(json.message);
       }
     } catch (error) {
       NotificationManager.error('Error in Registering');
@@ -434,7 +434,7 @@ const CommitteeMember = (props) => {
             <h5 className="modal-title" >Export Data From File</h5>
           </Modal.Header>
           <Modal.Body className="modal-body">
-            <form onSubmit={(e) => handleSubmit(e, 'committee')}>
+            <form onSubmit={(e) => handleSubmit(e, 'Committee')}>
               <div className="mb-3">
                 <label htmlFor="remrks" className="form-label">File</label>
                 <small>File Type should be : .xls/.xlsx</small>
@@ -609,7 +609,7 @@ const CommitteeMember = (props) => {
                     onChange={handleChange1}
                   />
                   <small>
-                    password should be of at least 4 characters{" "}
+                    password should be of at least 6 characters{" "}
                   </small>
                 </div>
               ) : (

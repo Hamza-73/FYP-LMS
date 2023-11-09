@@ -146,7 +146,7 @@ const ProjectList = (props) => {
         </div>
 
       </div>
-      <div div className='container'>
+      <div className='container'>
         <h3 className='text-center'>Project List</h3>
         <div className="mb-3">
           <input
@@ -162,36 +162,32 @@ const ProjectList = (props) => {
           <div>
             {data.map((datas, groupIndex) => (
               <div key={groupIndex}>
-                <h5 className='text-center' style={{ "borderBottom": "1px solid black" }}>{datas.supervisorName}</h5>
-                <table className='table table-hover'>
-                  <thead style={{ textAlign: "center" }}>
+                <h5 className='text-center' style={{ "borderBottom": "1px solid black", "marginBottom": "20px" }}>{datas.supervisorName}</h5>
+                <table className='table' style={{ textAlign: "center" }}>
+                  <thead className='thead-light'>
                     <tr>
-                      <th scope="col">Name</th>
-                      <th scope="col">Roll No</th>
-                      <th scope="col">Project Title</th>
-                      <th scope="col">Remarks</th>
+                      <th>Name</th>
+                      <th>Roll No</th>
+                      <th>Project Title</th>
+                      <th>Remarks</th>
                     </tr>
                   </thead>
-                  <tbody style={{ textAlign: "center" }}>
+                  <tbody>
                     {datas.groups.map((group, groupKey) => (
                       <tr key={groupKey}>
                         <td>
-                          <div>
-                            {group.students.map((student, studentKey) => (
-                              <React.Fragment key={studentKey}>
-                                {student.name}<br />
-                              </React.Fragment>
-                            ))}
-                          </div>
+                          {group.students.map((student, studentKey) => (
+                            <React.Fragment key={studentKey}>
+                              {student.name}<br />
+                            </React.Fragment>
+                          ))}
                         </td>
                         <td>
-                          <div>
-                            {group.students.map((student, studentKey) => (
-                              <React.Fragment key={studentKey}>
-                                {student.rollNo}<br />
-                              </React.Fragment>
-                            ))}
-                          </div>
+                          {group.students.map((student, studentKey) => (
+                            <React.Fragment key={studentKey}>
+                              {student.rollNo}<br />
+                            </React.Fragment>
+                          ))}
                         </td>
                         <td>{group.projectTitle}</td>
                         <td>{group.remarks} {!showSidebar && userData.member.isAdmin && <div style={{ cursor: "pointer" }} >
@@ -200,7 +196,6 @@ const ProjectList = (props) => {
                         </td>
                       </tr>
                     ))}
-
                   </tbody>
                 </table>
               </div>

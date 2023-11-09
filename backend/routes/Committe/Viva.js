@@ -88,7 +88,7 @@ router.post('/schedule-viva', async (req, res) => {
     
     const supervisor = await Supervisor.findById(group.supervisorId);
     internalMember.unseenNotifications.push({
-      type: "Important", message: `You have a viva scheduled with ${projectTitle} on ${parsedDate} at ${vivaTime}  External : ${externalMember.name}, Supervisor : ${supervisor.name}`
+      type: "Important", message: `You have a viva scheduled with ${projectTitle} on ${vivaDate} at ${vivaTime}  External : ${externalMember.name}, Supervisor : ${supervisor.name}`
     })
     console.log('internal save notidication');
     await Promise.all([internalMember.save(), externalMember.save()])

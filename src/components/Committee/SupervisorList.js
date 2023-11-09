@@ -405,7 +405,7 @@ const SupervisorList = (props) => {
             <h5 className="modal-title" >Export Data From File</h5>
           </Modal.Header>
           <Modal.Body className="modal-body">
-            <form onSubmit={(e) => handleSubmit(e, 'supervisor')}>
+            <form onSubmit={(e) => handleSubmit(e, 'Supervisor')}>
 
               <div className="mb-3">
                 <label htmlFor="remrks" className="form-label">File</label>
@@ -538,7 +538,7 @@ const SupervisorList = (props) => {
               {!editMode ? <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
                 <input type="password" minLength={6} className="form-control" id="exampleInputPassword2" name='password' value={register.password} onChange={handleChange1} />
-                <small>Password should be at least 4 characters</small>
+                <small>Password should be at least 6 characters</small>
               </div> : ''}
               <Modal.Footer className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setEditMode(false); handleClose(); closeModal() }}>Close</button>

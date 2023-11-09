@@ -127,8 +127,80 @@ const Groups = (props) => {
     }
   }
 
+  const changeName = async (e) => {
+    e.preventDefault();
+    if (titles.oldTitle.toLowerCase() === titles.title.toLowerCase()) {
+      NotificationManager.error("Old Title and new Title cant be same");
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/supervisor/changeName/${groupId}`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem("token")
+        },
+        body: JSON.stringify({
+          oldtitle: titles.oldTitle,
+          title: titles.title
+        })
+      });
+      const json = await response.json();
+      console.log('json in changing name is ', json);
+      if (json.success) {
+        NotificationManager.success(json.message);
+        getGroup();
+        setShowGroupName(false);
+      } else {
+        NotificationManager.error(json.message);
+      }
+    } catch (error) {
+      console.log('error in changing name ', error);
+    }
+  }
+
+  const [showGroupName, setShowGroupName] = useState(false);
+  const [titles, setTitles] = useState({
+    oldTitle: "", title: ""
+  });
+
   return (
     <div>
+      <div className="changeName">
+        <Modal show={showGroupName} onHide={() => {
+          setShowGroupName(false);
+        }}>
+          <Modal.Header className="modal-header">
+            <Modal.Title className="modal-title">Change Group Name</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={(e) => { changeName(e) }}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Old Title</label>
+                <input type="text" disabled={true} className="form-control" id="oldTitle" name="oldTitle" value={titles.oldTitle} onChange={(e) => {
+                  setTitles({ ...titles, [e.target.name]: e.target.value });
+                }} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">New Title</label>
+                <input type="text" className="form-control" id="title" name="title" value={titles.title} onChange={(e) => {
+                  setTitles({ ...titles, [e.target.name]: e.target.value });
+                }} />
+              </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                  setTitles({
+                    title: "", oldTitle: ""
+                  }); setShowGroupName(false);
+                }}>Close</button>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!titles.title || !titles.oldTitle}>
+                  Change Name
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
+      </div>
       <div className="fypIdea">
         <Modal show={show} onHide={() => {
           setShow(false);
@@ -221,6 +293,7 @@ const Groups = (props) => {
                       <th scope="col">Add Student</th>
                       <th scope="col">Viva</th>
                       <th scope="col">Grade</th>
+                      <th scope="col">Change Name</th>
                     </tr>
                   </thead>
                   {group.groups.map((group, groupIndex) => (
@@ -245,7 +318,7 @@ const Groups = (props) => {
                             {
                               group.vivaDate ?
                                 (
-                                  !group.isViva ? 
+                                  !group.isViva ?
                                     new Date(group.vivaDate).toISOString().split('T')[0] : "Taken"
                                 ) :
                                 "Pending"
@@ -261,6 +334,20 @@ const Groups = (props) => {
                                 setShow(true);
                               }}></i>
                             </div>
+                          </td>
+                          <td>
+                            <button style={{
+                              color: "white", background: "maroon"
+                            }} className="btn btn-sm" onClick={() => {
+                              setGrouppId(group._id);
+                              setShowGroupName(true);
+                              setTitles({
+                                oldTitle: group.projects[0].projectTitle
+                              })
+                            }}
+                            disabled={
+                              group.proposal
+                            }>Edit Name</button>
                           </td>
                         </tr>
                       ))}
