@@ -83,6 +83,17 @@ const userExist = async (user, userType) => {
       return external ? true : false;
     }
   }
+  if (userType === 'Supervisor') {
+    if (user && (user.username || user.email)) {
+      const external = await Supervisor.findOne({
+        $or: [
+          { username: user.username },
+          { email: user.email }
+        ]
+      });
+      return external ? true : false;
+    }
+  }
   if (userType === 'Admin') {
     if (user && (user.username || user.email)) {
       const admin = await Admin.findOne({
@@ -107,7 +118,7 @@ const userExist = async (user, userType) => {
   }
   if (userType === 'User') {
     if (user && (user.cnic || user.rollNo || user.email)) {
-      const committee = await Committee.findOne({
+      const committee = await User.findOne({
         $or: [
           { rollNo: user.rollNo },
           { email: user.email },
