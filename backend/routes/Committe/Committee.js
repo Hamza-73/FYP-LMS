@@ -42,6 +42,8 @@ router.post('/register', [
       { email: email });
 
     if (existingStudent) {
+      console.log('email is ', email)
+      console.log('existingStudent is ', existingStudent)
       return res.status(400).json({ message: "Email already exists for another Committee Member." });
     }
     const existUsename = await Committee.findOne(

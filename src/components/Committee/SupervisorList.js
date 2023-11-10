@@ -136,18 +136,13 @@ const SupervisorList = (props) => {
         });
         const json = await response.json();
         console.log('json in deleting supervisor is ', json)
-        if (response.status === 200) {
           // Update the UI by removing the deleted supervisor from the data
-          setData((prevData) => ({
-            ...prevData,
-            members: prevData.members.filter((member) => member._id !== id),
-          }));
           if (json.success)
-            NotificationManager.success('Deleted Successfully');
-          if (!json.success) {
-            NotificationManager.success(json.message);
+           { NotificationManager.success('Deleted Successfully');
+            getMembers()
+          }else{
+            NotificationManager.error(json.message);
           }
-        }
       } catch (error) {
         console.log('Error:', error); // Log the error message
         NotificationManager.error('Error in Deleting');

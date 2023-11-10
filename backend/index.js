@@ -177,7 +177,7 @@ app.post('/upload/:userType', async (req, res) => {
 
       const isValid = await userExist(user, userType);
       if (isValid) {
-        return res.status(400).json({ success: false, message: 'Invalid data in the excel sheet.' });
+        return res.status(400).json({ success: false, message: 'Duplicate Data in the excel sheet.' });
       }
     }
 

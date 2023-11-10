@@ -104,12 +104,12 @@ const CommitteeMember = (props) => {
         });
         setShow(false);
       }
-      if(updatedStudent.success)
+      if (updatedStudent.success)
         NotificationManager.success('Edited Successfully');
       else
-      NotificationManager.error(updatedStudent.message);
+        NotificationManager.error(updatedStudent.message);
 
-      
+
     } catch (error) {
       console.log('Error:', error); // Log the error message
     }
@@ -436,7 +436,7 @@ const CommitteeMember = (props) => {
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputusername1" className="form-label">Username</label>
-                <input type="text" className="form-control" required={true}  minLength={3} id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
+                <input type="text" className="form-control" required={true} minLength={3} id="exampleInputusername2" name='username' value={register.username} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="email" className="form-label"> Email </label>
@@ -513,7 +513,8 @@ const CommitteeMember = (props) => {
                     <td>{val.username}</td>
                     <td>{val.email}</td>
                     <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); setShow(true); }}>
-                      <button className="btn" style={{ background: "maroon", color: "white" }}>
+                      <button
+                        disabled={val.isAdmin || val.isCommittee} className="btn" style={{ background: "maroon", color: "white" }}>
                         <i className="fa-solid fa-pen-to-square"></i>
                       </button>
                     </td>
@@ -538,7 +539,7 @@ const CommitteeMember = (props) => {
         </div>
         {(!showSidebar && !userData.member.isAdmin) && (
           <div className="d-grid gap-2 col-6 mx-auto my-4">
-            <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" data-toggle="modal" data-target="#exampleModal" onClick={() => { setEditMode(false); handleClose(); setShow(true); }}>
+            <button style={{ background: "maroon" }} type="button" className="btn btn-danger mx-5" onClick={() => { setEditMode(false); handleClose(); setShow(true); }}>
               Register
             </button>
             <button

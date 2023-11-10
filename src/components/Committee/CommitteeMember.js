@@ -76,7 +76,7 @@ const CommitteeMember = (props) => {
         },
         body: JSON.stringify({
           fname: register.fname.trim(), lname: register.lname.trim(), username: register.username.trim(),
-          designation: register.designation.trim(), password: register.password, department: register.department.trim()
+          designation: register.designation.trim(), password: register.password, department: register.department.trim(), email:register.email
         })
       });
       const json = await response.json();
@@ -274,9 +274,7 @@ const CommitteeMember = (props) => {
         setFirstNameLastNameEqual(true);
       } else if (name === 'lname' && trimmedValue.toLowerCase().trim() === register.fname.toLowerCase().trim() && trimmedValue !== '' && register.fname.toLowerCase().trim() !== '') {
         setFirstNameLastNameEqual(true);
-      } else {
-        setFirstNameLastNameEqual(false);
-      }
+      } 
     } else {
       setRegister({ ...register, [name]: value });
     }
@@ -723,11 +721,10 @@ const CommitteeMember = (props) => {
                         <>
                           <td
                             style={{ cursor: "pointer" }}
-                            data-toggle="modal"
-                            data-target="#exampleModal"
                             onClick={() => { openEditModal(val); setShow(true) }}
                           >
-                            <button className="btn" style={{ background: "maroon", color: "white" }}>
+                            <button 
+                            disabled={val.isAdmin || val.isCommittee} className="btn" style={{ background: "maroon", color: "white" }}>
                               <i className="fa-solid fa-pen-to-square"></i>
                             </button>
                           </td>

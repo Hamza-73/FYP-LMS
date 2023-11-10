@@ -361,6 +361,24 @@ const Meeting = (props) => {
       console.log('error in getting groups ', error);
     }
   }
+
+  function hasMeetingPassed(meetingDate, meetingTime) {
+    // Convert meetingDate to a Date object
+    const dateParts = meetingDate.split('T')[0].split('-');
+    const year = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1; // Months are zero-indexed
+    const day = parseInt(dateParts[2], 10);
+  
+    const meetingDateTime = new Date(year, month, day);
+  
+    // Extract hours and minutes from meetingTime
+    const [hours, minutes] = meetingTime.split(':');
+    meetingDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+  
+    // Compare with the current date and time
+    return meetingDateTime <= new Date();
+  } 
+    
   return (
     <>
       <div className="meeting"  >
@@ -619,7 +637,7 @@ const Meeting = (props) => {
                         {meeting && meeting.purpose && <div className="item">
                           <h5>Purpose</h5>
                           <p
-                            style={{ cursor: "pointer", fontSize:"15px" }}
+                            style={{ cursor: "pointer", fontSize: "15px" }}
                             onClick={() => {
                               alert(meeting.purpose)
                             }}>Click Here To View</p>
@@ -640,7 +658,7 @@ const Meeting = (props) => {
                           </div>
                         )}
                         <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
-                          {(new Date(meeting.meetingDate) > new Date()) && <button
+                          { hasMeetingPassed(meeting.meetingDate, meeting.meetingTime) ? <> <button
                             className="btn btn-danger btn-sm"
                             data-toggle="modal"
                             data-target="#exampleModal"
@@ -657,29 +675,26 @@ const Meeting = (props) => {
                             }}
                           >
                             Edit
-                          </button>}
-                          {
-                            new Date(meeting.meetingDate) > new Date() ? (
-                              <button
-                                className="btn btn-danger btn-sm"
-                                onClick={() => {
-                                  setMeetingId(meeting.meetingId);
-                                  deleteMeeting(meeting.meetingId);
-                                }}
-                              >
-                                Cancel
-                              </button>
-                            ) : (
-                              <button
-                                className="btn btn-danger btn-sm"
-                                onClick={() => {
-                                  setMeetingId(meeting.meetingId);
-                                  setShowreview(true);
-                                }}
-                              >
-                                Review
-                              </button>
-                            )
+                          </button>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => {
+                                setMeetingId(meeting.meetingId);
+                                deleteMeeting(meeting.meetingId);
+                              }}
+                            >
+                              Cancel
+                            </button> </> : (
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => {
+                                setMeetingId(meeting.meetingId);
+                                setShowreview(true);
+                              }}
+                            >
+                              Review
+                            </button>
+                          )
                           }
                         </div>
                       </div>
