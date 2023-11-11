@@ -10,6 +10,8 @@ const externalSchema = new Schema({
         name: { type: String },
         date: { type: Date }
     }],
+    department: { type: String },
+    designation: { type: String },
 });
 
 module.exports = mongoose.model('External', externalSchema);

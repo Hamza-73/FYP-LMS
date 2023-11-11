@@ -12,7 +12,7 @@ router.post('/create', [
     body('username', 'Username is required').exists(),
     body('email', 'Enter a valid email').isEmail(),
 ], async (req, res) => {
-    const { name, username, email } = req.body;
+    const { name, username, email , department , designation } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -32,7 +32,7 @@ router.post('/create', [
         }
 
         // Create a new external student
-        const external = new External({ name, username, email });
+        const external = new External({ name, username, email , department , designation });
         await external.save();
         return res.json({ success: true, external });
     } catch (err) {

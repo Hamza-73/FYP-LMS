@@ -347,7 +347,7 @@ const Groups = (props) => {
                             }}
                             disabled={
                               group.proposal
-                            }>Edit Name</button>
+                            }>Edit Title</button>
                           </td>
                         </tr>
                       ))}

@@ -26,11 +26,6 @@ const CommitteeMember = (props) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      if (register.username.indexOf('_') === -1) {
-        NotificationManager.error('Username must contain at least one underscore (_).');
-        return;
-      }
-
       // Check if any required field is empty
       if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.email.trim() || !register.password.trim()) {
         NotificationManager.error('Please fill in all required fields.');
@@ -70,11 +65,6 @@ const CommitteeMember = (props) => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      if (register.username.indexOf('_') === -1) {
-        NotificationManager.error('Username must contain at least one underscore (_).');
-        return;
-      }
-
       // Check if any required field is empty
       if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.email.trim()) {
         NotificationManager.error('Please fill in all required fields.');
@@ -519,7 +509,9 @@ const CommitteeMember = (props) => {
                       </button>
                     </td>
                     {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}>
-                      <button className="btn" style={{ background: "maroon", color: "white" }}>
+                      <button className="btn" style={{ background: "maroon", color: "white" }}
+                      disabled={val.superAdmin}
+                      >
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>}
@@ -551,7 +543,7 @@ const CommitteeMember = (props) => {
                 setShowUpload(true);
               }}
             >
-              Register From File
+              Register Admin From File
             </button>
           </div>
         )}

@@ -149,7 +149,7 @@ const Allocate = () => {
                     <h1 className='text-center my-4'>Allocate Group</h1>
                     <form onSubmit={(e) => AllocateSupervisor(e)} className='container' style={{ border: "none" }}>
                         <div class="mb-3">
-                            <label for="exampleInputEmail1" class="form-label"> <h5>Project Title</h5></label>
+                            <label for="exampleInputEmail1" class="form-label"> <h5>Title</h5></label>
                             <select name="projectTitle" className='form-select' id="" value={allocate.projectTitle} onChange={handleChange}>
                                 <option value="">Select Group</option>
                                 {

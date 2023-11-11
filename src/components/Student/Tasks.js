@@ -4,9 +4,9 @@ import axios from 'axios';
 import Loading from '../Loading';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
+import { Modal } from 'react-bootstrap';
 
 const Tasks = (props) => {
-  const [type, setType] = useState('');
   const [file, setFile] = useState();
   const [group, setGroupDetails] = useState({
     success: false,
@@ -20,18 +20,21 @@ const Tasks = (props) => {
   });
   const [loading, setLoading] = useState(false);
 
-  const maxFileSize = 5 * 1024 * 1024;
+  const maxFileSize = 10 * 1024 * 1024;
 
-  const upload = async (type) => {
+  const upload = async (e, type) => {
     try {
       if (!file) {
         console.log('No file selected.');
         return;
       }
-
+      e.preventDefault();
       const formData = new FormData();
       formData.append('type', type); // Add the 'type' field to the FormData object
       formData.append(type, file);
+      if (link) {
+        formData.append("link", link);
+      }
 
       // Check if the file size is within the allowed limit
       if (file.size > maxFileSize) {
@@ -52,7 +55,8 @@ const Tasks = (props) => {
       console.log('response in uploading proposal is', json);
       if (json.success) {
         NotificationManager.success('file Uploaded Successfully');
-        groupDetail()
+        groupDetail();
+        setShow(false);
       }
     } catch (error) {
       console.log('error in uploading file', error);
@@ -137,25 +141,26 @@ const Tasks = (props) => {
     return new Date(Date.UTC(year, month, day, hour, minute, second, millisecond));
   }
 
-  // Function to calculate time remaining
-  function calculateTimeRemaining(isoDueDate) {
-    const dueDate = new Date(isoDueDate); // Assuming isoDueDate is in UTC format
+  // Function to calculate time remaining until tomorrow
+  function calculateTimeRemaining() {
     const now = new Date(); // Current date and time in client's local time zone
     const timeZoneOffset = 5 * 60 * 60 * 1000; // UTC+5 in milliseconds
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1); // Set to tomorrow
+    tomorrow.setHours(0, 0, 0, 0); // Set to midnight
 
-    // Adjust due date to Pakistan Standard Time (PKT)
-    const localDueDate = new Date(dueDate.getTime() - timeZoneOffset);
-
+    // Adjust tomorrow to Pakistan Standard Time (PKT)
+    const localTomorrow = new Date(tomorrow.getTime());
     // Calculate time difference in PKT
-    const timeDifference = localDueDate - now;
-
+    const timeDifference = localTomorrow.getTime() - now.getTime(); // Calculate time difference in milliseconds
+    console.log('time differnece is ', timeDifference)
     if (timeDifference <= 0) {
       return '0d 0h 0m 0s';
     }
 
-    // Calculate days, hours, minutes, and seconds
-    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24)) + 1;
-    const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    // Calculate hours, minutes, and seconds
+    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(timeDifference / (1000 * 60 * 60));
     const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
 
@@ -186,21 +191,20 @@ const Tasks = (props) => {
     );
   };
 
-  isTaskActive('Thu Nov 09 2023 05:00:00 GMT+0500 (Pakistan Standard Time)')
-
   const [remainingTime, setRemainingTime] = useState('');
 
   useEffect(() => {
     // Function to update the remaining time
     function updateRemainingTime() {
-      if (group.group.propDate && new Date(group.group.propDate) >= new Date()) {
+      if (group.group.propDate && new Date(group.group.propDate).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) {
+
         const newRemainingTime = calculateTimeRemaining(
           parseISODate(group.group.propDate)
         );
         setRemainingTime(newRemainingTime);
       } else if (
         group.group.docDate &&
-        new Date(group.group.docDate) >= new Date()
+        new Date(group.group.docDate).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
       ) {
         const newRemainingTime = calculateTimeRemaining(
           parseISODate(group.group.docDate)
@@ -242,20 +246,55 @@ const Tasks = (props) => {
     currentTaskType = 'documentation';
   }
 
-  // useEffect hook to re-render component when the group state changes
-  useEffect(() => {
-    // Do nothing if group or group.group is not defined
-    if (!group || !group.group) return;
 
-    // Check if proposal or documentation URLs are available and set the type accordingly
-    const uploadedType = group.group.proposal ? 'proposal' : group.group.documentation ? 'documentation' : '';
-
-    // Update the type state to trigger re-render
-    setType(uploadedType);
-  }, [group]);
+  const [link, setLink] = useState('');
+  const [show, setShow] = useState('');
+  const [invalidLink, setInvalidLink] = useState(false);
+  const handleLink = (e) => {
+    setInvalidLink(false);
+    setLink(e.target.value);
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
+    if (!urlRegex.test(link)) {
+      setInvalidLink(true);
+    }
+  }
 
   return (
     <div>
+      <div className="changeName">
+        <Modal show={show} onHide={() => {
+          setShow(false);
+        }}>
+          <Modal.Header className="modal-header">
+            <Modal.Title className="modal-title">Upload ${currentTaskType}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="modal-body">
+            <form onSubmit={(e) => { upload(e, currentTaskType) }}>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">File</label>
+                <input
+                  type="file"
+                  onChange={(e) => handleFileChange(e)}
+                  name="documentation"
+                  accept=".pdf"
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">Link <small>optional</small></label>
+                <input type="text" className="form-control" id="title" name="title" value={link} onChange={handleLink} />
+                {invalidLink && <div style={{ color: "red" }}>Enter a valid Link</div>}
+              </div>
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setShow(false); setFile(null) }}>Close</button>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!file || invalidLink}>
+                  Upload
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
+      </div>
+
       {!loading ? (
         <div className={!currentTaskType ? '' : 'container'}>
           {group.group ? (
@@ -286,26 +325,22 @@ const Tasks = (props) => {
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>
                     <div>
-                      {new Date(group.group.propDate) >= new Date()
-                        ? remainingTime
-                        : '-----'}
+                      {
+                        new Date(group.group.propDate).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
+                          ? remainingTime
+                          : '-----'
+                      }
+
                     </div>
                   </div>
                   {!group.group.proposal ? (
                     <div className='boxes text-center'>
-                      <input
-                        type="file"
-                        onChange={(e) => handleFileChange(e)}
-                        name="proposal"
-                        accept=".pdf"
-                      />
                       <button
                         className="btn"
                         type="button"
                         style={{ color: 'maroon', background: "white", fontWeight: '600' }}
                         onClick={() => {
-                          setType('proposal');
-                          upload('proposal');
+                          setShow(true);
                         }}
                       >
                         Add Proposal
@@ -371,8 +406,7 @@ const Tasks = (props) => {
                         type="button"
                         style={{ color: 'maroon', background: "white", fontWeight: '600' }}
                         onClick={() => {
-                          setType('documentation');
-                          upload('documentation');
+                          setShow(true);
                         }}
                       >
                         Add Document

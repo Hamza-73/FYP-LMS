@@ -229,13 +229,6 @@ app.post('/upload/:userType', async (req, res) => {
             throw new Error('Password must be at least 6 characters.');
           }
 
-          if (user.username) {
-            let username = user.username.toString();
-            if (username.indexOf('_') === -1) {
-              throw new Error('Username should contain underscore');
-            }
-          }
-
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(user.email)) {
             throw new Error('Invalid email address format.');

@@ -37,7 +37,7 @@ const nodemailer = require('nodemailer')
 
 router.post('/upload', authenticateUser, async (req, res) => {
   try {
-    const { type } = req.body;
+    const { type , link } = req.body;
     // Check if the user belongs to the specified group
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -71,9 +71,11 @@ router.post('/upload', authenticateUser, async (req, res) => {
       // Update the group with the uploaded file URL
       if (type === 'proposal') {
         groupUpdate.proposal = result.url;
+        groupUpdate.proposalLink = link ? link : "";
         groupUpdate.propSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
       } else if (type === 'documentation') {
         groupUpdate.documentation = result.url;
+        groupUpdate.documentationLink = link ? link : "";
         groupUpdate.docSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
       } else {
         return res.status(400).json({ success: false, message: 'Invalid file type' });
@@ -103,7 +105,7 @@ router.post('/upload', authenticateUser, async (req, res) => {
 router.post('/doc', authenticateUser, async (req, res) => {
   try {
     // Check if the user belongs to the specified group
-    const { comment } = req.body;
+    const { comment , link } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'Student Not Found' });
@@ -123,7 +125,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
       groupUpdate.docs = []
     }
     groupUpdate.docs.push({
-      docLink: result.url, review: "", comment: comment
+      docLink: result.url, review: "", comment: comment , link : link ? link : ""
     });
     groupUpdate.projects[0].students.map(async stu => {
       const studentObj = await User.findById(stu.userId);
@@ -133,9 +135,9 @@ router.post('/doc', authenticateUser, async (req, res) => {
       await studentObj.save();
     })
 
-    const Superisor = await Supervisor.findById(group.supervisorId);
+    const Superisor = await Supervisor.findById(groupUpdate.supervisorId);
     Superisor.unseenNotifications.push({
-      type: "Reminder", message: `A document has been uploaded by group : ${group.projects[0].projectTitle}`
+      type: "Reminder", message: `A document has been uploaded by group : ${groupUpdate.projects[0].projectTitle}`
     })
     await Promise.all([Superisor.save(), groupUpdate.save()]);
 

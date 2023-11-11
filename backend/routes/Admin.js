@@ -15,9 +15,9 @@ const nodemailer = require('nodemailer');
 router.post('/register', [
     body('username', 'Enter a valid username').isLength({ min: 3 }),
     body('fname', 'Enter a valid fname').isLength({ min: 3 }),
-    body('lname', 'Enter a valid lname').isLength({ min: 4 }),
+    body('lname', 'Enter a valid lname').isLength({ min: 3 }),
     body('email', 'Enter a valid email address').isEmail(),
-    body('password', 'Password must be at least 4 characters').isLength({ min: 4 }),
+    body('password', 'Password must be at least 4 characters').isLength({ min: 6 }),
 ], async (req, res) => {
     const { fname, lname, username, email, password } = req.body;
 
@@ -27,6 +27,7 @@ router.post('/register', [
     }
 
     try {
+        const checkAdmin = await Admin.find();
         // Check if the updated username or email already exists for another student
         const existingStudent = await Admin.findOne(
             { email });
@@ -35,7 +36,7 @@ router.post('/register', [
             return res.status(400).json({ message: "Email already exists for another Admin" });
         }
         const existUsename = await Admin.findOne(
-            { username : username.toLowerCase() });
+            { username: username.toLowerCase() });
         if (existUsename) {
             return res.status(400).json({ message: "Username already exists for another Admin" });
         }
@@ -67,6 +68,9 @@ router.post('/register', [
 
             // Create a new admin if the username and email are unique
             const newAdmin = new Admin({ fname, lname, username, email, password: hashedPassword });
+            if (checkAdmin.length === 0 || !checkAdmin) {
+                newAdmin.superAdmin = true;
+            }
             await newAdmin.save();
 
             const data = {
@@ -281,7 +285,7 @@ router.delete('/delete/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        const admin = await Admin.findByIdAndDelete(id);
+        const admin = await Admin.findById(id);
         if (!admin) {
             const committee = await Committee.findById(id);
             if (committee) {
@@ -292,7 +296,11 @@ router.delete('/delete/:id', async (req, res) => {
                 return res.json({ success: false, message: "Admin Not Found" })
             }
         }
-        res.json({ message: 'Admin deleted' });
+        if (admin.superAdmin) {
+            return res.json({ success: false, message: "Super Admin cannot be deleted" })
+        }
+        await Admin.findByIdAndDelete(id);
+        res.json({ success: true, message: 'Admin deleted' });
     } catch (error) {
         console.error('error is ', error)
         res.status(500).json({ message: 'Internal Server Error' });

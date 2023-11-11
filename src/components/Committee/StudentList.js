@@ -729,7 +729,7 @@ const StudentList = (props) => {
               setShowUpload(true);
             }}
           >
-            Register From File
+            Register Students From File
           </button>
         </div>}
         <NotificationContainer />

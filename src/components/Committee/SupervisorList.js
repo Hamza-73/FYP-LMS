@@ -30,10 +30,7 @@ const SupervisorList = (props) => {
         return;
       }
 
-      if (register.username.indexOf('_') === -1) {
-        NotificationManager.error('Username must contain at least one underscore (_).');
-        return;
-      }
+
       console.log('registering ', register)
       const response = await fetch("http://localhost:5000/supervisor/create", {
         method: "POST",
@@ -88,10 +85,7 @@ const SupervisorList = (props) => {
         return;
       }
 
-      if (register.username.indexOf('_') === -1) {
-        NotificationManager.error('Username must contain at least one underscore (_).');
-        return;
-      }
+
       const id = selectedSupervisor._id;
       const response = await fetch(`http://localhost:5000/supervisor/edit/${id}`, {
         method: "PUT",
@@ -117,7 +111,7 @@ const SupervisorList = (props) => {
           name: '', username: '', department: '', designation: '', slots: '', email: ''
         });
       }
-      else{
+      else {
         NotificationManager.error(updatedSupervisor.message);
       }
       setShow(false)
@@ -136,13 +130,13 @@ const SupervisorList = (props) => {
         });
         const json = await response.json();
         console.log('json in deleting supervisor is ', json)
-          // Update the UI by removing the deleted supervisor from the data
-          if (json.success)
-           { NotificationManager.success('Deleted Successfully');
-            getMembers()
-          }else{
-            NotificationManager.error(json.message);
-          }
+        // Update the UI by removing the deleted supervisor from the data
+        if (json.success) {
+          NotificationManager.success('Deleted Successfully');
+          getMembers()
+        } else {
+          NotificationManager.error(json.message);
+        }
       } catch (error) {
         console.log('Error:', error); // Log the error message
         NotificationManager.error('Error in Deleting');
@@ -166,7 +160,7 @@ const SupervisorList = (props) => {
       console.log('supervisors are ', json); // Log the response data to see its structure
       setData(json);
     } catch (error) {
-      NotificationManager.error('Error in fetching Supervisors');
+      console.log('error is ', error)
     }
   }
 
@@ -439,93 +433,96 @@ const SupervisorList = (props) => {
                     name="name"
                     minLength={3} required={true}
                     value={register.name}
+                    disabled={showSidebar ? true : false}
                     onChange={handleChange1}
                   />
                 </div>
               </div>
-              <div className="col">
-                <label htmlFor="username" className="form-label">
-                  Username
-                </label>
-                <div className="input-group">
-                  <span className="input-group-text">
-                    <i className="fas fa-user"></i>
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="username"
-                    name="username"
-                    minLength={3} required={true}
-                    value={register.username}
-                    onChange={handleChange1}
-                  />
+              {!showSidebar && <>
+                <div className="col">
+                  <label htmlFor="username" className="form-label">
+                    Username
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="fas fa-user"></i>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="username"
+                      name="username"
+                      minLength={3} required={true}
+                      value={register.username}
+                      onChange={handleChange1}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="mb-3">
-                <label htmlFor="department" className="form-label">
-                  {" "}
-                  Department{" "}
-                </label>
-                <div className="input-group">
-                  <span className="input-group-text"><i className="fas fa-building"></i></span>
-                  <select
-                    type="text"
-                    className="form-control"
-                    id="department"
-                    name="department" required={true}
-                    value={register.department}
-                    onChange={handleChange1}
-                  >
-                    <option value="">Select Department</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Other">other</option>
-                  </select>
+                <div className="mb-3">
+                  <label htmlFor="department" className="form-label">
+                    {" "}
+                    Department{" "}
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text"><i className="fas fa-building"></i></span>
+                    <select
+                      type="text"
+                      className="form-control"
+                      id="department"
+                      name="department" required={true}
+                      value={register.department}
+                      onChange={handleChange1}
+                    >
+                      <option value="">Select Department</option>
+                      <option value="Computer Science">Computer Science</option>
+                      <option value="Other">other</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div className="col">
-                <label htmlFor="name" className="form-label">
-                  Email
-                </label>
-                <div className="input-group">
-                  <span className="input-group-text">
-                    <i class="fa-regular fa-envelope"></i>
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="email"
-                    name="email" required={true}
-                    value={register.email}
-                    onChange={handleChange1}
-                  />
+                <div className="col">
+                  <label htmlFor="name" className="form-label">
+                    Email
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i class="fa-regular fa-envelope"></i>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="email"
+                      name="email" required={true}
+                      value={register.email}
+                      onChange={handleChange1}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="mb-3">
-                <label htmlFor="designation" className="form-label">
-                  {" "}
-                  Designation{" "}
-                </label>
-                <div className="input-group">
-                  <span className="input-group-text">
-                    <i className="fas fa-user-tie"></i>
-                  </span>
-                  <select
-                    className="form-select"
-                    id="designation"
-                    name="designation" required={true}
-                    value={register.designation}
-                    onChange={handleChange1}
-                  >
-                    <option value="Professor">Professor</option>
-                    <option value="Assistant Professor">
-                      Assistant Professor
-                    </option>
-                    <option value="Lecturer">Lecturer</option>
-                    <option value="External">External</option>
-                  </select>
+                <div className="mb-3">
+                  <label htmlFor="designation" className="form-label">
+                    {" "}
+                    Designation{" "}
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="fas fa-user-tie"></i>
+                    </span>
+                    <select
+                      className="form-select"
+                      id="designation"
+                      name="designation" required={true}
+                      value={register.designation}
+                      onChange={handleChange1}
+                    >
+                      <option value="Professor">Professor</option>
+                      <option value="Assistant Professor">
+                        Assistant Professor
+                      </option>
+                      <option value="Lecturer">Lecturer</option>
+                      <option value="External">External</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
+              </>}
               <div className="mb-3">
                 <label htmlFor="department" className="form-label">Slots</label>
                 <input type="number" className="form-control" required={true} id="semester" name='slots' value={register.slots} onChange={handleChange1} />
@@ -585,8 +582,11 @@ const SupervisorList = (props) => {
                     <th scope="col">Department</th>
                     <th scope="col">Designation</th>
                     <th scope="col">Slots</th>
-                    {(!showSidebar && !userData.member.isAdmin) && <>
+                    {
+                      (!showSidebar || userData.member.isAdmin) &&
                       <th scope="col">Edit</th>
+                    }
+                    {(!showSidebar) && <>
                       <th scope="col">Remove</th>
                       <th scope="col">Make Committee</th>
                     </>}
@@ -599,14 +599,17 @@ const SupervisorList = (props) => {
                       <td>{val.department}</td>
                       <td>{val.designation}</td>
                       <td>{val.slots}</td>
-                      {(!showSidebar && !userData.member.isAdmin) &&
+                      {
+                        (!showSidebar || userData.member.isAdmin) &&
+                        <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); handleShow() }}>
+                          <button className="btn" style={{ background: "maroon", color: "white" }}>
+                            <i class="fa-solid fa-pen-to-square"></i>
+                          </button>
+                        </td>
+                      }
+                      {(!showSidebar) &&
                         <>
-                          <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); handleShow() }}>
-                            <button className="btn" style={{ background: "maroon", color: "white" }}>
-                              <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                          </td>
-                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => { handleDelete(val._id);}}><button className="btn"
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => { handleDelete(val._id); }}><button className="btn"
                             style={{ background: "maroon", color: "white" }}>
                             <i class="fa-solid fa-trash"></i> </button></td>
                           <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}
@@ -643,7 +646,7 @@ const SupervisorList = (props) => {
                 setShowUpload(true)
               }}
             >
-              Register From File
+              Register Supervisor From File
             </button>
           </div>}
 

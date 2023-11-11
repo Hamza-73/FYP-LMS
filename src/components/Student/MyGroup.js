@@ -113,6 +113,9 @@ const MyGroup = (props) => {
       const formData = new FormData();
       formData.append('doc', file); // Make sure to match the field name with your backend route
       formData.append('comment', comment);
+      if (link) {
+        formData.append('link', link);
+      }
 
       // Check if the file size is within the allowed limit
       if (file.size > maxFileSize) {
@@ -157,6 +160,17 @@ const MyGroup = (props) => {
       console.log('error in uploading file', error);
     }
   };
+
+  const [link, setLink] = useState('');
+  const [invalidLink, setInvalidLink] = useState(false);
+  const handleLink = (e) => {
+    setInvalidLink(false);
+    setLink(e.target.value);
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
+    if (!urlRegex.test(link)) {
+      setInvalidLink(true);
+    }
+  }
 
   const requestMeeting = async () => {
     try {
@@ -245,6 +259,11 @@ const MyGroup = (props) => {
         <Modal.Body>
           <>
             <form onSubmit={upload}>
+              <div className="mb-3">
+                  <label htmlFor="">Link <small>optional</small></label>
+                  <input type='text' class="form-control" name="link" value={link} onChange={handleLink} ></input>
+                {invalidLink && <div style={{ color: "red" }}>Enter A Valid Link</div>}
+              </div>
               <div className="mb-3">
                 <div class="form-floating">
                   <textarea class="form-control" value={comment} placeholder="Leave a comment here" onChange={(e) => {

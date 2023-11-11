@@ -798,7 +798,7 @@ const CommitteeMember = (props) => {
                 setShowUpload(true)
               }}
             >
-              Register From File
+              Register Committee From File
             </button>
           </div>}
           <NotificationContainer />

@@ -21,15 +21,11 @@ const External = (props) => {
         try {
 
             // Check if any required field is empty
-            if (!register.name.trim() || !register.username.trim() || !register.email.trim()) {
+            if (!register.name.trim() || !register.username.trim() || !register.email.trim() || !register.department.trim() || !register.designation.trim()) {
                 NotificationManager.error('Please fill in all required fields.');
                 return;
             }
 
-            if (register.username.indexOf('_') === -1) {
-                NotificationManager.error('Username must contain at least one underscore (_).');
-                return;
-            }
             console.log('registering ', register)
             const response = await fetch("http://localhost:5000/external/create", {
                 method: "POST",
@@ -39,7 +35,9 @@ const External = (props) => {
                 body: JSON.stringify({
                     name: register.name.trim(),
                     username: register.username.trim(),
-                    email: register.email
+                    email: register.email,
+                    department: register.department,
+                    designation: register.designation,
                 })
             });
             const json = await response.json();
@@ -52,7 +50,7 @@ const External = (props) => {
                 setShow(false)
                 // Clear the register form fields
                 setRegister({
-                    name: "", username: "", email: ""
+                    name: "", username: "", email: "", department: "", designation: ""
                 });
             } else {
                 NotificationManager.error(json.message);
@@ -66,7 +64,7 @@ const External = (props) => {
         setSelectedSupervisor(supervisor);
         setEditMode(true); // Set edit mode when opening the modal
         setRegister({
-            name: supervisor.name, username: supervisor.username, email: supervisor.email
+            name: supervisor.name, username: supervisor.username, email: supervisor.email, department: supervisor.department, designation: supervisor.designation
         });
     };
 
@@ -79,10 +77,6 @@ const External = (props) => {
                 return;
             }
 
-            if (register.username.indexOf('_') === -1) {
-                NotificationManager.error('Username must contain at least one underscore (_).');
-                return;
-            }
             const id = selectedSupervisor._id;
             const response = await fetch(`http://localhost:5000/external/edit/${id}`, {
                 method: "PUT",
@@ -92,7 +86,9 @@ const External = (props) => {
                 body: JSON.stringify({
                     name: register.name.trim(),
                     username: register.username.trim(),
-                    email: register.email
+                    email: register.email,
+                    department: register.department,
+                    designation: register.designation,
                 })
             });
 
@@ -104,9 +100,9 @@ const External = (props) => {
                 setShow(false)
                 setEditMode(false); // Disable edit mode after successful edit
                 setRegister({
-                    name: '', username: '', email: ''
+                    name: '', username: '', email: '', department: "", designation: ""
                 });
-            }else{
+            } else {
                 NotificationManager.error(updatedSupervisor.message);
             }
         } catch (error) {
@@ -189,11 +185,13 @@ const External = (props) => {
     const filteredData = data.members.filter((member) =>
         member.name.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
         member.username.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
-        member.email.toLowerCase().trim().includes(searchQuery.toLowerCase())
+        member.email.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
+        member.department.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
+        member.designation.toLowerCase().trim().includes(searchQuery.toLowerCase())
     );
 
     const [register, setRegister] = useState({
-        name: "", username: "", email: ""
+        name: "", username: "", email: "", department: "", designation: ""
     });
 
     const handleChange1 = (e) => {
@@ -209,7 +207,7 @@ const External = (props) => {
     };
 
     const handleClose = () => {
-        setRegister({ name: "", username: "", email: "" })
+        setRegister({ name: "", username: "", email: "", department: "", designation: "" })
     }
 
     const paginate = (array, page_size, page_number) => {
@@ -419,6 +417,51 @@ const External = (props) => {
                                     />
                                 </div>
                             </div>
+                            <div className="mb-3">
+                                <label htmlFor="department" className="form-label">
+                                    {" "}
+                                    Department{" "}
+                                </label>
+                                <div className="input-group">
+                                    <span className="input-group-text"><i className="fas fa-building"></i></span>
+                                    <select
+                                        type="text"
+                                        className="form-control"
+                                        id="department"
+                                        name="department" required={true}
+                                        value={register.department}
+                                        onChange={handleChange1}
+                                    >
+                                        <option value="">Select Department</option>
+                                        <option value="Computer Science">Computer Science</option>
+                                        <option value="Other">other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="mb-3">
+                                <label htmlFor="designation" className="form-label">
+                                    {" "}
+                                    Designation{" "}
+                                </label>
+                                <div className="input-group">
+                                    <span className="input-group-text">
+                                        <i className="fas fa-user-tie"></i>
+                                    </span>
+                                    <select
+                                        className="form-select"
+                                        id="designation"
+                                        name="designation" required={true}
+                                        value={register.designation}
+                                        onChange={handleChange1}
+                                    >
+                                        <option value="Professor">Professor</option>
+                                        <option value="Assistant Professor">
+                                            Assistant Professor
+                                        </option>
+                                        <option value="Lecturer">Lecturer</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div className="col">
                                 <label htmlFor="name" className="form-label">
                                     Email
@@ -537,7 +580,7 @@ const External = (props) => {
                                 setShowUpload(true);
                             }}
                         >
-                            Register From File
+                            Register Externals From File
                         </button>
                     </div>}
 
