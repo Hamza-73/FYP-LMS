@@ -689,8 +689,8 @@ const StudentList = (props) => {
                     <td>{val.cnic}</td>
                     {(!showSidebar && !userData.member.isAdmin) &&
                       <>
-                        <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); setShow(true) }}>
-                          <button className="btn" style={{ background: "maroon", color: "white" }}>
+                        <td style={{ cursor: "pointer" }}>
+                          <button className="btn"  onClick={() => { openEditModal(val); setShow(true) }} style={{ background: "maroon", color: "white" }}>
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                         </td>

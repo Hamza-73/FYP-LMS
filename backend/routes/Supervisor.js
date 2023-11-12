@@ -164,7 +164,7 @@ router.delete('/delete/:id', async (req, res) => {
       return res.status(404).json({ message: 'Supervisor not found' });
     }
 
-    res.json({ message: 'Supervisor deleted successfully' });
+    res.json({ success: true, message: 'Supervisor deleted successfully' });
   } catch (error) {
     console.error('Error deleting Supervisor:', error);
     res.status(500).json({ message: 'Error deleting Supervisor', error });
@@ -821,7 +821,7 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
 // Give marks
 router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
   try {
-    const { marks, external, internal, hod } = req.body;
+    const { marks, external, hod } = req.body;
     const { groupId } = req.params;
 
     const group = await Group.findById(groupId);
@@ -835,11 +835,11 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
     if (!group.vivaDate) {
       return res.json({ success: false, message: "Marks will be given only when Viva is being taken" })
     }
-    if (new Date(group.vivaDate) > new Date()) {
+    if (new Date(group.vivaDate).setHours(0,0) > new Date().setHours(0,0)) {
       return res.status(201).json({ success: false, message: 'VIVA has not been taken yet' });
     }
 
-    group.marks = marks; group.externalMarks = external; group.hodMarks = hod, group.internalMarks = internal;
+    group.marks = marks; group.externalMarks = external; group.hodMarks = hod;
     group.isViva = true;
     group.projects.map(project => {
       console.log(' project is ', project);
@@ -852,7 +852,6 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
         console.log('student obj sis ', studentObj)
         studentObj.marks = marks;
         studentObj.externalMarks = external;
-        studentObj.internalMarks = internal;
         studentObj.hodMarks = hod;
         studentObj.unseenNotifications.push({
           type: "Important", message: `Marks have been uploaded`
@@ -860,20 +859,21 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
         await studentObj.save();
       });
     });
+    const supervisor = await Supervisor.findById(group.supervisorId);
+    const notificationMessage = `${supervisor.name} added marks for group ${group.projects[0].projectTitle} as for ${supervisor.name}(internal):${marks}, ${group.chairperson}(chairperson):${hod}, and ${group.externalName}(external):${external}`
+    const supervisors = await Supervisor.find({ isAdmin: true });
+    const committeeMembers = await Committee.find({ isAdmin: true });
+    supervisors.map(sup=>{
+      sup.unseenNotifications.push({
+        type:"Important", message : notificationMessage
+      })
+    })
     const viva = await Viva.findById(group.viva);
     if (viva) {
       viva.isViva = true;
       await viva.save()
     }
-
-    const internalMember = await Supervisor.findById(group.internal);
-    if (internalMember) {
-      internalMember.unseenNotifications.push({
-        type: "Important", message: `Marks of group ${group.projects[0].projectTitle} have been uploaded`
-      })
-    }
-
-    await Promise.all([internalMember.save(), group.save()]); // Save the group separately after updating students' marks
+    await group.save(); // Save the group separately after updating students' marks
     res.json({ success: true, message: `Marks uploaded successfully` });
 
   } catch (error) {

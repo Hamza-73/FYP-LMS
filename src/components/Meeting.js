@@ -36,7 +36,7 @@ const Meeting = (props) => {
         },
       });
       const json = await response.json();
-      console.log('json meeting is in get ', json);
+      // console.log('json meeting is in get ', json);
 
       setData(json)
     } catch (error) {
@@ -69,9 +69,9 @@ const Meeting = (props) => {
         })
       });
 
-      console.log('Response status:', response.status);
+      // console.log('Response status:', response.status);
       const json = await response.json();
-      console.log('JSON meeting is ', json);
+      // console.log('JSON meeting is ', json);
 
       if (json.success) {
         // Clear the form fields
@@ -93,7 +93,7 @@ const Meeting = (props) => {
   const editMeeting = async (e) => {
     try {
       e.preventDefault();
-      console.log('meeting starts', meetingId)
+      // console.log('meeting starts', meetingId)
       const response = await fetch(`http://localhost:5000/meeting/edit-meeting/${meetingId}`, {
         method: "PUT",
         headers: {
@@ -105,10 +105,10 @@ const Meeting = (props) => {
           time: edit.meetingTime, date: edit.meetingDate, type: edit.meetingType, purpose: edit.purpose
         })
       });
-      console.log('fetch ends');
-      console.log('Response status:', response.status);
+      // console.log('fetch ends');
+      // console.log('Response status:', response.status);
       const json = await response.json();
-      console.log('json meeting editing is  ', json);
+      // console.log('json meeting editing is  ', json);
 
       if (json.success) {
         alert(`Meeting Edited Successfully`);
@@ -133,16 +133,21 @@ const Meeting = (props) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'meetingDate') {
-      const selectedDate = new Date(value);
+    if (name === 'meetingTime') {
       const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for comparison
-
-      if (selectedDate < currentDate) {
-        alert("Meeting date cannot be in the past.");
+      currentDate.setSeconds(0); // Set seconds to 0 for comparison
+    
+      const [hours, minutes] = value.split(':');
+      const selectedTime = new Date(meeting.meetingDate); // Use meeting.meetingDate here
+      selectedTime.setHours(hours, minutes);
+      selectedTime.setSeconds(0); // Set seconds to 0 for comparison
+    
+      if (selectedTime < currentDate) {
+        alert("Meeting time cannot be in the past.");
         return;
       }
     }
+    
 
     if (name === 'meetingTime') {
       const currentDate = new Date();
@@ -167,13 +172,13 @@ const Meeting = (props) => {
     }
 
     setMeeting({ ...meeting, [name]: value });
-    console.log('meeting is ', meeting);
+    // console.log('meeting is ', meeting);
   };
 
 
   const deleteMeeting = async (id) => {
     try {
-      console.log('meeting id is ', id);
+      // console.log('meeting id is ', id);
       const confirmed = window.confirm('Are You Sure You Want To Cancel');
       if (!confirmed) {
         return;
@@ -185,7 +190,7 @@ const Meeting = (props) => {
           }
         });
         const json = await response.json();
-        console.log("deleting meeting ", json);
+        // console.log("deleting meeting ", json);
         if (json) {
           // Remove the canceled meeting from the state
           getMeeting();
@@ -243,7 +248,7 @@ const Meeting = (props) => {
   const giveReview = async (e) => {
     try {
       e.preventDefault();
-      console.log('review is ', review);
+      // console.log('review is ', review);
       const response = await fetch(`http://localhost:5000/meeting/meeting-review/${meetingId}/${review}`, {
         method: "PUT",
         headers: {
@@ -253,7 +258,7 @@ const Meeting = (props) => {
         body: JSON.stringify({ review: review })
       });
       const json = await response.json();
-      console.log('json is in giving meeting', json);
+      // console.log('json is in giving meeting', json);
       if (json) {
         alert(json.message)
       }
@@ -293,7 +298,7 @@ const Meeting = (props) => {
 
         const json = await response.json();
         if (json) {
-          console.log('User data is: ', json);
+          // console.log('User data is: ', json);
           setUserData(json);
           setLoading(false);
         }
@@ -305,10 +310,19 @@ const Meeting = (props) => {
     if (localStorage.getItem('token')) {
       setTimeout(() => {
         getDetail();
-        getMeeting();
+        // getMeeting();
         getGroups();
       }, 700);
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchDataInterval = setInterval(() => {
+      getMeeting();
+    }, 1000); // Fetch meeting data every second
+
+    // Clear interval on component unmount
+    return () => clearInterval(fetchDataInterval);
   }, []);
 
   const meetingStyle = `
@@ -355,7 +369,7 @@ const Meeting = (props) => {
         }
       });
       const json = await response.json();
-      console.log('groups under me are ', json);
+      // console.log('groups under me are ', json);
       setGroups(json);
     } catch (error) {
       console.log('error in getting groups ', error);
@@ -368,17 +382,16 @@ const Meeting = (props) => {
     const year = parseInt(dateParts[0], 10);
     const month = parseInt(dateParts[1], 10) - 1; // Months are zero-indexed
     const day = parseInt(dateParts[2], 10);
-  
+
     const meetingDateTime = new Date(year, month, day);
-  
+
     // Extract hours and minutes from meetingTime
     const [hours, minutes] = meetingTime.split(':');
     meetingDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10));
-  
     // Compare with the current date and time
     return meetingDateTime <= new Date();
-  } 
-    
+  }
+
   return (
     <>
       <div className="meeting"  >
@@ -510,7 +523,7 @@ const Meeting = (props) => {
               <h1>Link Information</h1>
               <div>
                 <textarea name="purpose" value={meeting.purpose} id="" placeholder='Purpose of Meeting' cols="30" rows="2" onChange={handleInputChange} style={myStyle}></textarea> <br />
-                <select name="meetingGroup" class="form-select" onChange={handleInputChange} value={meeting.meetingGroup}>
+                <select name="meetingGroup" className="form-select" onChange={handleInputChange} value={meeting.meetingGroup}>
                   <option value="">Select Group</option>
                   {
                     groups.projectTitles && groups.projectTitles.map((group, groupKey) => {
@@ -544,7 +557,7 @@ const Meeting = (props) => {
               <br />
               <div className="link" id="link">
                 <h4>
-                  <i class="fas fa-video" style={{ fontSize: "24px" }}></i>
+                  <i className="fas fa-video" style={{ fontSize: "24px" }}></i>
                   &ensp;Using
                 </h4>
                 <select id="test" name="meetingType" onChange={handleInputChange} value={meeting.meetingType}>
@@ -561,7 +574,7 @@ const Meeting = (props) => {
                 <br />
                 <textarea
                   name="meetingLink"
-                  class="purpose"
+                  className="purpose"
                   placeholder="Enter the link of the meeting"
                   disabled={meeting.meetingType === "In Person"}
                   onChange={handleInputChange}
@@ -570,11 +583,11 @@ const Meeting = (props) => {
               </div>
 
               <div style={{ marginTop: "20px" }}>
-                <h6 for="appt">Choose a time and date for your meeting:</h6>{" "}
+                <h6 htmlFor="appt">Choose a time and date for your meeting:</h6>{" "}
                 <input
                   type="date"
-                  class="purpose1"
-                  for="appt"
+                  className="purpose1"
+                  htmlFor="appt"
                   placeholder="Meeting Date"
                   onChange={handleInputChange}
                   name="meetingDate"
@@ -582,7 +595,7 @@ const Meeting = (props) => {
                 />{" "}
                 <br />
                 <input
-                  class="purpose1"
+                  className="purpose1"
                   type="time"
                   id="appt"
                   name="meetingTime"
@@ -658,44 +671,48 @@ const Meeting = (props) => {
                           </div>
                         )}
                         <div className='d-grid gap-2 d-md-flex justify-content-md-end'>
-                          { hasMeetingPassed(meeting.meetingDate, meeting.meetingTime) ? <> <button
-                            className="btn btn-danger btn-sm"
-                            data-toggle="modal"
-                            data-target="#exampleModal"
-                            onClick={() => {
-                              setMeetingId(meeting.meetingId);
-                              setEdit({
-                                meetingGroup: meeting.meetingGroup || '', // Ensure it's defined or set to an empty string
-                                meetingLink: meeting.meetingLink,
-                                meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
-                                meetingDate: meeting.meetingDate,
-                                purpose: meeting.purpose
-                              });
-                              setShow(true);
-                            }}
-                          >
-                            Edit
-                          </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => {
-                                setMeetingId(meeting.meetingId);
-                                deleteMeeting(meeting.meetingId);
-                              }}
-                            >
-                              Cancel
-                            </button> </> : (
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => {
-                                setMeetingId(meeting.meetingId);
-                                setShowreview(true);
-                              }}
-                            >
-                              Review
-                            </button>
-                          )
+                          {!hasMeetingPassed(meeting.meetingDate, meeting.meetingTime) ?
+                            <>
+                              <button
+                                className="btn btn-danger btn-sm"
+                                data-toggle="modal"
+                                data-target="#exampleModal"
+                                onClick={() => {
+                                  setMeetingId(meeting.meetingId);
+                                  setEdit({
+                                    meetingGroup: meeting.meetingGroup || '', // Ensure it's defined or set to an empty string
+                                    meetingLink: meeting.meetingLink,
+                                    meetingTime: meeting.meetingTime || '', // Ensure it's defined or set to an empty string
+                                    meetingDate: meeting.meetingDate,
+                                    purpose: meeting.purpose
+                                  });
+                                  setShow(true);
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => {
+                                  setMeetingId(meeting.meetingId);
+                                  deleteMeeting(meeting.meetingId);
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </> : (
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => {
+                                  setMeetingId(meeting.meetingId);
+                                  setShowreview(true);
+                                }}
+                              >
+                                Review
+                              </button>
+                            )
                           }
+
                         </div>
                       </div>
                     </div>

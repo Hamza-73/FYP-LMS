@@ -6,7 +6,7 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import 'react-notifications/lib/notifications.css';
 import { Modal } from 'react-bootstrap';
 
-const CommitteeMember = (props) => {
+const AdminList = (props) => {
   const history = useNavigate();
   const [userData, setUserData] = useState({ member: [] });
 
@@ -195,25 +195,25 @@ const CommitteeMember = (props) => {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) {
-      history('/');
-
-    } else {
-
-      // Set loading to true when starting data fetch
-      setLoading(true);
-      getDetail();
-      getMembers()
-        .then(() => {
-          // Once data is fetched, set loading to false
+    const fetchData = async () => {
+      try {
+        if (!localStorage.getItem('token')) {
+          history('/');
+        } else {
+          setLoading(true);
+          await getDetail();
+          await getMembers();
           setLoading(false);
-        })
-        .catch((error) => {
-          setLoading(false); // Handle error cases
-          console.error('Error fetching data:', error);
-        });
-    }
-  }, []);
+        }
+      } catch (error) {
+        setLoading(false);
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []); // Note: empty dependency array to run the effect only once
+
 
   // Function to handle input changes
   const handleChange1 = (e) => {
@@ -268,32 +268,35 @@ const CommitteeMember = (props) => {
     const searchTerm = searchQuery.trim().toLowerCase(); // Remove leading/trailing spaces and convert to lowercase
     const searchWords = searchTerm.split(' ');
 
-    // Check if any word in the search query matches either first name or last name
+    // Check if any word in the search query matches either first name, last name, or name
     const matchesFirstName = member.fname && searchWords.some((word) =>
       member.fname.toLowerCase().includes(word)
     );
     const matchesLastName = member.lname && searchWords.some((word) =>
       member.lname.toLowerCase().includes(word)
     );
+    const matchesName = member.name && searchWords.some((word) =>
+      member.name.toLowerCase().includes(word)
+    );
 
     return (
       matchesFirstName ||
-      matchesLastName
+      matchesLastName ||
+      matchesName
     );
   });
-
 
   const filteredDataPaginated = paginate(filteredData, recordsPerPage, currentPage);
 
   const handleNextPage = () => {
     if (currentPage < Math.ceil(filteredData.length / recordsPerPage)) {
-      setCurrentPage(currentPage + 1);
+      setCurrentPage((prevPage) => prevPage + 1);
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      setCurrentPage((prevPage) => prevPage - 1);
     }
   };
 
@@ -499,18 +502,39 @@ const CommitteeMember = (props) => {
               <tbody className='text-center'>
                 {filteredDataPaginated.map((val, key) => (
                   <tr key={key}>
-                    <td>{!val.isAdmin ? val.fname + ' ' + val.lname : <>{val.fname + ' ' + val.lname} <small>(committee)</small></>}</td>
+                    <td>
+                      <td>
+                        {!val.isAdmin ? (
+                          <>
+                            {val.fname + ' ' + val.lname}{val.superAdmin &&  <small>(super admin)</small>}
+                          </>
+                        ) : (
+                          <>
+                            {!val.isCommittee ? (
+                              <>
+                                {val.fname + ' ' + val.lname} <small>(committee)</small>
+                              </>
+                            ) : (
+                              <>
+                                {val.name} <small>(sup)</small>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </td>
+
+                    </td>
                     <td>{val.username}</td>
                     <td>{val.email}</td>
-                    <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); setShow(true); }}>
-                      <button
+                    <td style={{ cursor: "pointer" }}>
+                      <button onClick={() => { openEditModal(val); setShow(true); }}
                         disabled={val.isAdmin || val.isCommittee} className="btn" style={{ background: "maroon", color: "white" }}>
                         <i className="fa-solid fa-pen-to-square"></i>
                       </button>
                     </td>
-                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}>
-                      <button className="btn" style={{ background: "maroon", color: "white" }}
-                      disabled={val.superAdmin}
+                    {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }}>
+                      <button onClick={() => handleDelete(val._id)} className="btn" style={{ background: "maroon", color: "white" }}
+                        disabled={val.superAdmin}
                       >
                         <i className="fa-solid fa-trash"></i>
                       </button>
@@ -523,11 +547,24 @@ const CommitteeMember = (props) => {
             <div>No matching members found.</div>
           )}
           <div className="d-flex justify-content-between">
-            <button type="button" className="btn btn-success" disabled={currentPage === 1} onClick={handlePrevPage}
-            >  Previous </button>
-            <button type="button" className="btn btn-success" disabled={currentPage === Math.ceil(filteredData.length / recordsPerPage)} onClick={handleNextPage}
-            >  Next </button>
+            <button
+              type="button"
+              className="btn btn-success"
+              disabled={currentPage === 1}
+              onClick={handlePrevPage}
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              className="btn btn-success"
+              disabled={currentPage === Math.ceil(filteredData.length / recordsPerPage)}
+              onClick={handleNextPage}
+            >
+              Next
+            </button>
           </div>
+
         </div>
         {(!showSidebar && !userData.member.isAdmin) && (
           <div className="d-grid gap-2 col-6 mx-auto my-4">
@@ -553,4 +590,4 @@ const CommitteeMember = (props) => {
   );
 }
 
-export default CommitteeMember;
+export default AdminList;

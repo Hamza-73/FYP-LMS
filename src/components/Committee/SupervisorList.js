@@ -601,15 +601,15 @@ const SupervisorList = (props) => {
                       <td>{val.slots}</td>
                       {
                         (!showSidebar || userData.member.isAdmin) &&
-                        <td style={{ cursor: "pointer" }} onClick={() => { openEditModal(val); handleShow() }}>
-                          <button className="btn" style={{ background: "maroon", color: "white" }}>
+                        <td style={{ cursor: "pointer" }}>
+                          <button  onClick={() => { openEditModal(val); handleShow() }} className="btn" style={{ background: "maroon", color: "white" }}>
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                         </td>
                       }
                       {(!showSidebar) &&
                         <>
-                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => { handleDelete(val._id); }}><button className="btn"
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }}><button  onClick={() => { handleDelete(val._id); }} className="btn"
                             style={{ background: "maroon", color: "white" }}>
                             <i class="fa-solid fa-trash"></i> </button></td>
                           <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}

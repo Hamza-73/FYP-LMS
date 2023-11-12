@@ -127,7 +127,8 @@ const GroupDetail = () => {
     setGroupId('');
   }
 
-  const [comment, setComment] = useState('')
+  const [comment, setComment] = useState('');
+  const [link, setLink] = useState("");
 
   const currentGroup = group.groups.length > 0 ? group.groups[currentIndex] : {};
   return (
@@ -157,6 +158,12 @@ const GroupDetail = () => {
                           Review
                         </label>
                         <textarea className="form-control" id="text" name="text" value={review.text} onChange={handleChange} />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="exampleInputEmail163" className="form-label">
+                          Link
+                        </label>
+                        <input type="text" className="form-control" id="link" name="link" value={link ? link : ""} onChange={handleChange} />
                       </div>
                       <div className="modal-footer">
                         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close" onClick={handleClose}> Close</button>
@@ -249,6 +256,7 @@ const GroupDetail = () => {
                               setGroupId(currentGroup._id);
                               setComment(doc.comment)
                               setReview({ index: docKey, text: doc.review });
+                              setLink(doc.link)
                             }}>Reviews/Comment</button>
                         </div>
                       </div>

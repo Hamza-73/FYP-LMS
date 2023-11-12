@@ -6,7 +6,7 @@ import 'react-notifications/lib/notifications.css';
 
 const Groups = (props) => {
   const [group, setGroup] = useState({ groups: [] });
-  const [grades, setGrades] = useState({ marks: 0, external: 0, internal: 0, hod: 0 });
+  const [grades, setGrades] = useState({ marks: 0, external: 0, hod: 0 });
   const [groupId, setGrouppId] = useState('');
 
   const [addStudent, setAddStudent] = useState({
@@ -54,7 +54,7 @@ const Groups = (props) => {
           'Content-Type': 'application/json',
           Authorization: token,
         },
-        body: JSON.stringify({ marks: grades.marks, external: grades.external, internal: grades.internal, hod: grades.hod })
+        body: JSON.stringify({ marks: grades.marks, external: grades.external, hod: grades.hod })
       });
 
       const json = await response.json();
@@ -171,7 +171,7 @@ const Groups = (props) => {
           setShowGroupName(false);
         }}>
           <Modal.Header className="modal-header">
-            <Modal.Title className="modal-title">Change Group Name</Modal.Title>
+            <Modal.Title className="modal-title">Change Group Title</Modal.Title>
           </Modal.Header>
           <Modal.Body className="modal-body">
             <form onSubmit={(e) => { changeName(e) }}>
@@ -183,7 +183,7 @@ const Groups = (props) => {
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">New Title</label>
-                <input type="text" className="form-control" id="title" name="title" value={titles.title} onChange={(e) => {
+                <input type="text"  pattern="[A-Za-z]+" className="form-control" id="title" name="title" value={titles.title} onChange={(e) => {
                   setTitles({ ...titles, [e.target.name]: e.target.value });
                 }} />
               </div>
@@ -222,15 +222,11 @@ const Groups = (props) => {
                 <label htmlFor="name" className="form-label">External</label>
                 <input type="number" className="form-control" id="marks" min='0' max='100' name="external" value={grades.external} onChange={handleChange1} />
               </div>
-              <div className="mb-3">
-                <label htmlFor="exampleInputPassword1" className="form-label">Internal</label>
-                <input type="number" className="form-control" id="internal" min='0' max='100' name="internal" value={grades.internal} onChange={handleChange1} />
-              </div>
               <Modal.Footer className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
                   handleClose(); setShow(false);
                 }}>Close</button>
-                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external || !grades.internal || !grades.hod}>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!grades.marks || !grades.external || !grades.hod}>
                   Give Grades
                 </button>
               </Modal.Footer>
@@ -327,9 +323,9 @@ const Groups = (props) => {
 
                           <td>
                             <div style={{ cursor: "pointer" }}>
-                              {(group.marks && group.externalMarks && group.internalMarks && group.hodMarks) ? (group.marks + group.externalMarks + group.internalMarks + group.hodMarks) / 4 : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={() => {
+                              {(group.marks && group.externalMarks && group.hodMarks) ? (group.marks + group.externalMarks + group.hodMarks) / 3 : 0} &nbsp;&nbsp; <i className="fa-solid fa-pen-to-square" onClick={() => {
                                 setGrouppId(group._id); setGrades({
-                                  external: group.externalMarks, internal: group.internalMarks, hod: group.hodMarks, marks: group.marks
+                                  external: group.externalMarks, hod: group.hodMarks, marks: group.marks
                                 });
                                 setShow(true);
                               }}></i>

@@ -544,13 +544,13 @@ const External = (props) => {
                                             <td>{val.email}</td>
                                             {(userData.member.isAdmin) &&
                                                 <>
-                                                    <td data-toggle="modal" data-target="#exampleModal" onClick={() => { openEditModal(val); setShow(true); }}>
-                                                        <button className="btn" style={{ color: "white", cursor: "pointer", background: "maroon" }}>
+                                                    <td data-toggle="modal" data-target="#exampleModal">
+                                                        <button onClick={() => { openEditModal(val); setShow(true); }} className="btn" style={{ color: "white", cursor: "pointer", background: "maroon" }}>
                                                             <i className="fa-solid fa-pen-to-square"></i>
                                                         </button>
                                                     </td>
-                                                    <td onClick={() => handleDelete(val._id)}>
-                                                        <button className="btn" style={{ color: "white", cursor: "pointer", background: "maroon" }} > <i className="fa-solid fa-trash"></i></button></td>
+                                                    <td>
+                                                        <button onClick={() => handleDelete(val._id)} className="btn" style={{ color: "white", cursor: "pointer", background: "maroon" }} > <i className="fa-solid fa-trash"></i></button></td>
                                                 </>
                                             }
                                         </tr>

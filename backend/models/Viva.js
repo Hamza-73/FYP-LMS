@@ -14,8 +14,7 @@ const vivaSchema = new Schema({
   documentation: { type: String },
   external: { type: String },
   externalName: { type: String },
-  internal: { type: String },
-  internalName: { type: String },
+  chairperson: { type: String },
   vivaDate: { type: Date, required: true },
   vivaTime: {
     type: String,

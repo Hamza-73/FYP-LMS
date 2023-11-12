@@ -159,15 +159,15 @@ const ProjectRequests = (props) => {
             <form onSubmit={handleRequests}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Project Title</label>
-                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
+                <input type="text" pattern="[A-Za-z]+" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                <input type="text" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
+                <input type="text" pattern="[A-Za-z]+" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
-                <textarea className="form-control" id="description" name="description" value={improve.description} onChange={handleChange} />
+                <textarea className="form-control" pattern="[A-Za-z]+" id="description" name="description" value={improve.description} onChange={handleChange} />
               </div>
               <Modal.Footer >
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>

@@ -14,7 +14,7 @@ const Event = (props) => {
 
   const [viva, setViva] = useState({
     projectTitle: '', vivaDate: new Date(), vivaTime: '',
-    external: "", internal: ""
+    external: "", chairperson : ""
   });
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +53,7 @@ const Event = (props) => {
           projectTitle: viva.projectTitle,
           vivaDate: viva.vivaDate,
           vivaTime: viva.vivaTime,
-          internal: viva.internal,
+          chairperson: viva.chairperson,
           external: viva.external
         }),
       });
@@ -125,6 +125,7 @@ const Event = (props) => {
   };
 
   const [show, setShow] = useState(false);
+  const [supervisor , setSupervisor] = useState("")
 
   return (
     <div>
@@ -140,7 +141,7 @@ const Event = (props) => {
                 <label htmlFor="name" className="form-label">
                   Project Title
                 </label>
-                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
+                <input type="text" className="form-control" disabled={true} id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
@@ -172,15 +173,10 @@ const Event = (props) => {
                 </select>
               </div>
               <div className="mb-3">
-                <label htmlFor="internal" className="form-label">
-                  Internal
+                <label htmlFor="chairperson" className="form-label">
+                  ChairPerson
                 </label>
-                <select className='form-select' name='internal' onChange={handleChange1} value={viva.internal}>
-                  <option value="">Select Internal</option>
-                  {committee.members && committee.members.map((member, index) => (
-                    <option key={index} value={member.username}>{member.name}</option>
-                  ))}
-                </select>
+                  <input type="text" className="form-control" name='chairperson' value={viva.chairperson} onChange={handleChange1} />
               </div>
 
               <Modal.Footer className="modal-footer">
@@ -190,7 +186,7 @@ const Event = (props) => {
                   Close
                 </button>
                 <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                  disabled={!viva.vivaDate || !viva.vivaTime || !viva.projectTitle || !viva.external || !viva.internal}
+                  disabled={!viva.vivaDate || !viva.vivaTime || !viva.projectTitle || !viva.external || !viva.chairperson}
                 >
                   Schedule
                 </button>
@@ -214,7 +210,6 @@ const Event = (props) => {
                       <th scope="col">Supervisor</th>
                       <th scope="col">Student Name</th>
                       <th scope="col">Project Title</th>
-                      <th scope="col">Internal</th>
                       <th scope="col">External</th>
                       <th scope="col">Viva Date</th>
                       <th scope="col">Viva Time</th>
@@ -233,14 +228,13 @@ const Event = (props) => {
                           </div>
                         </td>
                         <td>{val.projectTitle}</td>
-                        <td>{val.internalName}</td>
                         <td>{val.externalName}</td>
                         <td>{new Date(val.vivaDate).toLocaleDateString('en-GB')}</td>
                         <td>{val.vivaTime}</td>
                         <td data-toggle="modal" data-target="#exampleModal1" onClick={() => {
                           setViva({
                             projectTitle: val.projectTitle, date: val.vivaDate,
-                            time: val.vivaTime, external: val.external, internal: val.internal ? val.internal : ""
+                            time: val.vivaTime, external: val.external,chairperson:val.chairperson
                           });
                           setShow(true);
                         }}

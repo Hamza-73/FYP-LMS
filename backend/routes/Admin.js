@@ -178,13 +178,24 @@ router.post('/reset-password/:id/:token', (req, res) => {
 // Route to make a committee member an admin
 router.post('/make-admin', async (req, res) => {
     const { username } = req.body;
-    console.log('usernam eis', username)
+    console.log('username is', username)
     try {
+        // Check if there is already a co-admin from committee or supervisor
+        const existingCoAdmin = await Committee.findOne({ isAdmin: true })
+            || await Supervisor.findOne({ isAdmin: true });
+
+        if (existingCoAdmin) {
+            return res.status(400).json({
+                success: false,
+                message: "There can only be 1 co-admin at a time. Please revoke the current co-admin status before making a new one."
+            });
+        }
 
         const admin = await Admin.findOne({ username });
         if (admin) {
             return res.json({ success: false, message: "Admin with this username already exists/ change username and try again " });
         }
+
         // Find the committee member by username
         const committeeMember = await Committee.findOne({ username });
 
@@ -292,9 +303,16 @@ router.delete('/delete/:id', async (req, res) => {
                 committee.isAdmin = false;
                 await committee.save();
                 return res.json({ success: true, message: "Admin Deleted Successfully" });
-            } else {
-                return res.json({ success: false, message: "Admin Not Found" })
+            } if (!committee) {
+                const supervisor = await Supervisor.findById(id);
+                if (supervisor) {
+                    supervisor.isAdmin = false;
+                    await supervisor.save()
+                } else {
+                    return res.json({ success: false, message: "Admin Not Found" })
+                }
             }
+
         }
         if (admin.superAdmin) {
             return res.json({ success: false, message: "Super Admin cannot be deleted" })

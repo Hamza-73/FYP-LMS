@@ -16,7 +16,6 @@ const groupSchema = new Schema({
   remarks: { type: String },
   marks: { type: Number },
   externalMarks: { type: Number },
-  internalMarks: { type: Number },
   hodMarks: { type: Number },
   proposal: { type: String },
   proposalLink: { type: String },
@@ -59,9 +58,8 @@ const groupSchema = new Schema({
     reason: { type: String }
   }],
   external: { type: String },
+  chairperson: { type: String },
   externalName: { type: String },
-  internal: { type: String },
-  internalName: { type: String },
   isViva: { type: Boolean, default: false }
 });
 

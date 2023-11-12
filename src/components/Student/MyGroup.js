@@ -462,8 +462,8 @@ const MyGroup = (props) => {
                             <h6>Time</h6>
                             <p>{group.group.viva.vivaTime && group.group.viva.vivaTime} </p>
                           </div><div className="items">
-                            <h6>Internal</h6>
-                            <p style={{ fontSize: "14px" }}>{group.group.viva.internalName} </p>
+                            <h6>Chair Person</h6>
+                            <p style={{ fontSize: "14px" }}>{group.group.viva.chairperson} </p>
                           </div><div className="items">
                             <h6>External</h6>
                             <p style={{ fontSize: "14px", position: "relative", marginLeft: "3px" }}>{group.group.viva.externalName} </p>

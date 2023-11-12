@@ -41,7 +41,7 @@ router.post('/meeting', authenticateUser, async (req, res) => {
       return res.status(404).json({ message: 'Group doesnot belong to you' });
     }
 
-    const parsedDate = moment(date, 'YYYY-MM-DD').toDate();
+    const parsedDate = moment.utc(date, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
 
 
     // Check if parsedDate is a valid date
@@ -126,7 +126,7 @@ router.put('/edit-meeting/:id', async (req, res) => {
     }
 
     group.meetingDate = updatedMeetingData.date ? updatedMeetingData.date : group.meetingDate;
-    group.meetingTime = updatedMeetingData.time ? updatedMeetingData.time : group.meetingTime;
+    group.meetingTime = updatedMeetingData.time ?  moment.utc(updatedMeetingData.time, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate() : group.meetingTime;
     group.meetingLink = updatedMeetingData.meetingLink ? updatedMeetingData.meetingLink : group.meetingLink;
     await group.save();
 
@@ -244,11 +244,7 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
     if (!meeting) {
       return res.status(404).json({ message: 'Meeting not found' });
     }
-    const currentDate = new Date();
-    const checkDate = new Date(meeting.date)
-    if (checkDate > currentDate) {
-      return res.status(200).json({ message: `There's still a while for the Meeting` });
-    }
+    
     const group = await Group.findOne({
       'projects.projectTitle': meeting.projectTitle
     });

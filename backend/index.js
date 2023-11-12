@@ -188,21 +188,20 @@ app.post('/upload/:userType', async (req, res) => {
 
       const isValid = await userExist(user, userType);
       if (isValid) {
-        return res.status(400).json({ success: false, message: 'Duplicate Data in the excel sheet.' });
+        return res.status(400).json({ success: false, message: 'Duplicate User in the excel sheet.' });
       }
     }
 
     // Hash passwords before storing
     if (userType === 'Committee' || userType === 'Supervisor' || userType === 'Admin' || userType === 'External') {
       excelData = excelData.map((user) => {
-
         if (userType === 'External' || userType === 'Supervisor') {
           if (!user.name) {
             throw new Error("Name can not be empty");
           }
 
           if ((user.name && user.name.toString().length < 3)) {
-            throw new Error('Name be atleast 3 characters');
+            throw new Error('Name be at least 3 characters');
           }
         }
 
@@ -211,15 +210,19 @@ app.post('/upload/:userType', async (req, res) => {
             throw new Error("First name and Last Name can not be empty")
           }
           if ((user.fname && user.fname.toString().length < 3) || (user.lname && user.lname.toString().length < 3)) {
-            throw new Error('Name be atleast 3 characters');
+            throw new Error('Name be at least 3 characters');
           }
           if (user.fname.trim().toLowerCase() === user.lname.trim().toLowerCase()) {
             throw new Error('First name and last name should be different')
           }
         }
-
-        if (!user.email || !user.password) {
-          throw new Error('Check out every field no entry should be null in other');
+        if (userType !== 'External') {
+          if (!user.password) {
+            throw new Error('Check out every field no entry should be null in other');
+          }
+        }
+        if (!user.email) {
+          throw new Error('Please provide a valid Email address for all users');
         }
 
         if (user.password) {
@@ -242,7 +245,11 @@ app.post('/upload/:userType', async (req, res) => {
             password: hashedPassword,
           };
         }
+
+        // Return the user object unchanged if no conditions are met
+        return user;
       });
+
     } else if (userType === 'User') {
       // For users, hash 'cnic' and add it to 'password'
       excelData = excelData.map((user) => {

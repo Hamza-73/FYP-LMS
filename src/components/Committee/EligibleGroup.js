@@ -12,7 +12,7 @@ const EligibleGroup = (props) => {
 
   const [viva, setViva] = useState({
     projectTitle: '', vivaDate: new Date(), vivaTime: '',
-    external: "", internal: ""
+    external: "", chairperson: ""
   });
   const [isFieldsModified, setIsFieldsModified] = useState(false);
   const [isInvalidDate, setIsInvalidDate] = useState(false);
@@ -41,7 +41,6 @@ const EligibleGroup = (props) => {
   const scheduleViva = async (e) => {
     try {
       e.preventDefault();
-      console.log('internal ', viva.internal)
       console.log('external ', viva.external)
       const response = await fetch(`http://localhost:5000/viva/schedule-viva`, {
         method: 'POST',
@@ -52,7 +51,7 @@ const EligibleGroup = (props) => {
           projectTitle: viva.projectTitle,
           vivaDate: viva.vivaDate,
           vivaTime: viva.vivaTime,
-          internal: viva.internal,
+          chairperson: viva.chairperson,
           external: viva.external
         }),
       });
@@ -158,6 +157,7 @@ const EligibleGroup = (props) => {
   }
 
   const [show, setShow] = useState(false);
+  const [supervisor,setSupervisor] = useState("");
 
   return (
     <div>
@@ -172,7 +172,7 @@ const EligibleGroup = (props) => {
                 <label htmlFor="name" className="form-label">
                   Project Title
                 </label>
-                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
+                <input type="text" className="form-control" disabled={true} id="projectTitle" name="projectTitle" value={viva.projectTitle} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
@@ -193,14 +193,15 @@ const EligibleGroup = (props) => {
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
-                  Internal
+                  Supervisor
                 </label>
-                <select className='form-select' name='internal' onChange={(e) => setViva({ ...viva, [e.target.name]: e.target.value })} value={viva.internal}>
-                  <option value="">Select Internal</option>
-                  {committee.members && committee.members.map((member, index) => (
-                    <option key={index} value={member.username}>{member.name}</option>
-                  ))}
-                </select>
+                <input type="text"  className="form-control" disabled={true} name="supervisor" value={supervisor}  />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="name" className="form-label">
+                  Chair Person
+                </label>
+                <input type="text"  className="form-control" name="chairperson" value={viva.chairperson} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
@@ -220,7 +221,7 @@ const EligibleGroup = (props) => {
                   Close
                 </button>
                 <button type="submit" className="btn btn-danger" style={{ background: 'maroon' }}
-                  disabled={!viva.vivaTime || !viva.vivaDate || !viva.projectTitle || !viva.external || !viva.internal}
+                  disabled={!viva.vivaTime || !viva.vivaDate || !viva.projectTitle || !viva.external || !viva.chairperson}
                 >
                   Schedule
                 </button>
@@ -240,7 +241,7 @@ const EligibleGroup = (props) => {
                   <th scope="col">My Group</th>
                   <th scope="col">Project Proposal</th>
                   <th scope="col">Documentation</th>
-                  {userData.member.isAdmin && <th scope="col">Viva</th>}
+                  <th scope="col">Viva</th>
                 </tr>
               </thead>
               <tbody style={{ textAlign: "center" }}>
@@ -275,13 +276,14 @@ const EligibleGroup = (props) => {
                           </div>
                         </td>
                         <td>{
-                          group.vivaDate ? (userData.member.isAdmin && <>{
+                          group.vivaDate ? <>
                             (group.isViva) ? 'Taken' : (<>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
-                          }</>) : <> <button className='btn btn-sm' data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} onClick={() => {
+                          </> : (userData.member.isAdmin && <> <button className='btn btn-sm' data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} onClick={() => {
                             setSelectedGroupId(group._id);
                             setViva({ projectTitle: project.projectTitle });
                             setShow(true);
-                          }} >Add Viva</button></>
+                            setSupervisor(group.supervisor)
+                          }} >Add Viva</button></>)
                         }</td>
                       </tr>
                     ))

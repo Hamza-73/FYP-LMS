@@ -721,15 +721,15 @@ const CommitteeMember = (props) => {
                         <>
                           <td
                             style={{ cursor: "pointer" }}
-                            onClick={() => { openEditModal(val); setShow(true) }}
                           >
                             <button 
+                            onClick={() => { openEditModal(val); setShow(true) }}
                             disabled={val.isAdmin || val.isCommittee} className="btn" style={{ background: "maroon", color: "white" }}>
                               <i className="fa-solid fa-pen-to-square"></i>
                             </button>
                           </td>
-                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }} onClick={() => handleDelete(val._id)}>
-                            <button className="btn" style={{ background: "maroon", color: "white" }}>
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }}>
+                            <button onClick={() => handleDelete(val._id)} className="btn" style={{ background: "maroon", color: "white" }}>
                               <i className="fa-solid fa-trash"></i>
                             </button>
                           </td>
@@ -740,7 +740,7 @@ const CommitteeMember = (props) => {
                                 makeAdmin(val.username)
                               }}
                             >
-                              Make Admin
+                              Make Converner
                             </button>
                           </td>
                         </>

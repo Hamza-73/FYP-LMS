@@ -365,7 +365,7 @@ const Progress = (props) => {
                                         <tr>
                                             <td>Marks</td>
                                             <td>
-                                                {(groupDetails.group.marks && groupDetails.group.externalMarks && groupDetails.group.internalMarks && groupDetails.group.hodMarks) ? (groupDetails.group.marks + groupDetails.group.externalMarks + groupDetails.group.internalMarks + groupDetails.group.hodMarks) / 4 : 0}
+                                                {(groupDetails.group.marks && groupDetails.group.externalMarks && groupDetails.group.hodMarks) ? (groupDetails.group.marks + groupDetails.group.externalMarks  + groupDetails.group.hodMarks) / 3 : 0}
                                             </td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>
