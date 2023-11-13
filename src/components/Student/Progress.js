@@ -9,11 +9,11 @@ import 'react-notifications/lib/notifications.css';
 import Loading from '../Loading';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Cell } from 'recharts';
 import { Modal } from 'react-bootstrap';
+import StuRequest from './StuRequest';
 
 const Progress = (props) => {
 
     const [percentage, setPercentage] = useState(25);
-    const [review] = useState(props.review); // assuming review is a prop passed to your component
     const [meetingReport, setMeetingReport] = useState([
         {
             date: "2023-10-1",
@@ -154,10 +154,14 @@ const Progress = (props) => {
     };
 
     const handleChange = (e) => {
-        // Use regular expressions to remove consecutive spaces
-        const value = e.target.value.replace(/\s+/g, ' ');
-        setRequest({ ...request, [e.target.name]: value });
-    };
+        const { name, value } = e.target;
+        let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
+        trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
+        StuRequest((prevRegister) => ({
+          ...prevRegister,
+          [name]: trimmedValue,
+        }));
+      }; 
 
 
     useEffect(() => {

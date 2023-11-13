@@ -681,6 +681,38 @@ router.post('/make-extension', authenticateUser, async (req, res) => {
     console.error('error in handling extenion', error);
     return res.json({ message: "Internal Server Error" });
   }
-})
+});
+// Mark a notification as seen
+router.post('/mark-notification-seen/:notificationIndex', authenticateUser, async (req, res) => {
+  const userId = req.user.id; // Get the user ID from the authenticated user
+  const notificationIndex = req.params; // Assuming you send the notification index in the request body
+
+  try {
+    // Find the user by ID
+    const user = await Supervisor.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the notification index is within the bounds of 'unseenNotifications'
+    if (notificationIndex < 0 || notificationIndex >= user.unseenNotifications.length) {
+      return res.status(404).json({ message: 'Invalid notification index' });
+    }
+
+    // Remove the notification from 'unseenNotifications' and push it to 'seenNotifications'
+    const notification = user.unseenNotifications.splice(notificationIndex, 1)[0];
+    console.log('notification is ', notification);
+    user.seenNotifications.push(notification);
+
+    // Save the updated user document
+    await user.save();
+
+    res.status(200).json({ message: 'Notification marked as seen' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 module.exports = router;

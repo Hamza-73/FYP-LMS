@@ -23,6 +23,13 @@ const committeeSchema = new Schema({
   }],
   propDate: { type: Date },
   docDate: { type: Date },
+  seenNotifications: { type: Array, default: [] },
+  unseenNotifications: { type: Array, default: [] },
+  myIdeas: [{
+    projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'ProjectRequest' },
+    date: { type: Date },
+    time: { type: String }
+  }],
 });
 
 module.exports = mongoose.model('Committee', committeeSchema);

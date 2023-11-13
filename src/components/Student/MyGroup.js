@@ -166,10 +166,10 @@ const MyGroup = (props) => {
   const handleLink = (e) => {
     setInvalidLink(false);
     setLink(e.target.value);
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
-    if (!urlRegex.test(link)) {
-      setInvalidLink(true);
-    }
+      // Use a regular expression to check if the input value is a valid link
+      const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+      const isValid = linkRegex.test(e.target.value);
+      setInvalidLink(isValid);
   }
 
   const requestMeeting = async () => {

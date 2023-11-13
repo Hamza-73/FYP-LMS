@@ -106,6 +106,9 @@ const ComNav = (props) => {
                             <li className="nav-item">
                                 <Link className="nav-link" to={`/${props.user}/${props.link02}`}>{props.title02}</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/${props.user}/${props.link03}`}>{props.title03}<i style={{fontSize:"20px"}} className="fa-solid fa-bell"></i></Link>
+                            </li>
                             <li className="nav-item dropdown">
                                 <a
                                     className="nav-link dropdown-toggle"

@@ -225,6 +225,12 @@ app.post('/upload/:userType', async (req, res) => {
           throw new Error('Please provide a valid Email address for all users');
         }
 
+        if(userType==='External'){
+          if (user.password) {
+            throw new Error('There should no password for External.');
+          }
+        }
+
         if (user.password) {
           let password = user.password.toString();
           // Validate password length

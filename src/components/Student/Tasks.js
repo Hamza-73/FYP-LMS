@@ -70,12 +70,12 @@ const Tasks = (props) => {
     if (selectedFile) {
       // Check file type
       // Check file size (in bytes)
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 10 * 1024 * 1024; // 5MB
       if (selectedFile.size <= maxSize) {
         setFile(selectedFile);
       } else {
         // File size exceeds the limit
-        NotificationManager.error('File size must be less than 5MB.');
+        NotificationManager.error('File size must be less than 10MB.');
         e.target.value = null; // Clear the file input 
       }
     }
@@ -253,10 +253,10 @@ const Tasks = (props) => {
   const handleLink = (e) => {
     setInvalidLink(false);
     setLink(e.target.value);
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
-    if (!urlRegex.test(link)) {
-      setInvalidLink(true);
-    }
+      // Use a regular expression to check if the input value is a valid link
+      const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+      const isValid = linkRegex.test(e.target.value);
+      setInvalidLink(isValid);
   }
 
   return (

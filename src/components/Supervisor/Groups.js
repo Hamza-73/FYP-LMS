@@ -164,6 +164,16 @@ const Groups = (props) => {
     oldTitle: "", title: ""
   });
 
+  const handleTitleChange = (e) =>{
+    const { name, value } = e.target;
+    let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
+    trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
+    setTitles((prevRegister) => ({
+      ...prevRegister,
+      [name]: trimmedValue,
+    }));
+  }
+
   return (
     <div>
       <div className="changeName">
@@ -177,13 +187,13 @@ const Groups = (props) => {
             <form onSubmit={(e) => { changeName(e) }}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Old Title</label>
-                <input type="text" disabled={true} className="form-control" id="oldTitle" name="oldTitle" value={titles.oldTitle} onChange={(e) => {
+                <input type="text" disabled={true} className="form-control" id="oldTitle" name="oldTitle" value={handleTitleChange} onChange={(e) => {
                   setTitles({ ...titles, [e.target.name]: e.target.value });
                 }} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">New Title</label>
-                <input type="text"  pattern="[A-Za-z]+" className="form-control" id="title" name="title" value={titles.title} onChange={(e) => {
+                <input type="text"  pattern="[A-Za-z]+" className="form-control" id="title" name="title" value={handleTitleChange} onChange={(e) => {
                   setTitles({ ...titles, [e.target.name]: e.target.value });
                 }} />
               </div>

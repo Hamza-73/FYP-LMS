@@ -147,7 +147,6 @@ const Meeting = (props) => {
         return;
       }
     }
-    
 
     if (name === 'meetingTime') {
       const currentDate = new Date();

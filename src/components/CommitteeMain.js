@@ -16,6 +16,7 @@ import ComNav from './Committee/ComNav'
 import ResetPassword from './ResetPassword'
 import External from './Committee/External'
 import ExtensionRequest from './Committee/ExtensionRequest'
+import Notification from './Notification'
 
 const CommitteeMain = (props) => {
 
@@ -40,7 +41,7 @@ const CommitteeMain = (props) => {
                         title10='Scheduled Vivas' link10='event' title00='Allocate Group' link00='allocate'
                         detailLink='committee' title8='Pending Progress' link8='progress'
                         title9='Eligible Groups' link9='eligible' title0='Vivas'
-                        title02='Extension Request' link02='extension' title001='Users'
+                        title02='Extension Request' link02='extension' title001='Users' link03='notification'
                     />
                 )}
             </div>
@@ -62,6 +63,7 @@ const CommitteeMain = (props) => {
                 <Route path='/allocate' element={<Allocate />} />
                 <Route path='/external' element={<External />} />
                 <Route path='/extension' element={<ExtensionRequest />} />
+                <Route path='/notification' element={<Notification user='committee'/>} />
                 <Route path='/reset_password/:id/:token' element={<ResetPassword user='committee' />} />
             </Routes>
         </div>

@@ -863,10 +863,17 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
     const notificationMessage = `${supervisor.name} added marks for group ${group.projects[0].projectTitle} as for ${supervisor.name}(internal):${marks}, ${group.chairperson}(chairperson):${hod}, and ${group.externalName}(external):${external}`
     const supervisors = await Supervisor.find({ isAdmin: true });
     const committeeMembers = await Committee.find({ isAdmin: true });
-    supervisors.map(sup=>{
+    supervisors.map(async sup=>{
       sup.unseenNotifications.push({
         type:"Important", message : notificationMessage
-      })
+      });
+      await sup.save();
+    })
+    committeeMembers.map(async sup=>{
+      sup.unseenNotifications.push({
+        type:"Important", message : notificationMessage
+      });
+      await sup.save();
     })
     const viva = await Viva.findById(group.viva);
     if (viva) {

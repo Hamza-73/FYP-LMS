@@ -191,7 +191,13 @@ const ProjectIdeas = () => {
   }
 
   const handleChange = (e) => {
-    setFypIdea({ ...fypIdea, [e.target.name]: e.target.value })
+    const { name, value } = e.target;
+    let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
+    trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
+    setFypIdea((prevRegister) => ({
+      ...prevRegister,
+      [name]: trimmedValue,
+    }));
   };
 
   const handleChange1 = (e) => {
@@ -247,7 +253,10 @@ const ProjectIdeas = () => {
     <div>
       <div className="fypIdea"  >
         <Modal show={show} onHide={() => {
-          setShow(false)
+          setShow(false);
+          setFypIdea({
+            projectTitle: "", scope: "", description: ""
+          })
         }}>
           <Modal.Header>
             <Modal.Title>Register</Modal.Title>
@@ -256,15 +265,15 @@ const ProjectIdeas = () => {
             <form onSubmit={editMode ? handleEdit : handleSubmit}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Project Title</label>
-                <input type="text" disabled={editMode ? true : false}  pattern="[A-Za-z]+" className="form-control" id="projectTitle" name='projectTitle' value={fypIdea.projectTitle} onChange={handleChange} />
+                <input type="text" disabled={editMode ? true : false} className="form-control" id="projectTitle" name='projectTitle' value={fypIdea.projectTitle} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                <input type="text" className="form-control" pattern="[A-Za-z]+" id="scope" name='scope' value={fypIdea.scope} onChange={handleChange} />
+                <input type="text" className="form-control" id="scope" name='scope' value={fypIdea.scope} onChange={handleChange} />
               </div>
               <div className="mb-3">
-                <label htmlFor="exampleInputPassword1" pattern="[A-Za-z]+" className="form-label">Description</label>
-                <textarea className="form-control" pattern="[A-Za-z]+" id="description" name='description' value={fypIdea.description} onChange={handleChange} />
+                <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
+                <textarea className="form-control" id="description" name='description' value={fypIdea.description} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="isActive" className="form-label">Status</label>
@@ -291,6 +300,9 @@ const ProjectIdeas = () => {
       <div className="addstudenyt">
         <Modal show={showStudent} onHide={() => {
           setShowStudent(false);
+          setAddStudent({
+            projectTitle:"", rollNo:""
+          })
         }}>
           <Modal.Header>
             <Modal.Title>Add Student To Existing Group</Modal.Title>

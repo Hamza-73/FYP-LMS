@@ -84,8 +84,14 @@ const StuRequest = (props) => {
     };
 
     const handleChange = (e) => {
-        setImprove({ ...improve, [e.target.name]: e.target.value });
-    };
+        const { name, value } = e.target;
+        let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
+        trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
+        setImprove((prevRegister) => ({
+          ...prevRegister,
+          [name]: trimmedValue,
+        }));
+      };  
 
     const [show, setShow] = useState(false);
 
