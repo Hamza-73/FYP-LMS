@@ -170,20 +170,26 @@ app.post('/upload/:userType', async (req, res) => {
       }
 
       if (userType === 'User') {
-        if (uniqueRollNos.has(user.rollNo)) {
-          return res.status(400).json({ success: false, message: 'Duplicate roll number found.' });
+        if (user.rollNo) {
+          if (uniqueRollNos.has(user.rollNo)) {
+            return res.status(400).json({ success: false, message: 'Duplicate roll number found.' });
+          }
+          uniqueRollNos.add(user.rollNo);
         }
-        uniqueRollNos.add(user.rollNo);
+        if (user.email) {
+          if (uniqueEmails.has(user.email)) {
+            return res.status(400).json({ success: false, message: 'Duplicate email found.' });
+          }
+          uniqueEmails.add(user.email);
+        }
 
-        if (uniqueEmails.has(user.email)) {
-          return res.status(400).json({ success: false, message: 'Duplicate email found.' });
+        if (user.cnic) {
+          if (uniqueCnics.has(user.cnic)) {
+            return res.status(400).json({ success: false, message: 'Duplicate CNIC found.' });
+          }
+          uniqueCnics.add(user.cnic);
         }
-        uniqueEmails.add(user.email);
 
-        if (uniqueCnics.has(user.cnic)) {
-          return res.status(400).json({ success: false, message: 'Duplicate CNIC found.' });
-        }
-        uniqueCnics.add(user.cnic);
       }
 
       const isValid = await userExist(user, userType);
@@ -196,6 +202,9 @@ app.post('/upload/:userType', async (req, res) => {
     if (userType === 'Committee' || userType === 'Supervisor' || userType === 'Admin' || userType === 'External') {
       excelData = excelData.map((user) => {
         if (userType === 'External' || userType === 'Supervisor') {
+          if(user.fname || user.lname){
+            throw new Error('First and last names are not attributes of supervisor')
+          }
           if (!user.name) {
             throw new Error("Name can not be empty");
           }
@@ -216,6 +225,19 @@ app.post('/upload/:userType', async (req, res) => {
             throw new Error('First name and last name should be different')
           }
         }
+        if(userType==='Admin'){
+          if(user.department || user.designation){
+            throw new Error('Department or Designation are not attributes of admin')
+          }
+        }
+        if (userType === 'Supervisor') {
+          if (!user.slots) {
+            throw new Error('Department field cannot be empty')
+          }
+          if (user.slots && user.slots < 0) {
+            throw new Error('Slot number must be greater than or equal to zero')
+          }
+        }
         if (userType !== 'External') {
           if (!user.password) {
             throw new Error('Check out every field no entry should be null in other');
@@ -225,9 +247,12 @@ app.post('/upload/:userType', async (req, res) => {
           throw new Error('Please provide a valid Email address for all users');
         }
 
-        if(userType==='External'){
+        if (userType === 'External') {
           if (user.password) {
-            throw new Error('There should no password for External.');
+            throw new Error('Password is not an attribute of External.');
+          }
+          if(user.slots){
+            throw new Error('Slots is not an attribute of external');
           }
         }
 

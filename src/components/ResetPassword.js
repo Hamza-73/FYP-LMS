@@ -58,7 +58,7 @@ const ResetPassword = (props) => {
                             className="form-control"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
+                            required = {true} minLength={6}
                         />
                     </div>
                     <button type="submit" className="btn" style={{ width: '100%', marginTop: '20px', background: "maroon", color: "white" }}>

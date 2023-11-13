@@ -188,9 +188,9 @@ const SupervisorList = (props) => {
   };
 
   const filteredData = data.members.filter((member) =>
-    member.name.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
-    member.department.toLowerCase().trim().includes(searchQuery.toLowerCase()) ||
-    member.designation.toLowerCase().trim().includes(searchQuery.toLowerCase())
+    member.name.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()) ||
+    member.department.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()) ||
+    member.designation.toLowerCase().trim().includes(searchQuery.toLowerCase().trim())
   );
 
   const [register, setRegister] = useState({
@@ -202,7 +202,7 @@ const SupervisorList = (props) => {
 
     if (name === 'name') {
       // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value.replace(/\s+/g, ' ');
+      const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
     } else if (name === 'department') {
       // Allow only alphabetic characters
@@ -398,7 +398,7 @@ const SupervisorList = (props) => {
 
               <div className="mb-3">
                 <label htmlFor="remrks" className="form-label">File</label>
-                <small>File Type should be : .xls/.xlsx</small>
+                <small>Type should be : .xls/.xlsx <br /> Excel file should contain name ,username and email.- Data must be unique</small> <br />
                 <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
               </div>
               <Modal.Footer className="modal-footer">
@@ -488,7 +488,7 @@ const SupervisorList = (props) => {
                       <i class="fa-regular fa-envelope"></i>
                     </span>
                     <input
-                      type="text"
+                      type="email"
                       className="form-control"
                       id="email"
                       name="email" required={true}
@@ -569,7 +569,7 @@ const SupervisorList = (props) => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search by name, department, or designation"
+                placeholder="Search......"
                 value={searchQuery}
                 onChange={handleSearch}
               />

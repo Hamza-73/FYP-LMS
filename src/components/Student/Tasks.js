@@ -141,28 +141,35 @@ const Tasks = (props) => {
     return new Date(Date.UTC(year, month, day, hour, minute, second, millisecond));
   }
 
-  // Function to calculate time remaining until tomorrow
-  function calculateTimeRemaining() {
-    const now = new Date(); // Current date and time in client's local time zone
+  function calculateTimeRemaining(isoDate) {
+    const now = new Date(); // Current date and time in the client's local time zone
     const timeZoneOffset = 5 * 60 * 60 * 1000; // UTC+5 in milliseconds
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1); // Set to tomorrow
-    tomorrow.setHours(0, 0, 0, 0); // Set to midnight
 
-    // Adjust tomorrow to Pakistan Standard Time (PKT)
-    const localTomorrow = new Date(tomorrow.getTime());
+    // Adjust isoDate to Pakistan Standard Time (PKT)
+    isoDate = new Date(isoDate.getTime() - timeZoneOffset);
+
+    // Set isoDate to the end of the day
+    isoDate.setHours(23, 59, 59, 999);
+
     // Calculate time difference in PKT
-    const timeDifference = localTomorrow.getTime() - now.getTime(); // Calculate time difference in milliseconds
-    console.log('time differnece is ', timeDifference)
-    if (timeDifference <= 0) {
-      return '0d 0h 0m 0s';
-    }
+    const timeDifference = isoDate.getTime() - now.getTime(); // Calculate time difference in milliseconds
 
-    // Calculate hours, minutes, and seconds
+    // Check if the adjusted isoDate is for today
+    // if (
+    //   isoDate.getDate() === now.getDate() &&
+    //   isoDate.getMonth() === now.getMonth() &&
+    //   isoDate.getFullYear() === now.getFullYear()
+    // ) {
+    //   return '0d 0h 0m 0s';
+    // }
+
+    // Calculate days, hours, minutes, and seconds
     const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+    const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+    console.log('hours ', hours)
+    console.log('minutes ', minutes)
 
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   }
@@ -180,9 +187,6 @@ const Tasks = (props) => {
     const currentYear = currentDateUTC.getFullYear();
     const currentMonth = currentDateUTC.getMonth();
     const currentDay = currentDateUTC.getDate();
-    console.log(dueYear > currentYear ||
-      (dueYear === currentYear && dueMonth > currentMonth) ||
-      (dueYear === currentYear && dueMonth === currentMonth && dueDay >= currentDay))
     // Compare only the dates (year, month, and day)
     return (
       dueYear > currentYear ||
@@ -253,10 +257,10 @@ const Tasks = (props) => {
   const handleLink = (e) => {
     setInvalidLink(false);
     setLink(e.target.value);
-      // Use a regular expression to check if the input value is a valid link
-      const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
-      const isValid = linkRegex.test(e.target.value);
-      setInvalidLink(isValid);
+    // Use a regular expression to check if the input value is a valid link
+    const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+    const isValid = linkRegex.test(e.target.value);
+    setInvalidLink(isValid);
   }
 
   return (
@@ -325,12 +329,7 @@ const Tasks = (props) => {
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>
                     <div>
-                      {
-                        new Date(group.group.propDate).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
-                          ? remainingTime
-                          : '-----'
-                      }
-
+                      {remainingTime !== '0d 0h 0m 0s' ? remainingTime : '-----'}
                     </div>
                   </div>
                   {!group.group.proposal ? (
@@ -388,9 +387,7 @@ const Tasks = (props) => {
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Time Remaining</div>
                     <div>
-                      {new Date(group.group.docDate) >= new Date()
-                        ? remainingTime
-                        : '-----'}
+                      {remainingTime !== '0d 0h 0m 0s' ? remainingTime : '-----'}
                     </div>
                   </div>
                   {!group.group.documentation ? (

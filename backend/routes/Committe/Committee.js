@@ -143,7 +143,7 @@ router.post('/forgot-password', async (req, res) => {
         from: 'YOUR_EMAIL',
         to: email,
         subject: 'Reset Password Link',
-        html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
+        html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/committeeMain/reset_password/${user._id}/${token}">http://localhost:3000/committeeMain/reset_password/${user._id}/${token}</a></p>
         <p>The link will expire in 5 minutes.</p>`
       };
       // console.log('mailoption is')

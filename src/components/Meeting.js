@@ -619,7 +619,9 @@ const Meeting = (props) => {
 
             </div>
 
-            {data.meeting.length > 0 && <div className="meeting-schedule">
+            {data.meeting.length > 0 && <div style={{
+              position:"relative", marginLeft:"65px"
+            }} className="meeting-schedule">
               <style>{meetingStyle}</style>
               <h3 className="text-center">Scheduled Meetings</h3>
               <div className="my-3">
@@ -629,15 +631,15 @@ const Meeting = (props) => {
                       <div className="contaner">
                         {/* Meeting details */}
                         <div className="item">
-                          <h5>Group</h5>
-                          <p style={{ fontSize: "15px" }}>{meeting.meetingGroup}</p>
+                          <p>Group</p>
+                          <p style={{ fontSize: "13px" }}>{meeting.meetingGroup}</p>
                         </div>
                         <div className="item">
-                          <h5>Time</h5>
+                          <p>Time</p>
                           <p>{meeting.meetingTime}</p>
                         </div>
                         <div className="item">
-                          <h5>Date</h5>
+                          <p>Date</p>
                           <p>
                             {meeting && meeting.meetingDate
                               ? new Date(meeting.meetingDate).toLocaleDateString(
@@ -647,7 +649,7 @@ const Meeting = (props) => {
                           </p>
                         </div>
                         {meeting && meeting.purpose && <div className="item">
-                          <h5>Purpose</h5>
+                          <p>Purpose</p>
                           <p
                             style={{ cursor: "pointer", fontSize: "15px" }}
                             onClick={() => {
@@ -656,7 +658,7 @@ const Meeting = (props) => {
                         </div>}
                         {meeting && meeting.meetingLink && (
                           <div className="item meeting-link">
-                            <h5>Link</h5>
+                            <p>Link</p>
                             <a
                               href={
                                 meeting.meetingLink.startsWith('http')

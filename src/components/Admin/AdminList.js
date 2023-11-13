@@ -219,9 +219,9 @@ const AdminList = (props) => {
   const handleChange1 = (e) => {
     const { name, value } = e.target;
     setFirstNameLastNameEqual(false);
-    if (name === 'fname' || name === 'lname') {
+    if (name === 'fname' || name === 'lname' || name === 'username') {
       // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value.replace(/\s+/g, ' ');
+      const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
@@ -394,7 +394,7 @@ const AdminList = (props) => {
             <form onSubmit={(e) => handleSubmit(e, 'Admin')}>
               <div className="mb-3">
                 <label htmlFor="remrks" className="form-label">File</label>
-                <small>File Type should be : .xls/.xlsx</small>
+                <small>Type should be : .xls/.xlsx <br /> Excel file should contain fname, lname ,username and email.- Data must be unique</small> <br />
                 <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
               </div>
               <Modal.Footer>
@@ -481,7 +481,7 @@ const AdminList = (props) => {
             <input
               type="text"
               className="form-control"
-              placeholder="Search by name, department, or designation"
+              placeholder="Search....."
               value={searchQuery}
               onChange={handleSearch}
             />
@@ -528,13 +528,13 @@ const AdminList = (props) => {
                     <td>{val.email}</td>
                     <td style={{ cursor: "pointer" }}>
                       <button onClick={() => { openEditModal(val); setShow(true); }}
-                        disabled={val.isAdmin || val.isCommittee} className="btn" style={{ background: "maroon", color: "white" }}>
+                        disabled={val.isAdmin || val.isCommittee ||(!userData.member.superAdmin && val.superAdmin)} className="btn" style={{ background: "maroon", color: "white" }}>
                         <i className="fa-solid fa-pen-to-square"></i>
                       </button>
                     </td>
                     {(!showSidebar && !userData.member.isAdmin) && <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }}>
                       <button onClick={() => handleDelete(val._id)} className="btn" style={{ background: "maroon", color: "white" }}
-                        disabled={val.superAdmin}
+                        disabled={(!userData.member.superAdmin && val.superAdmin)}
                       >
                         <i className="fa-solid fa-trash"></i>
                       </button>

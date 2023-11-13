@@ -141,7 +141,7 @@ router.post('/forgot-password', async (req, res) => {
                 from: 'YOUR_EMAIL',
                 to: email,
                 subject: 'Reset Password Link',
-                html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
+                html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/adminMain/reset_password/${user._id}/${token}">http://localhost:3000/adminMain/reset_password/${user._id}/${token}</a></p>
         <p>The link will expire in 5 minutes.</p>`
             };
 
@@ -292,10 +292,11 @@ router.get('/detail', authenticateUser, async (req, res) => {
 });
 
 // Route to delete an admin by ID
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/delete/:id', authenticateUser, async (req, res) => {
     const { id } = req.params;
 
     try {
+        const superAdmin = await Admin.findById(id);
         const admin = await Admin.findById(id);
         if (!admin) {
             const committee = await Committee.findById(id);
@@ -307,15 +308,20 @@ router.delete('/delete/:id', async (req, res) => {
                 const supervisor = await Supervisor.findById(id);
                 if (supervisor) {
                     supervisor.isAdmin = false;
-                    await supervisor.save()
+                    await supervisor.save();
+                    return res.json({ success: true, message: "Admin Deleted Successfully" });
                 } else {
                     return res.json({ success: false, message: "Admin Not Found" })
                 }
             }
 
         }
+        if (superAdmin.superAdmin) {
+            await Admin.findByIdAndDelete(id);
+            res.json({ success: true, message: 'Admin deleted' });
+        }
         if (admin.superAdmin) {
-            return res.json({ success: false, message: "Super Admin cannot be deleted" })
+            return res.json({ success: false, message: "Only Super Admin can delete himself" })
         }
         await Admin.findByIdAndDelete(id);
         res.json({ success: true, message: 'Admin deleted' });
@@ -326,18 +332,21 @@ router.delete('/delete/:id', async (req, res) => {
 });
 
 // Route to edit an admin by ID
-router.put('/edit/:id', async (req, res) => {
+router.put('/edit/:id', authenticateUser, async (req, res) => {
     const { id } = req.params;
     const updatedDetail = req.body;
 
     try {
-
+        const superAdmin = await Admin.findById(req.user.id);
+        const adminToBeEdites = await Admin.findById(id);
+        if (!superAdmin.superAdmin && adminToBeEdites.superAdmin) {
+            return res.json({ success: false, message: "Only Super Admin can edit himself" })
+        }
         // Check if the updated email already exists for another student
         const existingEmail = await Admin.findOne({ email: updatedDetail.email });
         if (existingEmail && existingEmail._id.toString() !== id) {
             return res.status(400).json({ message: "Email already exists for another Admin." });
         }
-
         // Check if the updated username already exists for another student
         const existingUsername = await Admin.findOne({ username: updatedDetail.username.toLowerCase() });
         if (existingUsername && existingUsername._id.toString() !== id) {

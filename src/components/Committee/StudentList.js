@@ -255,10 +255,10 @@ const StudentList = (props) => {
   };
 
   const filteredData = Array.from(data.members).filter((member) =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.name.trim().toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
+    member.department.trim().toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
     member.rollNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.father.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.father.trim().toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
     member.cnic.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.semester.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.batch.toLowerCase().includes(searchQuery.toLowerCase())
@@ -271,7 +271,7 @@ const StudentList = (props) => {
 
   const handleChange1 = (e) => {
     const { name, value } = e.target;
-    const trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and trim
+    const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' '); // Remove consecutive spaces and trim
 
     setRegister((prevRegister) => ({
       ...prevRegister,
@@ -427,7 +427,7 @@ const StudentList = (props) => {
             <form onSubmit={(e) => handleSubmit(e, 'User')}>
               <div className="mb-3">
                 <label htmlFor="remrks" className="form-label">File</label>
-                <small>File Type should be : .xls/.xlsx</small>
+                <small>Type should be : .xls/.xlsx <br /> Excel file should contain name, rollNo, cnic, semester, batch, father name and email.- Data must be unique</small> <br />
                 <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
               </div>
               <Modal.Footer className="modal-footer">
@@ -515,7 +515,7 @@ const StudentList = (props) => {
                     <i class="fa-regular fa-envelope"></i>
                   </span>
                   <input
-                    type="text"
+                    type="email"
                     className="form-control"
                     id="email"
                     name="email" required={true}

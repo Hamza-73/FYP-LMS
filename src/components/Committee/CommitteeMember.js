@@ -58,11 +58,6 @@ const CommitteeMember = (props) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      if (register.username.indexOf('_') === -1) {
-        NotificationManager.error('Username must contain at least one underscore (_).');
-        return;
-      }
-
       // Check if any required field is empty
       if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim() || !register.password.trim() || !register.email) {
         NotificationManager.error('Please fill in all required fields.');
@@ -104,10 +99,6 @@ const CommitteeMember = (props) => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      if (register.username.indexOf('_') === -1) {
-        NotificationManager.error('Username must contain at least one underscore (_).');
-        return;
-      }
 
       // Check if any required field is empty
       if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim() || !register.email) {
@@ -264,9 +255,9 @@ const CommitteeMember = (props) => {
   const handleChange1 = (e) => {
     const { name, value } = e.target;
     setFirstNameLastNameEqual(false);
-    if (name === 'fname' || name === 'lname') {
+    if (name === 'fname' || name === 'lname' || name === 'username') {
       // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value.replace(/\s+/g, ' ');
+      const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal
@@ -535,7 +526,7 @@ const CommitteeMember = (props) => {
                     <i class="fa-regular fa-envelope"></i>
                   </span>
                   <input
-                    type="text"
+                    type="email"
                     className="form-control"
                     id="email"
                     name="email" required={true}
@@ -690,7 +681,7 @@ const CommitteeMember = (props) => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search by name, department, or designation"
+                placeholder="Search....."
                 value={searchQuery}
                 onChange={handleSearch}
               />

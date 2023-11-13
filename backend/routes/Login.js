@@ -189,7 +189,7 @@ router.post('/login', async (req, res) => {
           to: user.email,
           subject: 'Reset Password Link',
           html: `<h4>The Link will expire in 24 hours</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
-        <p>The link will expire in 5 minutes.</p>`
+        <p>The link will expire in 24 minutes.</p>`
         };
         // console.log('mailoption is')
         transporter.sendMail(mailOptions, function (error, info) {
@@ -301,15 +301,15 @@ router.post('/forgot-password', async (req, res) => {
         service: 'gmail',
         auth: {
           user: 'YOUR_EMAIL',
-          pass: 'YOUR_PASSWORD'
+          pass: 'YOUR PASSKEY'
         }
       });
 
       var mailOptions = {
-        from: 'YOUR_EMAIL',
+        from: 'YOUR_eMAIL',
         to: email,
         subject: 'Reset Password Link',
-        html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${user._id}/${token}</a></p>
+        html: `<h4>The Link will expire in 5m</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/studentMain/reset_password/${user._id}/${token}">http://localhost:3000/studentMain/reset_password/${user._id}/${token}</a></p>
         <p>The link will expire in 5 minutes.</p>`
       };
       // console.log('mailoption is')
@@ -329,17 +329,31 @@ router.post('/reset-password/:id/:token', (req, res) => {
 
   jwt.verify(token, JWT_KEY, (err, decoded) => {
     if (err) {
-      return res.json({ Status: "Error with token" })
+        return res.json({ Status: 'Error with token' });
     } else {
-      bcrypt.hash(password, 10)
-        .then(hash => {
-          User.findByIdAndUpdate({ _id: id }, { password: hash })
-            .then(u => res.send({ success: true, message: "Password Updated Successfully" }))
-            .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
-        })
-        .catch(err => { console.error('errror in changing password', err); res.send({ success: false, message: "Error in Changing Pasword" }) })
+        // Hash the new password synchronously
+
+        bcrypt.genSalt(10)
+            .then((salt) => bcrypt.hashSync(password, salt))
+            .then((hash) => {
+                // Update the user's password
+                User.findByIdAndUpdate(id, { password: hash })
+                    .then((u) => {
+                        console.log('user ', u);
+                        res.send({ success: true, message: 'Password Updated Successfully' });
+                    })
+                    .catch((err) => {
+                        console.error('error in changing password', err);
+                        res.send({ success: false, message: 'Error in Changing Password' });
+                    });
+            })
+            .catch((err) => {
+                console.error('error in changing password', err);
+                res.send({ success: false, message: 'Error in Changing Password' });
+            });
     }
-  })
+});
+
 })
 
 //delete Student
@@ -427,8 +441,8 @@ router.post('/reset-password', async (req, res) => {
     var mailOptions = {
       from: 'youremail@gmail.com',
       to: 'myfriend@yahoo.com',
-      subject: 'Sending Email using Node.js',
-      text: 'That was easy!'
+      subject: 'Password Updated',
+      text: 'Password updates successfully!'
     };
 
     transporter.sendMail(mailOptions, function (error, info) {

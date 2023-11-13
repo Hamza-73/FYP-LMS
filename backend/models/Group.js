@@ -22,7 +22,7 @@ const groupSchema = new Schema({
   documentationLink: { type: String },
   documentation: { type: String },
   viva: { type: Schema.Types.ObjectId, ref: 'Viva' },
-  vivaDate: { type: String },
+  vivaDate: { type: Date },
   vivaTime: { type: String },
   propDate: { type: Date },
   propSub: { type: Date },
@@ -30,7 +30,7 @@ const groupSchema = new Schema({
   docSub: { type: Date },
   meetingid: { type: Schema.Types.ObjectId, ref: 'Meeting' },
   meetingLink: { type: String },
-  meetingDate: { type: String },
+  meetingDate: { type: Date },
   meetingTime: { type: String },
   meetingPurpose: { type: String },
   meetingReport: [{
