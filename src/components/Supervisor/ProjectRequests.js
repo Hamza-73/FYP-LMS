@@ -141,7 +141,17 @@ const ProjectRequests = (props) => {
   };
 
   const handleChange = (e) => {
-    setImprove({ ...improve, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // Ensure name is alphabetic and only allows one space
+    const trimmedValue = value
+      .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
+      .replace(/\s+/g, ' ');                  // Trim leading and trailing spaces
+
+    setImprove((prevRegister) => ({
+      ...prevRegister,
+      [name]: trimmedValue,
+    }));
   };
 
   const [show, setShow] = useState(false);
@@ -159,18 +169,20 @@ const ProjectRequests = (props) => {
             <form onSubmit={handleRequests}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Project Title</label>
-                <input type="text" pattern="[A-Za-z]+" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
+                <input type="text"  className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                <input type="text" pattern="[A-Za-z]+" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
+                <input type="text"  className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
-                <textarea className="form-control" pattern="[A-Za-z]+" id="description" name="description" value={improve.description} onChange={handleChange} />
+                <textarea className="form-control"  id="description" name="description" value={improve.description} onChange={handleChange} />
               </div>
               <Modal.Footer >
-                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" className="btn btn-secondary" onClick={() => {
+                  setShow(false);
+                }}>Close</button>
                 <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }} disabled={!improve.projectTitle || !improve.scope || !improve.description}>
                   Improve Request
                 </button>
@@ -221,7 +233,7 @@ const ProjectRequests = (props) => {
                             <td>{group.scope}</td>
                             <td>
                               <div style={{ cursor: 'pointer' }}>
-                                <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <div className="d-grid gap-2 d-md-flex">
                                   <button className="btn btn-success btn-sm me-md-2" type="button" onClick={() => {
                                     acceptRequest(group.requestId);
                                   }}>Accept</button>

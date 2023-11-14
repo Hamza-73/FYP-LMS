@@ -155,14 +155,20 @@ const Progress = (props) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
-        trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
-        StuRequest((prevRegister) => ({
-          ...prevRegister,
-          [name]: trimmedValue,
-        }));
-      }; 
-
+        if (name !== 'username') {
+            let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
+            trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '');
+            setRequest((prevData) => ({
+                ...prevData,
+                [name]: trimmedValue,
+            }));
+        } else {
+            setRequest((prevData) => ({
+                ...prevData,
+                [name]: e.target.value,
+            }));
+        }
+    };
 
     useEffect(() => {
         setLoading(true);
@@ -218,7 +224,7 @@ const Progress = (props) => {
             console.log('supervisors are ', json); // Log the response data to see its structure
             setData(json);
         } catch (error) {
-            NotificationManager.error('Error in fetching Supervisors');
+            console.log('error in fetching supervisor ', error);
         }
     }
 
@@ -297,9 +303,9 @@ const Progress = (props) => {
                         <>
                             <div className="container d-flex">
                                 <div className="d-flex mx-6" style={{ position: "relative", marginLeft: "10%" }}>
-                                    <div className="my-3 box mx-4 text-center" style={{height:"300px"}}>
-                                        <h3>Meeting Progress</h3> { meetingReport.length > 0 && <small>Meeting {meetingReport.length}</small>}
-                                        {meetingReport.length > 0 ? <BarChart style={{marginLeft:"20px"}} width={350} height={200} data={chartData} maxBarSize={50}>
+                                    <div className="my-3 box mx-4 text-center" style={{ height: "300px" }}>
+                                        <h3>Meeting Progress</h3> {meetingReport.length > 0 && <small>Meeting {meetingReport.length}</small>}
+                                        {meetingReport.length > 0 ? <BarChart style={{ marginLeft: "20px" }} width={350} height={200} data={chartData} maxBarSize={50}>
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis dataKey="monthYear" />
                                             <Tooltip />
@@ -311,7 +317,7 @@ const Progress = (props) => {
                                             : <h4 className='my-6'>No Meetings Yet</h4>}
 
                                     </div>
-                                    <div className="box my-3 mx-4"  style={{height:"300px"}}>
+                                    <div className="box my-3 mx-4" style={{ height: "300px" }}>
                                         <h3>Project Report</h3>
                                         <div style={{ width: '190px', marginLeft: '25%' }}>
                                             <CircularProgressbar value={percentage} text={`${percentage}%`} />
@@ -369,7 +375,7 @@ const Progress = (props) => {
                                         <tr>
                                             <td>Marks</td>
                                             <td>
-                                                {(groupDetails.group.marks && groupDetails.group.externalMarks && groupDetails.group.hodMarks) ? (groupDetails.group.marks + groupDetails.group.externalMarks  + groupDetails.group.hodMarks) / 3 : 0}
+                                                {(groupDetails.group.marks && groupDetails.group.externalMarks && groupDetails.group.hodMarks) ? (groupDetails.group.marks + groupDetails.group.externalMarks + groupDetails.group.hodMarks) / 3 : 0}
                                             </td>
                                             <td>{'-----'}</td>
                                             <td>{'-----'}</td>
@@ -384,7 +390,7 @@ const Progress = (props) => {
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end buttonCls">
                         <button
                             type="button"
-                            style={{ background: 'maroon', position:"relative", marginTop:"45px" }}
+                            style={{ background: 'maroon', position: "relative", marginTop: "45px" }}
                             className="btn btn-danger"
                             disabled={groupDetails.group}
                             onClick={() => {

@@ -166,11 +166,13 @@ const MyGroup = (props) => {
   const handleLink = (e) => {
     setInvalidLink(false);
     setLink(e.target.value);
-      // Use a regular expression to check if the input value is a valid link
-      const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
-      const isValid = linkRegex.test(e.target.value);
-      setInvalidLink(isValid);
-  }
+
+    // Use a regular expression to check if the input value is a valid link
+    const linkRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+    const isValid = linkRegex.test(e.target.value.trim());
+    setInvalidLink(!isValid);
+  };
+
 
   const requestMeeting = async () => {
     try {
@@ -193,7 +195,7 @@ const MyGroup = (props) => {
     background-color: #ffffff;
     border: 1px solid #d1d1d1;
     border-radius: 6px;
-    width: 200px;
+    width: 250px;
     height: 100px;
     padding: 16px;
     margin: 10px;
@@ -225,8 +227,8 @@ const MyGroup = (props) => {
   background-color: #ffffff;
   border: 1px solid #d1d1d1;
   border-radius: 6px;
-  width: 200px;
-  height: 100px;
+  width: 260px;
+  height: 210px;
   padding: 16px;
   margin: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -260,8 +262,8 @@ const MyGroup = (props) => {
           <>
             <form onSubmit={upload}>
               <div className="mb-3">
-                  <label htmlFor="">Link <small>optional</small></label>
-                  <input type='text' class="form-control" name="link" value={link} onChange={handleLink} ></input>
+                <label htmlFor="">Link <small>optional</small></label>
+                <input type='text' class="form-control" name="link" value={link} onChange={handleLink} ></input>
                 {invalidLink && <div style={{ color: "red" }}>Enter A Valid Link</div>}
               </div>
               <div className="mb-3">
@@ -399,7 +401,7 @@ const MyGroup = (props) => {
                     <div>
                       <div>
                         <div>
-                          <div className="meeting-box" style={{ width: "200px", height: "210px" }}>
+                          <div className="meeting-box">
                             <div className="contaner">
                               <h4 className='text-center'>Meeting</h4>
                               <div className="items">
@@ -451,7 +453,7 @@ const MyGroup = (props) => {
                   <div className="notify">
                     <style>{myStyle}</style>
                     <div>
-                      <div className="meeting-box" style={{ width: "200px", height: "210px" }}>
+                      <div className="meeting-box" style={{width:"250px", height:"210px"}}>
                         <div className="contaner">
                           <h4 className='text-center'>Viva</h4>
                           <div className="items">
@@ -499,7 +501,7 @@ const MyGroup = (props) => {
 
               <button className="btn btn-danger" onClick={() => {
                 setShow(true);
-              }} disabled={group.group.documentation}>Extension Request</button>
+              }} disabled={ !group.group.docDate || group.group.documentation || new Date(group.group.docDate) <= new Date()}>Extension Request</button>
 
               <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} onClick={() => {
                 setShowUpload(true);

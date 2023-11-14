@@ -257,11 +257,12 @@ const Tasks = (props) => {
   const handleLink = (e) => {
     setInvalidLink(false);
     setLink(e.target.value);
+  
     // Use a regular expression to check if the input value is a valid link
-    const linkRegex = /^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
-    const isValid = linkRegex.test(e.target.value);
-    setInvalidLink(isValid);
-  }
+    const linkRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
+    const isValid = linkRegex.test(e.target.value.trim());
+    setInvalidLink(!isValid);
+  };
 
   return (
     <div>

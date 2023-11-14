@@ -21,9 +21,16 @@ router.post('/schedule-viva', async (req, res) => {
   try {
     const { projectTitle, vivaDate, vivaTime, external, chairperson } = req.body;
 
-    if (new Date(vivaDate) < new Date()) {
-      return res.json({ success: false, message: "Enter a valid date" })
+    comparisonDate = new Date(vivaDate); // Replace this with your actual vivaDate
+
+    // Create a new Date object for the current date with the time set to midnight
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (comparisonDate <= currentDate) {
+      return res.json({ success: false, message: "Enter a valid date" });
     }
+
     // Find the group by project title
     const group = await Group.findOne({
       'projects.projectTitle': projectTitle
@@ -61,7 +68,7 @@ router.post('/schedule-viva', async (req, res) => {
     });
     console.log('external save');
 
-    
+
     const supervisor = await Supervisor.findById(group.supervisorId);
     await externalMember.save()
     // Iterate through each project within the group and schedule a viva for each project
@@ -108,8 +115,8 @@ router.post('/schedule-viva', async (req, res) => {
 
 
     // Send notification to supervisor
-      supervisor.unseenNotifications.push({ type: "Reminder", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} chairperson : ${chairperson}, External : ${externalMember.name}` });
-      await supervisor.save();
+    supervisor.unseenNotifications.push({ type: "Reminder", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} chairperson : ${chairperson}, External : ${externalMember.name}` });
+    await supervisor.save();
 
     res.json({ success: true, message: 'Viva scheduled and notifications sent' });
 
@@ -126,8 +133,14 @@ router.put('/edit', async (req, res) => {
     const parsedDate = moment.utc(vivaDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
     console.log('parsed date is ', parsedDate)
 
-    if (new Date(vivaDate) < new Date()) {
-      return res.json({ success: false, message: "Enter a valid date" })
+    comparisonDate = new Date(vivaDate); // Replace this with your actual vivaDate
+
+    // Create a new Date object for the current date with the time set to midnight
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (comparisonDate <= currentDate) {
+      return res.json({ success: false, message: "Enter a valid date" });
     }
 
     const group = await Group.findOne({

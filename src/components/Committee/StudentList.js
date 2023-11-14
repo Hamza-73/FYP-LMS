@@ -271,13 +271,33 @@ const StudentList = (props) => {
 
   const handleChange1 = (e) => {
     const { name, value } = e.target;
-    const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' '); // Remove consecutive spaces and trim
-
-    setRegister((prevRegister) => ({
-      ...prevRegister,
-      [name]: trimmedValue,
-    }));
-  };
+  
+    if (name !== 'email' && name !== 'batch' && name !== 'rollNo' && name !== 'semester' && name !== 'cnic') {
+      // Allow only alphabetic characters and a single space
+      const trimmedValue = value
+        .replace(/[^A-Za-z ]/g, '')  // Remove characters other than A-Z, a-z, and space
+        .replace(/\s+/g, ' ')       // Trim leading and trailing spaces
+  
+      setRegister((prevRegister) => ({
+        ...prevRegister,
+        [name]: trimmedValue,
+      }));
+    } else if (name === 'cnic') {
+      // Allow only numeric characters for "cnic"
+      const numericValue = value.replace(/[^0-9]/g, '');
+  
+      setRegister((prevRegister) => ({
+        ...prevRegister,
+        [name]: numericValue,
+      }));
+    } else {
+      // For other fields, allow any value
+      setRegister((prevRegister) => ({
+        ...prevRegister,
+        [name]: value,
+      }));
+    }
+  };    
 
   const filteredDataPaginated = paginate(filteredData, recordsPerPage, currentPage);
 

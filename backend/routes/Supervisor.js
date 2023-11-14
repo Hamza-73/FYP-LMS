@@ -33,6 +33,38 @@ router.post('/login', async (req, res) => {
       // Generate JWT token
       const token = jwt.sign({ id: supervisor._id }, JWT_KEY);
       supervisor.token = token;
+      
+      supervisor.login++;
+      if (supervisor.login === 1) {
+        supervisor.unseenNotifications.push({
+          type: "Important", message: "You can reset password now after 1st login link has been sent to your email and will be expired after 24 hours."
+        });
+        const token = jwt.sign({ id: supervisor.id }, JWT_KEY, { expiresIn: '1d' });
+
+        var transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'YOUR_EMAIL',
+            pass: 'YOUR_PASSWORD'
+          }
+        });
+
+        var mailOptions = {
+          from: 'YOUR_EMAIL',
+          to: supervisor.email,
+          subject: 'Reset Password Link',
+          html: `<h4>The Link will expire in 24 hours</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/supervisorMain/reset_password/${supervisor._id}/${token}">http://localhost:3000/supervisorMain/reset_password/${supervisor._id}/${token}</a></p>
+        <p>The link will expire in 24 minutes.</p>`
+        };
+        // console.log('mailoption is')
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            return res.send({ success: true, message: "Check Your Email" })
+          }
+        });
+      }
       await supervisor.save();
 
       res.json({ message: 'Supervisor Login successful', success: true, token });
@@ -66,8 +98,7 @@ router.post('/create', [
     if (existingStudent) {
       return res.status(400).json({ message: "Email already exists for another Supervisor" });
     }
-    const existUsename = await Supervisor.findOne(
-      { username: username.toLowerCase() });
+    const existingUsername = await Supervisor.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
     if (existUsename) {
       return res.status(400).json({ message: "Username already exists for another Supervisor" });
     } else {
@@ -198,7 +229,7 @@ router.put('/edit/:id', async (req, res) => {
     }
 
     // Check if the updated username already exists for another supervisor
-    const existingUsername = await Supervisor.findOne({ username: updatedUsername.toLowerCase() });
+    const existingUsername = await Supervisor.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
     if (existingUsername && existingUsername._id.toString() !== supervisorId) {
       return res.status(400).json({ success: false, message: "Username already exists for another supervisor." });
     }

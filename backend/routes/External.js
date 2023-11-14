@@ -12,7 +12,7 @@ router.post('/create', [
     body('username', 'Username is required').exists(),
     body('email', 'Enter a valid email').isEmail(),
 ], async (req, res) => {
-    const { name, username, email , department , designation } = req.body;
+    const { name, username, email, department, designation } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -26,13 +26,13 @@ router.post('/create', [
         }
 
         // Check if username already exists
-        const existingUsername = await External.findOne({ username: username.toLowerCase() });
+        const existingUsername = await External.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
         if (existingUsername) {
             return res.status(400).json({ success: false, message: "Username already exists for another external." });
         }
 
         // Create a new external student
-        const external = new External({ name, username, email , department , designation });
+        const external = new External({ name, username, email, department, designation });
         await external.save();
         return res.json({ success: true, external });
     } catch (err) {
@@ -53,8 +53,8 @@ router.put('/edit/:id', async (req, res) => {
         const existingEmail = await External.findOne({ email: updatedDetails.email });
 
         // Check if the updated username already exists for another external student
-        const existingUsername = await External.findOne({ username: updatedDetails.username.toLowerCase() });
-
+        const existingUsername = await External.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
+    
         // Check if the updated email exists for another external student
         if (existingEmail && existingEmail._id.toString() !== studentId) {
             return res.status(400).json({ success: false, message: "Email already exists for another external student." });

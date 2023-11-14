@@ -46,8 +46,7 @@ router.post('/register', [
       console.log('existingStudent is ', existingStudent)
       return res.status(400).json({ message: "Email already exists for another Committee Member." });
     }
-    const existUsename = await Committee.findOne(
-      { username: username.toLowerCase() });
+    const existingUsername = await Committee.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
     if (existUsename) {
       return res.status(400).json({ message: "Username already exists for another Committee Member." });
     }
@@ -88,6 +87,38 @@ router.post('/login', async (req, res) => {
       if (isPasswordValid) {
         // Generate JWT token for admin
         const token = jwt.sign({ id: admin.id }, JWT_KEY);
+        admin.login++;
+        if (admin.login === 1) {
+          admin.unseenNotifications.push({
+            type: "Important", message: "You can reset password now after 1st login link has been sent to your email and will be expired after 24 hours."
+          });
+          const token = jwt.sign({ id: admin.id }, JWT_KEY, { expiresIn: '1d' });
+  
+          var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: 'YOUR_EMAIL',
+              pass: 'YOUR_PASSWORD'
+            }
+          });
+  
+          var mailOptions = {
+            from: 'YOUR_EMAIL',
+            to: admin.email,
+            subject: 'Reset Password Link',
+            html: `<h4>The Link will expire in 24 hours</h4> <br> <p><strong>Link:</strong> <a href="http://localhost:3000/committeeMain/reset_password/${admin._id}/${token}">http://localhost:3000/committeeMain/reset_password/${admin._id}/${token}</a></p>
+          <p>The link will expire in 24 minutes.</p>`
+          };
+          // console.log('mailoption is')
+          transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+              console.log(error);
+            } else {
+              return res.send({ success: true, message: "Check Your Email" })
+            }
+          });
+        }
+        await admin.save();
 
         res.json({ message: 'Committee login successful', success: true, token });
       } else {
@@ -277,7 +308,7 @@ router.put('/edit/:id', async (req, res) => {
     }
 
     // Check if the updated username already exists for another student
-    const existingUsername = await Committee.findOne({ username: updatedUsername.toLowerCase() });
+    const existingUsername = await Committee.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
     if (existingUsername && existingUsername._id.toString() !== studentId) {
       return res.status(400).json({ message: "Username already exists for another Committee." });
     }
@@ -418,9 +449,9 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
     // Parse dueDate and ignore the time component
     const dueDateWithoutTime = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').startOf('day');
 
-    // Validate if the due date is not behind the current date
-    if (dueDateWithoutTime.isBefore(currentDate)) {
-      return res.status(400).json({ message: "Due Date cannot be behind the current date" });
+
+    if (dueDateWithoutTime <= currentDate) {
+      return res.json({ success: false, message: `Due date must set atleast for tomorrow` })
     }
 
     const supervisor = await Supervisor.findById(req.user.id);
@@ -555,21 +586,33 @@ router.put('/allocate-group', async (req, res) => {
     }
 
     if (previousSupervisor._id.equals(supervisor._id)) {
-      return res.json({ success: false, message: "The group Already Belong to this Supervisor select another one" })
+      return res.json({ success: false, message: "The group Already Belongs to this Supervisor; select another one" });
     }
 
-    if (supervisor.slots.length == 0) {
+    if (supervisor.slots.length === 0) {
       return res.status(400).json({ success: false, message: 'New supervisor does not have available slots' });
     }
+
+    // Move the meeting from the current supervisor to the new supervisor
+    const groupMeetingId = group.meetingid;
+
+    // Remove the meeting from the current supervisor's meetings
+    previousSupervisor.meeting = previousSupervisor.meeting.filter(meeting => meeting.id.toString() !== groupMeetingId.toString());
+
+    // Add the meeting to the new supervisor's meetings
+    supervisor.meeting.push(groupMeetingId);
+
+    // Remove the group ID from the previous supervisor's groups
     previousSupervisor.groups = previousSupervisor.groups.filter(groupId => !groupId.equals(group._id));
     previousSupervisor.slots += 1;
+
     // get requests to save it to new supervisor's projectRequest
     const filteredRequest = previousSupervisor.projectRequest.filter(request => {
       return request.project.equals(projectRequest._id);
     });
     previousSupervisor.unseenNotifications.push({
-      type: "Important", message: `You're group ${projectTitle} has been alocated to ${supervisor.name}`
-    })
+      type: "Important", message: `Your group ${projectTitle} has been allocated to ${supervisor.name}`
+    });
     previousSupervisor.projectRequest = previousSupervisor.projectRequest.filter(request => {
       return !request.project.equals(projectRequest._id);
     });
@@ -577,21 +620,23 @@ router.put('/allocate-group', async (req, res) => {
     // Allocate the group to the new supervisor
     group.supervisor = supervisor.name;
     group.supervisorId = supervisor._id;
+
     // Add the group ID to the new supervisor's groups
     supervisor.groups.push(group._id);
     supervisor.slots -= 1;
+
     group.projects[0].students.forEach(async stu => {
       const studentObj = await User.findById(stu.userId);
       if (studentObj) {
         studentObj.unseenNotifications.push({
           type: "Important", message: `You've been assigned a new supervisor ${supervisor.name}`
         });
-        await studentObj.save()
+        await studentObj.save();
       }
-    })
+    });
+
     // Create an allocation object
     const currentDateTime = new Date();
-    await group.save();
 
     // Extract date and time from the current date and time object
     const currentDate = currentDateTime.toISOString().split('T')[0];
@@ -612,7 +657,8 @@ router.put('/allocate-group', async (req, res) => {
 
     // Save the allocation object to the database
     await allocation.save();
-    // Push filtered request to new supervisor's projectRequest
+
+    // Push filtered request to the new supervisor's projectRequest
     if (!supervisor.projectRequest) {
       supervisor.projectRequest = []; // Initialize as an empty array if it's undefined
     }
@@ -620,8 +666,9 @@ router.put('/allocate-group', async (req, res) => {
     projectRequest.supervisor = supervisor._id;
     supervisor.unseenNotifications.push({
       type: "Important", message: `You've been allocated a group ${projectTitle}`
-    })
+    });
 
+    // Save changes to the database
     await Promise.all([group.save(), supervisor.save(), previousSupervisor.save(), projectRequest.save()]);
 
     res.json({ success: true, message: 'Group allocated to the new supervisor' });
@@ -630,6 +677,7 @@ router.put('/allocate-group', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 router.post('/make-extension', authenticateUser, async (req, res) => {
   try {

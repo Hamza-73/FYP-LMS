@@ -202,7 +202,9 @@ const SupervisorList = (props) => {
 
     if (name === 'name') {
       // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' ');
+      const trimmedValue = value
+      .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
+      .replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
     } else if (name === 'department') {
       // Allow only alphabetic characters

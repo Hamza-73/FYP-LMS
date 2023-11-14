@@ -257,7 +257,9 @@ const CommitteeMember = (props) => {
     setFirstNameLastNameEqual(false);
     if (name === 'fname' || name === 'lname' || name === 'username') {
       // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' ');
+      const trimmedValue = value
+      .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
+      .replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
 
       // Check if both first name and last name are not empty and equal

@@ -162,8 +162,10 @@ app.post('/upload/:userType', async (req, res) => {
           return res.status(400).json({ success: false, message: 'Duplicate email found.' });
         }
         uniqueEmails.add(user.email);
-
-        if (user.username && uniqueUsernames.has(user.username)) {
+        if(user.username && /^[a-zA-Z0-9]+$/.test(uniqueUsernames)){
+          return res.status(400).json({ success: false, message: 'Username should be alphanumeric.' });
+        }
+        if (user.username && uniqueUsernames.has(user.username.toLowerCase().replace(/\s+/g, ''))) {
           return res.status(400).json({ success: false, message: 'Duplicate username found.' });
         }
         uniqueUsernames.add(user.username);

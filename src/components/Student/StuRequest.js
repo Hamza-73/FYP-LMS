@@ -88,49 +88,78 @@ const StuRequest = (props) => {
         let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
         trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
         setImprove((prevRegister) => ({
-          ...prevRegister,
-          [name]: trimmedValue,
+            ...prevRegister,
+            [name]: trimmedValue,
         }));
-      };  
+    };
 
     const [show, setShow] = useState(false);
 
     return (
         <div>
-            <Modal className="imporve">
-                <div show={show} onHide={() => {
-                    setShow(false);
-                }}>
+            <Modal show={show} onHide={() => setShow(false)}>
                     <Modal.Header>
                         <Modal.Title>Register</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <form onSubmit={(e) => {
-                            handleRequests(e, choice.id, 'improve');
-                        }}>
+                        <form onSubmit={(e) => handleRequests(e, choice.id, 'improve')}>
                             <div className="mb-3">
-                                <label htmlFor="name" className="form-label">Project Title</label>
-                                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
+                                <label htmlFor="name" className="form-label">
+                                    Project Title
+                                </label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="projectTitle"
+                                    name="projectTitle"
+                                    value={improve.projectTitle}
+                                    onChange={handleChange}
+                                />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                                <input type="text" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
+                                <label htmlFor="exampleInputPassword1" className="form-label">
+                                    Scope
+                                </label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="scope"
+                                    name="scope"
+                                    value={improve.scope}
+                                    onChange={handleChange}
+                                />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
-                                <textarea className="form-control" id="description" name="description" value={improve.description} onChange={handleChange} />
+                                <label htmlFor="exampleInputPassword1" className="form-label">
+                                    Description
+                                </label>
+                                <textarea
+                                    className="form-control"
+                                    id="description"
+                                    name="description"
+                                    value={improve.description}
+                                    onChange={handleChange}
+                                />
                             </div>
                             <Modal.Footer>
-                                <button type="button" className="btn btn-secondary" onClick={() => {
-                                    setShow(false);
-                                }}>Close</button>
-                                <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }} disabled={!improve.projectTitle || !improve.scope || !improve.description}>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShow(false)}
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn"
+                                    style={{ background: 'maroon', color: 'white' }}
+                                    disabled={!improve.projectTitle || !improve.scope || !improve.description}
+                                >
                                     Add Idea
                                 </button>
                             </Modal.Footer>
                         </form>
                     </Modal.Body>
-                </div>
             </Modal>
 
             {!loading ? (
@@ -159,7 +188,7 @@ const StuRequest = (props) => {
                                                     <td>{group.scope}</td>
                                                     <td>
                                                         <div style={{ cursor: 'pointer' }}>
-                                                            <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                            <div className="d-grid gap-2 d-md-flex">
                                                                 <button className="btn btn-success btn-sm me-md-2" type="button" onClick={(e) => {
                                                                     setChoice({ action: 'accept', id: group.projectId });
                                                                     handleRequests(e, group.projectId, 'accept');
@@ -168,7 +197,7 @@ const StuRequest = (props) => {
                                                                     setChoice({ action: 'reject', id: group.projectId });
                                                                     handleRequests(e, group.projectId, 'reject');
                                                                 }}>Reject</button>
-                                                                <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} data-toggle="modal" data-target="#exampleModal" type="button" onClick={(e) => {
+                                                                <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} type="button" onClick={(e) => {
                                                                     setChoice({ action: 'improve', id: group.projectId });
                                                                     setShow(true);
                                                                 }}>Improve</button>

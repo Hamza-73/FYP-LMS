@@ -56,7 +56,7 @@ const External = (props) => {
                 NotificationManager.error(json.message);
             }
         } catch (error) {
-            NotificationManager.error('Error in Registering');
+            console.log('error is ', error);
         }
     }
 
@@ -199,7 +199,9 @@ const External = (props) => {
 
         if (name === 'name' || name === 'username') {
             // Allow only one space between words and trim spaces at the beginning and end
-            const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' ');
+            const trimmedValue = value
+            .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
+            .replace(/\s+/g, ' ');;
             setRegister({ ...register, [name]: trimmedValue });
         } else {
             setRegister({ ...register, [name]: value });

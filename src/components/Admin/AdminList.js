@@ -77,6 +77,7 @@ const AdminList = (props) => {
           method: "PUT",
           headers: {
             'Content-Type': 'application/json',
+            "Authorization" : localStorage.getItem('token')
           },
           body: JSON.stringify({
             fname: register.fname, lname: register.lname, username: register.username,
@@ -127,6 +128,7 @@ const AdminList = (props) => {
           {
             headers: {
               'Content-Type': 'application/json',
+              "Authorization" : localStorage.getItem('token')
             },
           }
         );
@@ -219,10 +221,18 @@ const AdminList = (props) => {
   const handleChange1 = (e) => {
     const { name, value } = e.target;
     setFirstNameLastNameEqual(false);
-    if (name === 'fname' || name === 'lname' || name === 'username') {
+    if (name === 'fname' || name === 'lname') {
       // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value.replace(/[^A-Za-z]+/g, '').replace(/\s+/g, ' ');
+      const trimmedValue = value
+      .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
+      .replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: trimmedValue });
+
+      if (name === 'username') {
+        const cleanedUsername = value.replace(/\s+/g, '').trim(); // Remove all spaces
+        const alphanumericUsername = cleanedUsername.replace(/[^a-zA-Z0-9]/g, '').trim(); // Remove non-alphanumeric characters
+        setRegister({ ...register, [name]: alphanumericUsername });
+      }                
 
       // Check if both first name and last name are not empty and equal
       if (name === 'fname' && trimmedValue.toLowerCase().trim() === register.lname.toLowerCase().trim() && trimmedValue !== '' && register.lname.toLowerCase().trim() !== '') {
@@ -408,7 +418,7 @@ const AdminList = (props) => {
       {/* REGISTER */}
       <div className="register">
         <style>{style}</style>
-        <Modal show={show} onHide={() => setEditMode(false)}>
+        <Modal show={show} onHide={() =>{ setEditMode(false); setShow(false)}}>
           <Modal.Header>
             <Modal.Title>{!editMode ? "Register" : "Edit"}</Modal.Title>
           </Modal.Header>

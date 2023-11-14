@@ -204,6 +204,12 @@ const Meeting = (props) => {
   const handleEditChange = (e) => {
     const { name, value } = e.target;
 
+    if(name==='purpose'){
+      const trimmedValue = e.target.value.replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
+      .replace(/\s+/g, ' ');
+      setEdit({ ...edit, [name]: trimmedValue });
+    }
+
     if (name === 'meetingDate') {
       const selectedDate = new Date(value);
       const currentDate = new Date();
@@ -329,7 +335,7 @@ const Meeting = (props) => {
     background-color: #f0f0f0;
     border: 2px solid #f0f0f0;
     border-radius: 4px;
-    width : 200px;
+    width : 230px;
     padding : 8px;
     margin: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -632,7 +638,7 @@ const Meeting = (props) => {
                         {/* Meeting details */}
                         <div className="item">
                           <p>Group</p>
-                          <p style={{ fontSize: "13px" }}>{meeting.meetingGroup}</p>
+                          <p style={{ fontSize: "13px", position:"relative", marginLeft:"8px" }}>{meeting.meetingGroup}</p>
                         </div>
                         <div className="item">
                           <p>Time</p>

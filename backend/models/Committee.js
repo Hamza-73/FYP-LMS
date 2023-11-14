@@ -11,6 +11,7 @@ const committeeSchema = new Schema({
   password: { type: String, required: true, minlength: 4 },
   isAdmin: { type: Boolean, default: false },
   isLogin: { type: Boolean, default: false },
+  login: { type: Number, default: 0 },
   requests: [{
     group: { type: String },
     supervisor: { type: String },

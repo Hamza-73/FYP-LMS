@@ -187,13 +187,13 @@ const Groups = (props) => {
             <form onSubmit={(e) => { changeName(e) }}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Old Title</label>
-                <input type="text" disabled={true} className="form-control" id="oldTitle" name="oldTitle" value={handleTitleChange} onChange={(e) => {
+                <input type="text" disabled={true} className="form-control" id="oldTitle" name="oldTitle" value={titles.oldTitle} onChange={(e) => {
                   setTitles({ ...titles, [e.target.name]: e.target.value });
                 }} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">New Title</label>
-                <input type="text"  pattern="[A-Za-z]+" className="form-control" id="title" name="title" value={handleTitleChange} onChange={(e) => {
+                <input type="text" className="form-control" id="title" name="title" value={handleTitleChange} onChange={(e) => {
                   setTitles({ ...titles, [e.target.name]: e.target.value });
                 }} />
               </div>
@@ -221,7 +221,7 @@ const Groups = (props) => {
           <Modal.Body className="modal-body">
             <form onSubmit={(e) => { handleMarks(e) }}>
               <div className="mb-3">
-                <label htmlFor="name" className="form-label">Marks</label>
+                <label htmlFor="name" className="form-label">Internal's Supervisor</label>
                 <input type="number" className="form-control" id="marks" min='0' max='100' name="marks" value={grades.marks} onChange={handleChange1} />
               </div>
               <div className="mb-3">
@@ -256,7 +256,7 @@ const Groups = (props) => {
             <form onSubmit={handleAddStudent}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Project Title</label>
-                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange} />
+                <input type="text" disabled={true} className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="rollNo" className="form-label">Student Roll No</label>
@@ -349,7 +349,7 @@ const Groups = (props) => {
                               setShowGroupName(true);
                               setTitles({
                                 oldTitle: group.projects[0].projectTitle
-                              })
+                              });
                             }}
                             disabled={
                               group.proposal

@@ -200,7 +200,7 @@ router.post('/make-admin', async (req, res) => {
         const committeeMember = await Committee.findOne({ username });
 
         if (!committeeMember) {
-            const supervisor = await Supervisor.findOne({ username });
+            const supervisor = await Supervisor.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
             if (!supervisor) {
                 return res.status(404).json({ success: false, message: "Committee Member Not Found" });
             }
@@ -234,12 +234,12 @@ router.post('/make-committee', async (req, res) => {
     const { username } = req.body;
     try {
         // Find the committee member by username
-        const committeeMember = await Supervisor.findOne({ username });
+        const committeeMember = await Supervisor.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
 
         if (!committeeMember) {
             return res.status(404).json({ success: false, message: "Supervisor not found" });
         }
-        const admin = await Committee.findOne({ username });
+        const admin = await Committee.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
         if (admin) {
             return res.json({ success: false, message: "Committe Member With The username already exists change the username" })
         }
@@ -268,7 +268,6 @@ router.get('/detail', authenticateUser, async (req, res) => {
         const admin = await Admin.findById(userId);
 
         if (admin) {
-            console.log('admin is ')
             let member = admin;
             // User is an admin, return admin details
             return res.json({ success: true, member });
@@ -337,10 +336,12 @@ router.put('/edit/:id', authenticateUser, async (req, res) => {
     const updatedDetail = req.body;
 
     try {
-        const superAdmin = await Admin.findById(req.user.id);
+        const adminSuper = await Admin.findById(req.user.id);
         const adminToBeEdites = await Admin.findById(id);
-        if (!superAdmin.superAdmin && adminToBeEdites.superAdmin) {
-            return res.json({ success: false, message: "Only Super Admin can edit himself" })
+        if (adminSuper) {
+            if (!adminSuper.superAdmin && adminToBeEdites.superAdmin) {
+                return res.json({ success: false, message: "Only Super Admin can edit himself" })
+            }
         }
         // Check if the updated email already exists for another student
         const existingEmail = await Admin.findOne({ email: updatedDetail.email });
@@ -348,7 +349,7 @@ router.put('/edit/:id', authenticateUser, async (req, res) => {
             return res.status(400).json({ message: "Email already exists for another Admin." });
         }
         // Check if the updated username already exists for another student
-        const existingUsername = await Admin.findOne({ username: updatedDetail.username.toLowerCase() });
+        const existingUsername = await Admin.findOne({ username: { $regex: new RegExp("^" + updatedDetail.username.toLowerCase(), "i") } });
         if (existingUsername && existingUsername._id.toString() !== id) {
             return res.status(400).json({ message: "Username already exists for another Admin." });
         }
