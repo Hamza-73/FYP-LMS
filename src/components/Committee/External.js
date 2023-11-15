@@ -25,6 +25,11 @@ const External = (props) => {
                 NotificationManager.error('Please fill in all required fields.');
                 return;
             }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(register.email)) {
+                NotificationManager.warning("Invalid Email Address");
+                return;
+            }
 
             console.log('registering ', register)
             const response = await fetch("http://localhost:5000/external/create", {
@@ -74,6 +79,11 @@ const External = (props) => {
             console.log('Register state:', register); // Debugging statement
             if (!register.name || !register.username || !register.email) {
                 NotificationManager.error('Please fill in all required fields.');
+                return;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(register.email)) {
+                NotificationManager.warning("Invalid Email Address");
                 return;
             }
 
@@ -196,12 +206,16 @@ const External = (props) => {
 
     const handleChange1 = (e) => {
         const { name, value } = e.target;
-
-        if (name === 'name' || name === 'username') {
+        if (name === 'username') {
+            // Ensure alphanumeric characters only (no spaces)
+            const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, '');
+            setRegister({ ...register, [name]: alphanumericValue });
+        }
+        else if (name === 'name') {
             // Allow only one space between words and trim spaces at the beginning and end
             const trimmedValue = value
-            .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
-            .replace(/\s+/g, ' ');;
+                .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
+                .replace(/\s+/g, ' ');;
             setRegister({ ...register, [name]: trimmedValue });
         } else {
             setRegister({ ...register, [name]: value });

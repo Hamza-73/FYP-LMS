@@ -1157,7 +1157,8 @@ router.post('/extension', authenticateUser, async (req, res) => {
     group.projects[0].students.map(async stu => {
       const studentObj = await User.findById(stu.userId);
       studentObj.unseenNotifications.push({
-        type: "Important", message: `Extension Request sent to Supervisor`
+        type: "Important", message : `Extension Request sent to Supervisor on ${new Date().toLocaleDateString()}`
+
       });
       await studentObj.save()
     })

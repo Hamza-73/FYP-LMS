@@ -63,6 +63,11 @@ const CommitteeMember = (props) => {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(register.email)) {
+        NotificationManager.warning("Invalid Email Address");
+        return;
+      }
 
       const response = await fetch("http://localhost:5000/committee/register", {
         method: 'POST',
@@ -71,7 +76,7 @@ const CommitteeMember = (props) => {
         },
         body: JSON.stringify({
           fname: register.fname.trim(), lname: register.lname.trim(), username: register.username.trim(),
-          designation: register.designation.trim(), password: register.password, department: register.department.trim(), email:register.email
+          designation: register.designation.trim(), password: register.password, department: register.department.trim(), email: register.email
         })
       });
       const json = await response.json();
@@ -103,6 +108,11 @@ const CommitteeMember = (props) => {
       // Check if any required field is empty
       if (!register.fname.trim() || !register.lname.trim() || !register.username.trim() || !register.department.trim() || !register.designation.trim() || !register.email) {
         NotificationManager.error('Please fill in all required fields.');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(register.email)) {
+        NotificationManager.warning("Invalid Email Address");
         return;
       }
 
@@ -251,27 +261,32 @@ const CommitteeMember = (props) => {
     }
   }, []);
 
-  // Function to handle input changes
-  const handleChange1 = (e) => {
-    const { name, value } = e.target;
-    setFirstNameLastNameEqual(false);
-    if (name === 'fname' || name === 'lname' || name === 'username') {
-      // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value
+// Function to handle input changes
+const handleChange1 = (e) => {
+  const { name, value } = e.target;
+  setFirstNameLastNameEqual(false);
+
+  if (name === 'username') {
+    // Ensure alphanumeric characters only (no spaces)
+    const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, '');
+    setRegister({ ...register, [name]: alphanumericValue });
+  } else if (name === 'fname' || name === 'lname') {
+    // Allow only one space between words and trim spaces at the beginning and end
+    const trimmedValue = value
       .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
       .replace(/\s+/g, ' ');
-      setRegister({ ...register, [name]: trimmedValue });
+    setRegister({ ...register, [name]: trimmedValue });
 
-      // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue.toLowerCase().trim() === register.lname.toLowerCase().trim() && trimmedValue !== '' && register.lname.toLowerCase().trim() !== '') {
-        setFirstNameLastNameEqual(true);
-      } else if (name === 'lname' && trimmedValue.toLowerCase().trim() === register.fname.toLowerCase().trim() && trimmedValue !== '' && register.fname.toLowerCase().trim() !== '') {
-        setFirstNameLastNameEqual(true);
-      } 
-    } else {
-      setRegister({ ...register, [name]: value });
+    // Check if both first name and last name are not empty and equal
+    if (name === 'fname' && trimmedValue.toLowerCase().trim() === register.lname.toLowerCase().trim() && trimmedValue !== '' && register.lname.toLowerCase().trim() !== '') {
+      setFirstNameLastNameEqual(true);
+    } else if (name === 'lname' && trimmedValue.toLowerCase().trim() === register.fname.toLowerCase().trim() && trimmedValue !== '' && register.fname.toLowerCase().trim() !== '') {
+      setFirstNameLastNameEqual(true);
     }
-  };
+  } else {
+    setRegister({ ...register, [name]: value });
+  }
+};
 
   // Function to reset input fields
   const handleClose = () => {
@@ -423,6 +438,7 @@ const CommitteeMember = (props) => {
         <Modal show={showUpload} onHide={() => setShowUpload(false)}>
           <Modal.Header className="modal-header">
             <h5 className="modal-title" >Export Data From File</h5>
+                <small>Type should be : .xls/.xlsx <br /> Excel file should contain fname, lname ,username and email.- Data must be unique</small> <br />
           </Modal.Header>
           <Modal.Body className="modal-body">
             <form onSubmit={(e) => handleSubmit(e, 'Committee')}>
@@ -715,9 +731,9 @@ const CommitteeMember = (props) => {
                           <td
                             style={{ cursor: "pointer" }}
                           >
-                            <button 
-                            onClick={() => { openEditModal(val); setShow(true) }}
-                            disabled={val.isAdmin || val.isCommittee} className="btn" style={{ background: "maroon", color: "white" }}>
+                            <button
+                              onClick={() => { openEditModal(val); setShow(true) }}
+                              disabled={val.isAdmin || val.isCommittee} className="btn" style={{ background: "maroon", color: "white" }}>
                               <i className="fa-solid fa-pen-to-square"></i>
                             </button>
                           </td>

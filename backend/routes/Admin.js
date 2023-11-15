@@ -36,14 +36,14 @@ router.post('/register', [
             return res.status(400).json({ message: "Email already exists for another Admin" });
         }
         const existUsename = await Admin.findOne(
-            { username: username.toLowerCase() });
+            { username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
         if (existUsename) {
             return res.status(400).json({ message: "Username already exists for another Admin" });
         }
 
         const committee = await Committee.findOne({
             $or: [
-                { username: username },
+                { username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } },
                 { email: email }
             ]
         });
@@ -54,7 +54,7 @@ router.post('/register', [
 
         const supervisor = await Supervisor.findOne({
             $or: [
-                { username: username },
+                { username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } },
                 { email: email }
             ]
         });
@@ -191,16 +191,16 @@ router.post('/make-admin', async (req, res) => {
             });
         }
 
-        const admin = await Admin.findOne({ username });
+        const admin = await Admin.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
         if (admin) {
             return res.json({ success: false, message: "Admin with this username already exists/ change username and try again " });
         }
 
         // Find the committee member by username
-        const committeeMember = await Committee.findOne({ username });
+        const committeeMember = await Committee.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
 
         if (!committeeMember) {
-            const supervisor = await Supervisor.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
+            const supervisor = await Supervisor.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
             if (!supervisor) {
                 return res.status(404).json({ success: false, message: "Committee Member Not Found" });
             }
@@ -234,12 +234,12 @@ router.post('/make-committee', async (req, res) => {
     const { username } = req.body;
     try {
         // Find the committee member by username
-        const committeeMember = await Supervisor.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
+        const committeeMember = await Supervisor.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
 
         if (!committeeMember) {
             return res.status(404).json({ success: false, message: "Supervisor not found" });
         }
-        const admin = await Committee.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
+        const admin = await Committee.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
         if (admin) {
             return res.json({ success: false, message: "Committe Member With The username already exists change the username" })
         }
@@ -257,7 +257,6 @@ router.post('/make-committee', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-
 
 // get detail of admin
 router.get('/detail', authenticateUser, async (req, res) => {
@@ -356,7 +355,7 @@ router.put('/edit/:id', authenticateUser, async (req, res) => {
 
         const committee = await Committee.findOne({
             $or: [
-                { username: updatedDetail.username.toLowerCase() },
+                { username: { $regex: new RegExp("^" + updatedDetail.username.toLowerCase(), "i") } },
                 { email: updatedDetail.email }
             ]
         });
@@ -367,7 +366,7 @@ router.put('/edit/:id', authenticateUser, async (req, res) => {
 
         const supervisor = await Supervisor.findOne({
             $or: [
-                { username: updatedDetail.username },
+                { username: { $regex: new RegExp("^" + updatedDetail.username.toLowerCase(), "i") } },
                 { email: updatedDetail.email }
             ]
         });

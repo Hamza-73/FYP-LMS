@@ -98,7 +98,7 @@ router.post('/create', [
     if (existingStudent) {
       return res.status(400).json({ message: "Email already exists for another Supervisor" });
     }
-    const existingUsername = await Supervisor.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
+    const existingUsername = await Supervisor.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
     if (existUsename) {
       return res.status(400).json({ message: "Username already exists for another Supervisor" });
     } else {
@@ -850,6 +850,7 @@ router.get('/view-sent-proposals', authenticateUser, async (req, res) => {
 
 
 // Give marks
+// Give marks
 router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
   try {
     const { marks, external, hod } = req.body;
@@ -859,61 +860,68 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
     if (!group) {
       return res.status(404).json({ success: false, message: 'Group not found' })
     }
-    console.log('group is ', group);
+
     if (!group.proposal || !group.documentation) {
       return res.status(500).json({ success: false, message: 'One of the Documentation is Pending' });
     }
+
     if (!group.vivaDate) {
       return res.json({ success: false, message: "Marks will be given only when Viva is being taken" })
     }
-    if (new Date(group.vivaDate).setHours(0,0) > new Date().setHours(0,0)) {
+
+    if (new Date(group.vivaDate).setHours(0, 0) > new Date().setHours(0, 0)) {
       return res.status(201).json({ success: false, message: 'VIVA has not been taken yet' });
     }
 
-    group.marks = marks; group.externalMarks = external; group.hodMarks = hod;
-    group.isViva = true;
-    group.projects.map(project => {
-      console.log(' project is ', project);
-      project.students.map(async student => {
-        console.log("student ", student);
+    group.projects.forEach(async project => {
+      project.students.forEach(async student => {
+        console.log('student is ', student)
         const studentObj = await User.findById(student.userId);
         if (!studentObj) {
           return res.status(404).json({ success: false, message: 'Student not found' })
         }
-        console.log('student obj sis ', studentObj)
+
         studentObj.marks = marks;
         studentObj.externalMarks = external;
         studentObj.hodMarks = hod;
         studentObj.unseenNotifications.push({
           type: "Important", message: `Marks have been uploaded`
-        })
+        });
         await studentObj.save();
       });
     });
+ 
+    group.marks = marks; group.externalMarks = external; group.hodMarks = hod;
+    group.isViva = true;
+
     const supervisor = await Supervisor.findById(group.supervisorId);
     const notificationMessage = `${supervisor.name} added marks for group ${group.projects[0].projectTitle} as for ${supervisor.name}(internal):${marks}, ${group.chairperson}(chairperson):${hod}, and ${group.externalName}(external):${external}`
     const supervisors = await Supervisor.find({ isAdmin: true });
     const committeeMembers = await Committee.find({ isAdmin: true });
-    supervisors.map(async sup=>{
+
+    supervisors.forEach(async sup => {
       sup.unseenNotifications.push({
-        type:"Important", message : notificationMessage
+        type: "Important", message: notificationMessage
       });
       await sup.save();
-    })
-    committeeMembers.map(async sup=>{
+    });
+
+    committeeMembers.forEach(async sup => {
       sup.unseenNotifications.push({
-        type:"Important", message : notificationMessage
+        type: "Important", message: notificationMessage
       });
       await sup.save();
-    })
+    });
+
     const viva = await Viva.findById(group.viva);
     if (viva) {
       viva.isViva = true;
       await viva.save()
     }
-    await group.save(); // Save the group separately after updating students' marks
-    res.json({ success: true, message: `Marks uploaded successfully` });
 
+    await group.save(); // Save the group separately after updating students' marks
+
+    res.json({ success: true, message: `Marks uploaded successfully` });
   } catch (error) {
     console.error('Error fetching sent proposals:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });

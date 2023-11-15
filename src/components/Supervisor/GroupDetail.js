@@ -163,8 +163,9 @@ const GroupDetail = () => {
                         <label htmlFor="exampleInputEmail163" className="form-label">
                           Link
                         </label>
-                        <input type="text" className="form-control" id="link" name="link" value={link ? link : ""} onChange={handleChange} />
+                        <textarea className="form-control" id="text" name="link" value={link} />
                       </div>
+
                       <div className="modal-footer">
                         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close" onClick={handleClose}> Close</button>
                         <button type="submit" className="btn" style={{ background: 'maroon', color: 'white' }}>

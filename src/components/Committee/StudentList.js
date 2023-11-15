@@ -26,6 +26,11 @@ const StudentList = (props) => {
     if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim() || !register.email) {
       NotificationManager.error('Please fill in all required fields.');
       return;
+    } 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(register.email)){
+      NotificationManager.warning("Invalid Email Address");
+      return;
     }
 
     // Check for consecutive spaces in any field
@@ -113,7 +118,11 @@ const StudentList = (props) => {
       if (!register.name.trim() || !register.rollNo.trim() || !register.department.trim() || !register.cnic.trim() || !register.batch.trim() || !register.father.trim() || !register.email) {
         NotificationManager.error('Please fill in all required fields.');
         return;
-      }
+      } 
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if(!emailRegex.test(register.email)){
+        NotificationManager.warning("Invalid Email Address");
+     return; }
 
       // Check for consecutive spaces in any field
       const consecutiveSpacesPattern = /\s{2,}/;

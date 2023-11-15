@@ -162,7 +162,7 @@ app.post('/upload/:userType', async (req, res) => {
           return res.status(400).json({ success: false, message: 'Duplicate email found.' });
         }
         uniqueEmails.add(user.email);
-        if(user.username && /^[a-zA-Z0-9]+$/.test(uniqueUsernames)){
+        if (user.username && /^[a-zA-Z0-9]+$/.test(uniqueUsernames)) {
           return res.status(400).json({ success: false, message: 'Username should be alphanumeric.' });
         }
         if (user.username && uniqueUsernames.has(user.username.toLowerCase().replace(/\s+/g, ''))) {
@@ -203,8 +203,9 @@ app.post('/upload/:userType', async (req, res) => {
     // Hash passwords before storing
     if (userType === 'Committee' || userType === 'Supervisor' || userType === 'Admin' || userType === 'External') {
       excelData = excelData.map((user) => {
+
         if (userType === 'External' || userType === 'Supervisor') {
-          if(user.fname || user.lname){
+          if (user.fname || user.lname) {
             throw new Error('First and last names are not attributes of supervisor')
           }
           if (!user.name) {
@@ -227,9 +228,20 @@ app.post('/upload/:userType', async (req, res) => {
             throw new Error('First name and last name should be different')
           }
         }
-        if(userType==='Admin'){
-          if(user.department || user.designation){
+        if (userType === 'Admin') {
+          if (user.department || user.designation) {
             throw new Error('Department or Designation are not attributes of admin')
+          }
+        } else if (userType === 'Committee' || userType === 'Supervisor' || userType === 'External') {
+          const validDesignations = ['professor', 'assistant professor', 'lecturer'];
+          const validDepartments = ['computer science', 'other'];
+
+          if (user.designation && !validDesignations.includes(user.designation.toLowerCase().trim())) {
+            throw new Error('Invalid designation. Valid designations are Professor, Assistant Professor, Lecturer.');
+          }
+
+          if (user.department && !validDepartments.includes(user.department.toLowerCase().trim())) {
+            throw new Error('Invalid department. Valid departments are Computer Science, Other.');
           }
         }
         if (userType === 'Supervisor') {
@@ -253,7 +265,7 @@ app.post('/upload/:userType', async (req, res) => {
           if (user.password) {
             throw new Error('Password is not an attribute of External.');
           }
-          if(user.slots){
+          if (user.slots) {
             throw new Error('Slots is not an attribute of external');
           }
         }
@@ -286,12 +298,24 @@ app.post('/upload/:userType', async (req, res) => {
     } else if (userType === 'User') {
       // For users, hash 'cnic' and add it to 'password'
       excelData = excelData.map((user) => {
-        if (!user.name || !user.email || !user.cnic || !user.rollNo || !user.father || !user.semester) {
+        if (!user.name || !user.email || !user.cnic || !user.rollNo || !user.father || !user.semester ||!user.department) {
           throw new Error('Check every field no entry should be null');
         }
+        
+        const validDepartments = ['computer science', 'other'];
+
+        if (user.department && !validDepartments.includes(user.department.toLowerCase().trim())) {
+          throw new Error('Invalid department. Valid departments are Computer Science, Other.');
+        }
+
         const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
         if (!rollNoPattern.test(user.rollNo)) {
           throw new Error('Roll Number should be in the format XXXX-BSCS-XX');
+        }
+        const batchPattern = /^[0-9]{4}-[0-9]{4}$/;
+
+        if (user.batch && !batchPattern.test(user.batch)) {
+          throw new Error('Invalid batch format. Valid format is XXXX-XXXX.');
         }
 
         if ((user.name && user.name.toString().length < 3) || (user.father && user.father.toString().length < 3)) {

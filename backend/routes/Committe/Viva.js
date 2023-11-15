@@ -21,13 +21,14 @@ router.post('/schedule-viva', async (req, res) => {
   try {
     const { projectTitle, vivaDate, vivaTime, external, chairperson } = req.body;
 
-    comparisonDate = new Date(vivaDate); // Replace this with your actual vivaDate
+    // Use findOneAndUpdate to find and update the document
+    const parsedDate = moment.utc(vivaDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
+    console.log('parsed date is ', parsedDate)
 
-    // Create a new Date object for the current date with the time set to midnight
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
+    // Validate if the vivaDate is before the current date
+    const currentDate = moment().startOf('day'); // Current date without time, using moment.js
 
-    if (comparisonDate <= currentDate) {
+    if (moment(parsedDate).isSameOrBefore(currentDate, 'day')) {
       return res.json({ success: false, message: "Enter a valid date" });
     }
 
@@ -49,8 +50,6 @@ router.post('/schedule-viva', async (req, res) => {
     if (!externalMember) {
       return res.status(404).json({ success: false, message: 'External Member not found' });
     }
-
-    const parsedDate = moment.utc(vivaDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
 
     externalMember.groups.forEach(grp => {
       let count = 0;
@@ -113,6 +112,25 @@ router.post('/schedule-viva', async (req, res) => {
       });
     });
 
+    const committeemembers = await Committee.find();
+    const supervisorsAdmin = await Supervisor.find({ isAdmin: true });
+
+    committeemembers.map(async cum => {
+      cum.push({
+        type: "Important", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} chairperson : ${chairperson}, External : ${externalMember.name}`
+      });
+      await cum.save();
+    })
+
+    if (supervisorsAdmin || supervisorsAdmin.length > 0) {
+
+      supervisorsAdmin.map(async cum => {
+        cum.push({
+          type: "Important", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} chairperson : ${chairperson}, External : ${externalMember.name}`
+        });
+        await cum.save();
+      })
+    }
 
     // Send notification to supervisor
     supervisor.unseenNotifications.push({ type: "Reminder", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} chairperson : ${chairperson}, External : ${externalMember.name}` });
@@ -130,16 +148,14 @@ router.put('/edit', async (req, res) => {
   try {
     const { projectTitle, vivaDate, vivaTime, external, chairperson } = req.body;
     // Use findOneAndUpdate to find and update the document
+    // Use findOneAndUpdate to find and update the document
     const parsedDate = moment.utc(vivaDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
     console.log('parsed date is ', parsedDate)
 
-    comparisonDate = new Date(vivaDate); // Replace this with your actual vivaDate
+    // Validate if the vivaDate is before the current date
+    const currentDate = moment().startOf('day'); // Current date without time, using moment.js
 
-    // Create a new Date object for the current date with the time set to midnight
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-
-    if (comparisonDate <= currentDate) {
+    if (moment(parsedDate).isSameOrBefore(currentDate, 'day')) {
       return res.json({ success: false, message: "Enter a valid date" });
     }
 
@@ -193,12 +209,35 @@ router.put('/edit', async (req, res) => {
         student.unseenNotifications.push({
           type: "Important",
           message: `Viva Date has been changed by the Committee 
-          It's now ${vivaDate} at ${vivaTime}
+          It's now ${vivaDate} at ${vivaTime} for group: ${projectTitle}
           `
         });
         await student.save();
       })
     })
+    const committeemembers = await Committee.find();
+    const supervisorsAdmin = await Supervisor.find({ isAdmin: true });
+
+    committeemembers.map(async cum => {
+      cum.push({
+        type: "Important", message:  `Viva Date has been changed by the Committee 
+        It's now ${vivaDate} at ${vivaTime} for group: ${projectTitle}
+        `
+      });
+      await cum.save();
+    })
+
+    if (supervisorsAdmin || supervisorsAdmin.length > 0) {
+
+      supervisorsAdmin.map(async cum => {
+        cum.push({
+          type: "Important", message:  `Viva Date has been changed by the Committee 
+          It's now ${vivaDate} at ${vivaTime} for group: ${projectTitle}
+          `
+        });
+        await cum.save();
+      })
+    }
 
     // Send the updated document as the response
     res.json({ success: true, message: "Viva Updated Successfully", updatedViva });

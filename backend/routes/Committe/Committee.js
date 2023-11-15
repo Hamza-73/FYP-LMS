@@ -46,8 +46,8 @@ router.post('/register', [
       console.log('existingStudent is ', existingStudent)
       return res.status(400).json({ message: "Email already exists for another Committee Member." });
     }
-    const existingUsername = await Committee.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
-    if (existUsename) {
+    const existingUsername = await Committee.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
+    if (existingUsername) {
       return res.status(400).json({ message: "Username already exists for another Committee Member." });
     }
     else {
@@ -93,7 +93,7 @@ router.post('/login', async (req, res) => {
             type: "Important", message: "You can reset password now after 1st login link has been sent to your email and will be expired after 24 hours."
           });
           const token = jwt.sign({ id: admin.id }, JWT_KEY, { expiresIn: '1d' });
-  
+
           var transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -101,7 +101,7 @@ router.post('/login', async (req, res) => {
               pass: 'YOUR_PASSWORD'
             }
           });
-  
+
           var mailOptions = {
             from: 'YOUR_EMAIL',
             to: admin.email,
@@ -443,16 +443,21 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
     console.log('due datw starts')
     const { type, dueDate, instructions } = req.body;
     const newDate = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
-    // Validate if the due date is not behind the current date
+    // Validate if the due date is at least one day in the future
     const currentDate = moment().startOf('day'); // Current date without time, using moment.js
-
+    
     // Parse dueDate and ignore the time component
     const dueDateWithoutTime = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').startOf('day');
-
-
-    if (dueDateWithoutTime <= currentDate) {
-      return res.json({ success: false, message: `Due date must set atleast for tomorrow` })
-    }
+    
+    console.log('dur date is ', dueDateWithoutTime);
+    console.log('current date is ', currentDate);
+    
+    // Add one day to the current date for comparison
+    const minDueDate = currentDate.clone().add(1, 'days');
+    
+    if (dueDateWithoutTime < minDueDate) {
+      return res.json({ success: false, message: `Due date must be set at least for tomorrow` });
+    }    
 
     const supervisor = await Supervisor.findById(req.user.id);
     if (!supervisor) {
@@ -597,13 +602,15 @@ router.put('/allocate-group', async (req, res) => {
     const groupMeetingId = group.meetingid;
 
     // Remove the meeting from the current supervisor's meetings
-    previousSupervisor.meeting = previousSupervisor.meeting.filter(meeting => meeting.id.toString() !== groupMeetingId.toString());
-
+    const filteredMeeting = previousSupervisor.meeting.filter(meet =>{
+      return !meet.equals(groupMeetingId)});
+    previousSupervisor.meeting = filteredMeeting;
+    
     // Add the meeting to the new supervisor's meetings
     supervisor.meeting.push(groupMeetingId);
-
+    
     // Remove the group ID from the previous supervisor's groups
-    previousSupervisor.groups = previousSupervisor.groups.filter(groupId => !groupId.equals(group._id));
+    previousSupervisor.groups = previousSupervisor.groups.filter(groupId =>{ return !groupId.equals(group._id.toHexString())});
     previousSupervisor.slots += 1;
 
     // get requests to save it to new supervisor's projectRequest
@@ -677,7 +684,6 @@ router.put('/allocate-group', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
 
 router.post('/make-extension', authenticateUser, async (req, res) => {
   try {

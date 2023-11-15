@@ -164,15 +164,19 @@ const Groups = (props) => {
     oldTitle: "", title: ""
   });
 
-  const handleTitleChange = (e) =>{
+  const handleTitleChange = (e) => {
     const { name, value } = e.target;
-    let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
-    trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
+  
+    const trimmedValue = value
+        .replace(/[^A-Za-z ]/g, '')  // Remove characters other than A-Z, a-z, and space
+        .replace(/\s+/g, ' ') 
+  
+    // Update the state
     setTitles((prevRegister) => ({
       ...prevRegister,
       [name]: trimmedValue,
     }));
-  }
+  }  
 
   return (
     <div>
@@ -187,15 +191,11 @@ const Groups = (props) => {
             <form onSubmit={(e) => { changeName(e) }}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Old Title</label>
-                <input type="text" disabled={true} className="form-control" id="oldTitle" name="oldTitle" value={titles.oldTitle} onChange={(e) => {
-                  setTitles({ ...titles, [e.target.name]: e.target.value });
-                }} />
+                <input type="text" disabled={true} className="form-control" id="oldTitle" name="oldTitle" value={titles.oldTitle} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">New Title</label>
-                <input type="text" className="form-control" id="title" name="title" value={handleTitleChange} onChange={(e) => {
-                  setTitles({ ...titles, [e.target.name]: e.target.value });
-                }} />
+                <input type="text" className="form-control" id="title" name="title" value={titles.title} onChange={handleTitleChange} />
               </div>
               <Modal.Footer className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {

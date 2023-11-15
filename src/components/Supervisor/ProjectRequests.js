@@ -169,15 +169,15 @@ const ProjectRequests = (props) => {
             <form onSubmit={handleRequests}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Project Title</label>
-                <input type="text"  className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
+                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={improve.projectTitle} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Scope</label>
-                <input type="text"  className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
+                <input type="text" className="form-control" id="scope" name="scope" value={improve.scope} onChange={handleChange} />
               </div>
               <div className="mb-3">
                 <label htmlFor="exampleInputPassword1" className="form-label">Description</label>
-                <textarea className="form-control"  id="description" name="description" value={improve.description} onChange={handleChange} />
+                <textarea className="form-control" id="description" name="description" value={improve.description} onChange={handleChange} />
               </div>
               <Modal.Footer >
                 <button type="button" className="btn btn-secondary" onClick={() => {
@@ -240,7 +240,11 @@ const ProjectRequests = (props) => {
                                   <button className="btn btn-warning btn-sm" type="button" onClick={(e) => {
                                     rejectRequest(group.requestId);
                                   }}>Reject</button>
-                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} type="button" onClick={() => { setRequestId(group.requestId); setShow(true); }}>Improve</button>
+                                  <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} type="button" onClick={() => {
+                                    setRequestId(group.requestId); setImprove({
+                                      scope: group.scope, projectTitle: group.projectTitle, description: group.description
+                                    }); setShow(true);
+                                  }}>Improve</button>
                                 </div>
                               </div>
                             </td>

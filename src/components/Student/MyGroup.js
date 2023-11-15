@@ -395,13 +395,13 @@ const MyGroup = (props) => {
 
             <div className="last">
               <div className='d-flex'>
-                {(group.group.meetingDate && new Date(group.group.meetingDate) > new Date()) && <div>
+                {(group.group.meetingDate && new Date(group.group.meetingDate).setHours(0,0,0,0) >= new Date().setHours(0,0,0,0)) && <div>
                   <div className="notify">
                     <style>{myStyle}</style>
                     <div>
                       <div>
                         <div>
-                          <div className="meeting-box">
+                          <div className="meeting-box" style={{height:"210px"}}>
                             <div className="contaner">
                               <h4 className='text-center'>Meeting</h4>
                               <div className="items">
@@ -501,7 +501,7 @@ const MyGroup = (props) => {
 
               <button className="btn btn-danger" onClick={() => {
                 setShow(true);
-              }} disabled={ !group.group.docDate || group.group.documentation || new Date(group.group.docDate) <= new Date()}>Extension Request</button>
+              }} >Extension Request</button>
 
               <button className="btn btn-danger" disabled={group.group.viva && group.group.viva.vivaDate && (new Date() > new Date(group.group.viva.vivaDate))} onClick={() => {
                 setShowUpload(true);

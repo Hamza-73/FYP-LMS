@@ -271,7 +271,7 @@ const Tasks = (props) => {
           setShow(false);
         }}>
           <Modal.Header className="modal-header">
-            <Modal.Title className="modal-title">Upload ${currentTaskType}</Modal.Title>
+            <Modal.Title className="modal-title">Upload {currentTaskType}</Modal.Title>
           </Modal.Header>
           <Modal.Body className="modal-body">
             <form onSubmit={(e) => { upload(e, currentTaskType) }}>

@@ -26,7 +26,7 @@ router.post('/create', [
         }
 
         // Check if username already exists
-        const existingUsername = await External.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
+        const existingUsername = await External.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
         if (existingUsername) {
             return res.status(400).json({ success: false, message: "Username already exists for another external." });
         }
@@ -53,7 +53,7 @@ router.put('/edit/:id', async (req, res) => {
         const existingEmail = await External.findOne({ email: updatedDetails.email });
 
         // Check if the updated username already exists for another external student
-        const existingUsername = await External.findOne({ username: { $regex: new RegExp("^" + updatedUsername.toLowerCase(), "i") } });
+        const existingUsername = await External.findOne({ username: { $regex: new RegExp("^" + updatedDetails.username.toLowerCase(), "i") } });
     
         // Check if the updated email exists for another external student
         if (existingEmail && existingEmail._id.toString() !== studentId) {
@@ -74,6 +74,7 @@ router.put('/edit/:id', async (req, res) => {
 
         res.status(200).json({ success: true, message: "Edited Successfully", updatedStudent: updatedExternalStudent });
     } catch (error) {
+        console.error('error in editing is ', error)
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });

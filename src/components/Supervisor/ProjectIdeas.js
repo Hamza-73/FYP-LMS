@@ -311,11 +311,11 @@ const ProjectIdeas = () => {
             <form onSubmit={(e) => { handleAddStudent(e, addStudent.projectTitle, addStudent.rollNo); }}>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">Project Title</label>
-                <input type="text" className="form-control" id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange1} />
+                <input type="text" className="form-control" required={true} disabled={true} id="projectTitle" name="projectTitle" value={addStudent.projectTitle} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="rollNo" className="form-label">Student Roll No</label>
-                <select name="rollNo" id="" className='form-select' value={addStudent.rollNo} onChange={handleChange1}>
+                <select name="rollNo" id="" className='form-select' required={true} value={addStudent.rollNo} onChange={handleChange1}>
                   <option value="">Select Student By Roll No</option>
                   {
                     rollNo && rollNo.map((student, studentKey) => {

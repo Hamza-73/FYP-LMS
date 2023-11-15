@@ -30,6 +30,11 @@ const SupervisorList = (props) => {
         return;
       }
 
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(register.email)) {
+        NotificationManager.warning("Invalid Email Address");
+        return;
+      }
 
       console.log('registering ', register)
       const response = await fetch("http://localhost:5000/supervisor/create", {
@@ -82,6 +87,11 @@ const SupervisorList = (props) => {
       console.log('Register state:', register); // Debugging statement
       if (!register.name || !register.username || !register.department || !register.designation || !register.email) {
         NotificationManager.error('Please fill in all required fields.');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(register.email)) {
+        NotificationManager.warning("Invalid Email Address");
         return;
       }
 
@@ -199,26 +209,23 @@ const SupervisorList = (props) => {
 
   const handleChange1 = (e) => {
     const { name, value } = e.target;
-
-    if (name === 'name') {
-      // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value
-      .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
-      .replace(/\s+/g, ' ');
-      setRegister({ ...register, [name]: trimmedValue });
+  
+    if (name === 'username') {
+      // Ensure alphanumeric characters only (no spaces)
+      const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, '');
+      setRegister({ ...register, [name]: alphanumericValue });
     } else if (name === 'department') {
-      // Allow only alphabetic characters
+      // Allow only alphabetic characters and single spaces
       const formattedValue = value.replace(/[^A-Za-z ]+/g, '').replace(/\s+/g, ' ');
       setRegister({ ...register, [name]: formattedValue });
-    }
-    else if (name === 'slots') {
+    } else if (name === 'slots') {
       // Allow only non-negative integers
       const numericValue = value.replace(/[^0-9]+/g, '');
       setRegister({ ...register, [name]: numericValue });
     } else {
       setRegister({ ...register, [name]: value });
     }
-  };
+  };  
 
   const handleClose = () => {
     setRegister({ name: "", username: "", department: "", designation: "", password: "", slots: "", email: "" })
@@ -604,14 +611,14 @@ const SupervisorList = (props) => {
                       {
                         (!showSidebar || userData.member.isAdmin) &&
                         <td style={{ cursor: "pointer" }}>
-                          <button  onClick={() => { openEditModal(val); handleShow() }} className="btn" style={{ background: "maroon", color: "white" }}>
+                          <button onClick={() => { openEditModal(val); handleShow() }} className="btn" style={{ background: "maroon", color: "white" }}>
                             <i class="fa-solid fa-pen-to-square"></i>
                           </button>
                         </td>
                       }
                       {(!showSidebar) &&
                         <>
-                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }}><button  onClick={() => { handleDelete(val._id); }} className="btn"
+                          <td style={{ cursor: "pointer", color: "maroon", textAlign: "center", fontSize: "25px" }}><button onClick={() => { handleDelete(val._id); }} className="btn"
                             style={{ background: "maroon", color: "white" }}>
                             <i class="fa-solid fa-trash"></i> </button></td>
                           <td><button className="btn btn-sm" style={{ background: "maroon", color: "white" }}

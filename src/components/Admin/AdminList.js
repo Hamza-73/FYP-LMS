@@ -32,6 +32,11 @@ const AdminList = (props) => {
         return;
       }
 
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(register.email)) {
+        NotificationManager.warning("Invalid Email Address");
+        return;
+      }
       const response = await fetch("http://localhost:5000/admin/register", {
         method: 'POST',
         headers: {
@@ -54,6 +59,7 @@ const AdminList = (props) => {
         setShow(false);
       }
       else {
+        console.log('error is ', json)
         NotificationManager.error(json.message);
       }
     } catch (error) {
@@ -70,6 +76,11 @@ const AdminList = (props) => {
         NotificationManager.error('Please fill in all required fields.');
         return;
       }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(register.email)) {
+        NotificationManager.warning("Invalid Email Address");
+        return;
+      }
 
       const id = selectedStudent._id;
       const response = await fetch(`http://localhost:5000/admin/edit/${id}`,
@@ -77,7 +88,7 @@ const AdminList = (props) => {
           method: "PUT",
           headers: {
             'Content-Type': 'application/json',
-            "Authorization" : localStorage.getItem('token')
+            "Authorization": localStorage.getItem('token')
           },
           body: JSON.stringify({
             fname: register.fname, lname: register.lname, username: register.username,
@@ -128,7 +139,7 @@ const AdminList = (props) => {
           {
             headers: {
               'Content-Type': 'application/json',
-              "Authorization" : localStorage.getItem('token')
+              "Authorization": localStorage.getItem('token')
             },
           }
         );
@@ -217,48 +228,32 @@ const AdminList = (props) => {
   }, []); // Note: empty dependency array to run the effect only once
 
 
-  // Function to handle input changes
-  const handleChange1 = (e) => {
-    const { name, value } = e.target;
-    setFirstNameLastNameEqual(false);
-    if (name === 'fname' || name === 'lname') {
-      // Allow only one space between words and trim spaces at the beginning and end
-      const trimmedValue = value
+// Function to handle input changes
+const handleChange1 = (e) => {
+  const { name, value } = e.target;
+  setFirstNameLastNameEqual(false);
+
+  if (name === 'username') {
+    // Ensure alphanumeric characters only (no spaces)
+    const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, '');
+    setRegister({ ...register, [name]: alphanumericValue });
+  } else if (name === 'fname' || name === 'lname') {
+    // Allow only one space between words and trim spaces at the beginning and end
+    const trimmedValue = value
       .replace(/[^A-Za-z ]/g, '') // Remove characters other than A-Z, a-z, and space
       .replace(/\s+/g, ' ');
-      setRegister({ ...register, [name]: trimmedValue });
+    setRegister({ ...register, [name]: trimmedValue });
 
-      if (name === 'username') {
-        const cleanedUsername = value.replace(/\s+/g, '').trim(); // Remove all spaces
-        const alphanumericUsername = cleanedUsername.replace(/[^a-zA-Z0-9]/g, '').trim(); // Remove non-alphanumeric characters
-        setRegister({ ...register, [name]: alphanumericUsername });
-      }                
-
-      // Check if both first name and last name are not empty and equal
-      if (name === 'fname' && trimmedValue.toLowerCase().trim() === register.lname.toLowerCase().trim() && trimmedValue !== '' && register.lname.toLowerCase().trim() !== '') {
-        setFirstNameLastNameEqual(true);
-        // Display an error message
-        NotificationManager.error('First name and last name should not be equal.');
-
-      } else if (name === 'lname' && trimmedValue.toLowerCase().trim() === register.fname.toLowerCase().trim() && trimmedValue !== '' && register.fname.toLowerCase().trim() !== '') {
-        setFirstNameLastNameEqual(true);
-        // Display an error message
-        NotificationManager.error('First name and last name should not be equal.');
-
-      } else {
-        setFirstNameLastNameEqual(false);
-      }
-    } else if (name === 'department') {
-      // Allow only alphabetic characters
-      const alphabeticValue = value.replace(/[^A-Za-z]+/g, '');
-      setRegister({ ...register, [name]: alphabeticValue });
-
-      // First name and last name are not equal when editing department
-      setFirstNameLastNameEqual(false);
-    } else {
-      setRegister({ ...register, [name]: value });
+    // Check if both first name and last name are not empty and equal
+    if (name === 'fname' && trimmedValue.toLowerCase().trim() === register.lname.toLowerCase().trim() && trimmedValue !== '' && register.lname.toLowerCase().trim() !== '') {
+      setFirstNameLastNameEqual(true);
+    } else if (name === 'lname' && trimmedValue.toLowerCase().trim() === register.fname.toLowerCase().trim() && trimmedValue !== '' && register.fname.toLowerCase().trim() !== '') {
+      setFirstNameLastNameEqual(true);
     }
-  };
+  } else {
+    setRegister({ ...register, [name]: value });
+  }
+};
 
   // Function to reset input fields
   const handleClose = () => {
@@ -418,7 +413,7 @@ const AdminList = (props) => {
       {/* REGISTER */}
       <div className="register">
         <style>{style}</style>
-        <Modal show={show} onHide={() =>{ setEditMode(false); setShow(false)}}>
+        <Modal show={show} onHide={() => { setEditMode(false); setShow(false) }}>
           <Modal.Header>
             <Modal.Title>{!editMode ? "Register" : "Edit"}</Modal.Title>
           </Modal.Header>
@@ -516,7 +511,7 @@ const AdminList = (props) => {
                       <td>
                         {!val.isAdmin ? (
                           <>
-                            {val.fname + ' ' + val.lname}{val.superAdmin &&  <small>(super admin)</small>}
+                            {val.fname + ' ' + val.lname}{val.superAdmin && <small>(super admin)</small>}
                           </>
                         ) : (
                           <>
@@ -538,7 +533,7 @@ const AdminList = (props) => {
                     <td>{val.email}</td>
                     <td style={{ cursor: "pointer" }}>
                       <button onClick={() => { openEditModal(val); setShow(true); }}
-                        disabled={val.isAdmin || val.isCommittee ||(!userData.member.superAdmin && val.superAdmin)} className="btn" style={{ background: "maroon", color: "white" }}>
+                        disabled={val.isAdmin || val.isCommittee || (!userData.member.superAdmin && val.superAdmin)} className="btn" style={{ background: "maroon", color: "white" }}>
                         <i className="fa-solid fa-pen-to-square"></i>
                       </button>
                     </td>
