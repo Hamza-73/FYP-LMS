@@ -42,7 +42,7 @@ router.post('/schedule-viva', async (req, res) => {
     }
 
     console.log('Group is ', group.projects[0].projectTitle)
-    if (!(group.documentation && group.proposal)) {
+    if (!((group.documentation || group.documentationLink) &&( group.proposal || group.proposalLink))) {
       return res.status(500).json({ success: false, message: `Documentation or Proposal is Pending` })
     }
 
@@ -116,7 +116,7 @@ router.post('/schedule-viva', async (req, res) => {
     const supervisorsAdmin = await Supervisor.find({ isAdmin: true });
 
     committeemembers.map(async cum => {
-      cum.push({
+      cum.unseenNotifications.push({
         type: "Important", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} chairperson : ${chairperson}, External : ${externalMember.name}`
       });
       await cum.save();
@@ -125,7 +125,7 @@ router.post('/schedule-viva', async (req, res) => {
     if (supervisorsAdmin || supervisorsAdmin.length > 0) {
 
       supervisorsAdmin.map(async cum => {
-        cum.push({
+        cum.unseenNotifications.push({
           type: "Important", message: `A viva has been scheduled for the project "${projectTitle}" on ${vivaDate} at ${vivaTime} chairperson : ${chairperson}, External : ${externalMember.name}`
         });
         await cum.save();
@@ -219,7 +219,7 @@ router.put('/edit', async (req, res) => {
     const supervisorsAdmin = await Supervisor.find({ isAdmin: true });
 
     committeemembers.map(async cum => {
-      cum.push({
+      cum.unseenNotifications.push({
         type: "Important", message:  `Viva Date has been changed by the Committee 
         It's now ${vivaDate} at ${vivaTime} for group: ${projectTitle}
         `
@@ -230,7 +230,7 @@ router.put('/edit', async (req, res) => {
     if (supervisorsAdmin || supervisorsAdmin.length > 0) {
 
       supervisorsAdmin.map(async cum => {
-        cum.push({
+        cum.unseenNotifications.push({
           type: "Important", message:  `Viva Date has been changed by the Committee 
           It's now ${vivaDate} at ${vivaTime} for group: ${projectTitle}
           `

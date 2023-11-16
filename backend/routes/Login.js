@@ -37,7 +37,7 @@ const nodemailer = require('nodemailer')
 
 router.post('/upload', authenticateUser, async (req, res) => {
   try {
-    const { type , link } = req.body;
+    const { type, link } = req.body;
     // Check if the user belongs to the specified group
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -59,22 +59,49 @@ router.post('/upload', authenticateUser, async (req, res) => {
       return res.status(500).json({ success: false, message: 'Deadline for Documentation Has Not Been Announced Yet.' });
     }
 
-    const file = req.files[type];
+    let file = req.files;
     console.log('file is ', file);
+    if (file) {
+      file = req.files[type]
+      cloudinary.uploader.upload(file.tempFilePath, async (error, result) => {
+        if (error) {
+          console.error('Error uploading PDF:', error);
+          return res.status(500).json({ success: false, message: 'Error uploading PDF' });
+        }
 
-    cloudinary.uploader.upload(file.tempFilePath, async (error, result) => {
-      if (error) {
-        console.error('Error uploading PDF:', error);
-        return res.status(500).json({ success: false, message: 'Error uploading PDF' });
-      }
+        // Update the group with the uploaded file URL
+        if (type === 'proposal') {
+          groupUpdate.proposal = result.url;
+          groupUpdate.proposalLink = link ? link : "";
+          groupUpdate.propSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
+        } else if (type === 'documentation') {
+          groupUpdate.documentation = result.url;
+          groupUpdate.documentationLink = link ? link : "";
+          groupUpdate.docSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
+        } else {
+          return res.status(400).json({ success: false, message: 'Invalid file type' });
+        }
 
-      // Update the group with the uploaded file URL
+        groupUpdate.projects[0].students.map(async stu => {
+          const studentObj = await User.findById(stu.userId);
+          studentObj.unseenNotifications.push({
+            type: "Important", message: `${type} has been submitted`
+          });
+          await studentObj.save();
+        })
+
+        // Save groupUpdate object after the update
+        await groupUpdate.save();
+
+        // Respond with the uploaded file URL
+        return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
+      });
+    } else {
+      console.log('else part')
       if (type === 'proposal') {
-        groupUpdate.proposal = result.url;
         groupUpdate.proposalLink = link ? link : "";
         groupUpdate.propSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
       } else if (type === 'documentation') {
-        groupUpdate.documentation = result.url;
         groupUpdate.documentationLink = link ? link : "";
         groupUpdate.docSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
       } else {
@@ -93,8 +120,8 @@ router.post('/upload', authenticateUser, async (req, res) => {
       await groupUpdate.save();
 
       // Respond with the uploaded file URL
-      return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
-    });
+      return res.status(201).json({ success: true, message: 'File uploaded successfully'});
+    }
 
   } catch (error) {
     console.error('Error uploading PDF:', error);
@@ -104,8 +131,9 @@ router.post('/upload', authenticateUser, async (req, res) => {
 
 router.post('/doc', authenticateUser, async (req, res) => {
   try {
+    console.log('doc start')
     // Check if the user belongs to the specified group
-    const { comment , link } = req.body;
+    const { comment, link } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'Student Not Found' });
@@ -116,33 +144,59 @@ router.post('/doc', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group Not Found' });
     }
 
-    const file = req.files.doc;
+    let file = req.files;
     console.log('file is ', file);
+    if (file) {
+      file = req.files.doc
+      console.log('file is ', file);
 
-    const result = await cloudinary.uploader.upload(file.tempFilePath);
-    console.log('result is ', result);
-    if (!groupUpdate.docs) {
-      groupUpdate.docs = []
-    }
-    groupUpdate.docs.push({
-      docLink: result.url, review: "", comment: comment , link : link ? link : ""
-    });
-    groupUpdate.projects[0].students.map(async stu => {
-      const studentObj = await User.findById(stu.userId);
-      studentObj.unseenNotifications.push({
-        type: "Important", message: `Document has been uploaded`
+      const result = await cloudinary.uploader.upload(file.tempFilePath);
+      console.log('result is ', result);
+      if (!groupUpdate.docs) {
+        groupUpdate.docs = []
+      }
+      groupUpdate.docs.push({
+        docLink: result.url, review: "", comment: comment, link: link ? link : ""
+      });
+      groupUpdate.projects[0].students.map(async stu => {
+        const studentObj = await User.findById(stu.userId);
+        studentObj.unseenNotifications.push({
+          type: "Important", message: `Document has been uploaded`
+        })
+        await studentObj.save();
       })
-      await studentObj.save();
-    })
+      const Superisor = await Supervisor.findById(groupUpdate.supervisorId);
+      Superisor.unseenNotifications.push({
+        type: "Reminder", message: `A document has been uploaded by group : ${groupUpdate.projects[0].projectTitle}`
+      })
+      await Promise.all([Superisor.save(), groupUpdate.save()]);
 
-    const Superisor = await Supervisor.findById(groupUpdate.supervisorId);
-    Superisor.unseenNotifications.push({
-      type: "Reminder", message: `A document has been uploaded by group : ${groupUpdate.projects[0].projectTitle}`
-    })
-    await Promise.all([Superisor.save(), groupUpdate.save()]);
+      // Return the Cloudinary URL in the response
+      return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
 
-    // Return the Cloudinary URL in the response
-    return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
+    } else {
+      console.log('else part')
+      groupUpdate.docs.push({
+        docLink: "", review: "", comment: comment, link: link ? link : ""
+      });
+      groupUpdate.projects[0].students.map(async stu => {
+        const studentObj = await User.findById(stu.userId);
+        studentObj.unseenNotifications.push({
+          type: "Important", message: `Document has been uploaded`
+        })
+        await studentObj.save();
+      })
+
+      const Superisor = await Supervisor.findById(groupUpdate.supervisorId);
+      Superisor.unseenNotifications.push({
+        type: "Reminder", message: `A document has been uploaded by group : ${groupUpdate.projects[0].projectTitle}`
+      })
+      await Promise.all([Superisor.save(), groupUpdate.save()]);
+
+      // Return the Cloudinary URL in the response
+      return res.status(201).json({ success: true, message: 'Link uploaded successfully', });
+    }
+
   } catch (error) {
     console.error('Error uploading PDF:', error);
     return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -329,30 +383,30 @@ router.post('/reset-password/:id/:token', (req, res) => {
 
   jwt.verify(token, JWT_KEY, (err, decoded) => {
     if (err) {
-        return res.json({ Status: 'Error with token' });
+      return res.json({ Status: 'Error with token' });
     } else {
-        // Hash the new password synchronously
+      // Hash the new password synchronously
 
-        bcrypt.genSalt(10)
-            .then((salt) => bcrypt.hashSync(password, salt))
-            .then((hash) => {
-                // Update the user's password
-                User.findByIdAndUpdate(id, { password: hash })
-                    .then((u) => {
-                        console.log('user ', u);
-                        res.send({ success: true, message: 'Password Updated Successfully' });
-                    })
-                    .catch((err) => {
-                        console.error('error in changing password', err);
-                        res.send({ success: false, message: 'Error in Changing Password' });
-                    });
+      bcrypt.genSalt(10)
+        .then((salt) => bcrypt.hashSync(password, salt))
+        .then((hash) => {
+          // Update the user's password
+          User.findByIdAndUpdate(id, { password: hash })
+            .then((u) => {
+              console.log('user ', u);
+              res.send({ success: true, message: 'Password Updated Successfully' });
             })
             .catch((err) => {
-                console.error('error in changing password', err);
-                res.send({ success: false, message: 'Error in Changing Password' });
+              console.error('error in changing password', err);
+              res.send({ success: false, message: 'Error in Changing Password' });
             });
+        })
+        .catch((err) => {
+          console.error('error in changing password', err);
+          res.send({ success: false, message: 'Error in Changing Password' });
+        });
     }
-});
+  });
 
 })
 
@@ -718,8 +772,8 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       viva: viva, meetingReport: group.meetingReport,
       meetings: group.meetings,
       instructions: group.instructions, purpose: group.meetingPurpose,
-      docs: group.docs,
-      internalMarks: group.internalMarks, externalMarks: group.externalMarks,
+      docs: group.docs, proposalLink : group.proposalLink, documentationLink : group.documentationLink,
+      externalMarks: group.externalMarks,
       marks: group.marks, hodMarks: group.hodMarks,
       meetingDate: group.meetingDate,
       meetingLink: group.meetingLink ? group.meetingLink : "",
@@ -1157,7 +1211,7 @@ router.post('/extension', authenticateUser, async (req, res) => {
     group.projects[0].students.map(async stu => {
       const studentObj = await User.findById(stu.userId);
       studentObj.unseenNotifications.push({
-        type: "Important", message : `Extension Request sent to Supervisor on ${new Date().toLocaleDateString()}`
+        type: "Important", message: `Extension Request sent to Supervisor on ${new Date().toLocaleDateString()}`
 
       });
       await studentObj.save()

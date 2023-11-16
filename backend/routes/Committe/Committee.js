@@ -445,19 +445,19 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
     const newDate = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
     // Validate if the due date is at least one day in the future
     const currentDate = moment().startOf('day'); // Current date without time, using moment.js
-    
+
     // Parse dueDate and ignore the time component
     const dueDateWithoutTime = moment.utc(dueDate, 'YYYY-MM-DDTHH:mm:ss.SSSZ').startOf('day');
-    
+
     console.log('dur date is ', dueDateWithoutTime);
     console.log('current date is ', currentDate);
-    
+
     // Add one day to the current date for comparison
     const minDueDate = currentDate.clone().add(1, 'days');
-    
+
     if (dueDateWithoutTime < minDueDate) {
       return res.json({ success: false, message: `Due date must be set at least for tomorrow` });
-    }    
+    }
 
     const supervisor = await Supervisor.findById(req.user.id);
     if (!supervisor) {
@@ -602,15 +602,16 @@ router.put('/allocate-group', async (req, res) => {
     const groupMeetingId = group.meetingid;
 
     // Remove the meeting from the current supervisor's meetings
-    const filteredMeeting = previousSupervisor.meeting.filter(meet =>{
-      return !meet.equals(groupMeetingId)});
+    const filteredMeeting = previousSupervisor.meeting.filter(meet => {
+      return !meet.equals(groupMeetingId)
+    });
     previousSupervisor.meeting = filteredMeeting;
-    
+
     // Add the meeting to the new supervisor's meetings
     supervisor.meeting.push(groupMeetingId);
-    
+
     // Remove the group ID from the previous supervisor's groups
-    previousSupervisor.groups = previousSupervisor.groups.filter(groupId =>{ return !groupId.equals(group._id.toHexString())});
+    previousSupervisor.groups = previousSupervisor.groups.filter(groupId => { return !groupId.equals(group._id.toHexString()) });
     previousSupervisor.slots += 1;
 
     // get requests to save it to new supervisor's projectRequest
@@ -641,6 +642,24 @@ router.put('/allocate-group', async (req, res) => {
         await studentObj.save();
       }
     });
+
+    const supervisorsAdmin = await Supervisor.find({ isAdmin: true });
+    const committeeAdmin = await Committee.find();
+
+    committeeAdmin.map(async cum => {
+      cum.unseenNotifications.push({
+        type: "Important", message: `Group ${projectTitle} of ${previousSupervisor.name} has been Allocated to ${supervisor.name}`
+      });
+      await cum.save();
+    })
+    if (supervisorsAdmin || supervisorsAdmin.length > 0) {
+      supervisorsAdmin.map(async cum => {
+        cum.unseenNotifications.push({
+          type: "Important", message: `Group ${projectTitle} of ${previousSupervisor.name} has been Allocated to ${supervisor.name}`
+        });
+        await cum.save();
+      })
+    }
 
     // Create an allocation object
     const currentDateTime = new Date();
@@ -766,6 +785,21 @@ router.post('/mark-notification-seen/:notificationIndex', authenticateUser, asyn
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/notification', authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await Committee.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Committee not found' });
+    }
+    const notification = user.unseenNotifications;
+    return res.json({ success: true, notification })
+  } catch (error) {
+    console.error('error is ', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

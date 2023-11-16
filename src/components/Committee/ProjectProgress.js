@@ -133,6 +133,9 @@ const ProjectProgress = (props) => {
   };
 
   const [show, setShow] = useState(false);
+  const [documents, setDocuMents] = useState({
+    doc: "", docLink: ""
+  })
 
   return (
     <div>
@@ -172,10 +175,35 @@ const ProjectProgress = (props) => {
           </Modal>
         </div>
       </div>
+
+      <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Document</h1>
+            </div>
+            <div className="modal-body">
+              <>
+                <form>
+                  {documents.doc && <> <label htmlFor="">Document</label> <br />
+                    <a target="_blank" href={documents.doc ? documents.doc : ""}>See Document</a> </>} <br />
+                  {documents.docLink && <> <label htmlFor="">Document Link</label> <br />
+                    <a target="_blank" href={documents.docLink ? documents.docLink : ""}>See Document</a> </>}
+                  <br />
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                  </div>
+                </form>
+              </>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {loading ? <Loading /> : <>
         {group.groups.length > 0 ? (
           <>
-            { (userData.member.propDate || userData.member.docDate) && <button
+            {(userData.member.propDate || userData.member.docDate) && <button
               className="btn btn-secondary"
               style={{ position: "absolute", top: "82px", right: "15rem", background: "maroon", color: "white" }}
               onClick={toggleDeadlineHistory}
@@ -223,7 +251,7 @@ const ProjectProgress = (props) => {
                 <tbody style={{ textAlign: "center" }}>
                   {group.groups
                     .filter((group) =>
-                      !group.proposal || !group.documentation
+                      ((!group.proposal && !group.proposalLink) || (!group.documentation && !group.documentationLink))
 
                     ).map((group, groupIndex) => (
                       group.projects.map((project, projectKey) => (
@@ -240,14 +268,22 @@ const ProjectProgress = (props) => {
                           <td>{project.projectTitle}</td>
                           <td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                              {(group.proposal ? (
-                                <a href={group.proposal} target="_blank" rel="noopener noreferrer">Proposal</a>
+                              {((group.proposal || group.propsalLink) ? (
+                                <p onClick={() => {
+                                  setDocuMents({
+                                    doc: group.proposal, docLink: group.proposalLink
+                                  })
+                                }} style={{ color: "blue" }}>Uploaded</p>
                               ) : 'Pending')}
                             </div>
                           </td><td>
                             <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                              {(group.documentation ? (
-                                <a href={group.documentation} target="_blank" rel="noopener noreferrer">Documentation</a>
+                              {((group.documentation || group.documentationLink) ? (
+                                <p onClick={() => {
+                                  setDocuMents({
+                                    doc: group.documentation, docLink: group.documentationLink
+                                  })
+                                }} style={{ color: "blue" }}>Uploaded</p>
                               ) : 'Pending')}
                             </div>
                           </td>

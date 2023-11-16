@@ -321,14 +321,6 @@ const Meeting = (props) => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchDataInterval = setInterval(() => {
-      getMeeting();
-    }, 1000); // Fetch meeting data every second
-
-    // Clear interval on component unmount
-    return () => clearInterval(fetchDataInterval);
-  }, []);
 
   const meetingStyle = `
   .meeting-box {

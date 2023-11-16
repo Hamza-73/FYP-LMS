@@ -126,7 +126,7 @@ router.put('/edit-meeting/:id', async (req, res) => {
     }
 
     group.meetingDate = updatedMeetingData.date ? updatedMeetingData.date : group.meetingDate;
-    group.meetingTime = updatedMeetingData.time ?  moment.utc(updatedMeetingData.time, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate() : group.meetingTime;
+    group.meetingTime = updatedMeetingData.time ?  updatedMeetingData.time : group.meetingTime
     group.meetingLink = updatedMeetingData.meetingLink ? updatedMeetingData.meetingLink : group.meetingLink;
     await group.save();
 

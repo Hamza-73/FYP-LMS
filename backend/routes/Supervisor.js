@@ -99,7 +99,7 @@ router.post('/create', [
       return res.status(400).json({ message: "Email already exists for another Supervisor" });
     }
     const existingUsername = await Supervisor.findOne({ username: { $regex: new RegExp("^" + username.toLowerCase(), "i") } });
-    if (existUsename) {
+    if (existingUsername) {
       return res.status(400).json({ message: "Username already exists for another Supervisor" });
     } else {
       const salt = await bcrypt.genSalt(10);

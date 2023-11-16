@@ -14,8 +14,8 @@ const Tasks = (props) => {
       myDetail: [{ name: '', rollNo: '', myId: '' }], groupId: '',
       supervisor: '', supervisorId: '', projectTitle: '',
       projectId: '', groupMember: [{ userId: '', name: '', rollNo: '', _id: '' }],
-      proposal: false, documentation: false, docDate: '----', propDate: '',
-      viva: ''
+      proposal: "", documentation: "", docDate: '----', propDate: '',
+      viva: '', proposalLink: "", documentationLink: ""
     },
   });
   const [loading, setLoading] = useState(false);
@@ -24,21 +24,18 @@ const Tasks = (props) => {
 
   const upload = async (e, type) => {
     try {
-      if (!file) {
-        console.log('No file selected.');
-        return;
-      }
       e.preventDefault();
       const formData = new FormData();
       formData.append('type', type); // Add the 'type' field to the FormData object
-      formData.append(type, file);
+      if (file) {
+        formData.append(type, file);
+      }
       if (link) {
         formData.append("link", link);
       }
-
       // Check if the file size is within the allowed limit
-      if (file.size > maxFileSize) {
-        console.log('File size exceeds the limit of 5 MB.');
+      if (file && file.size > maxFileSize) {
+        alert('File size exceeds the limit of 10 MB.');
         return;
       }
 
@@ -257,12 +254,16 @@ const Tasks = (props) => {
   const handleLink = (e) => {
     setInvalidLink(false);
     setLink(e.target.value);
-  
+
     // Use a regular expression to check if the input value is a valid link
     const linkRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ;,./?%&=]*)?$/;
     const isValid = linkRegex.test(e.target.value.trim());
     setInvalidLink(!isValid);
   };
+
+  const [documents, setDocuments] = useState({
+    doc: "", docLink: ""
+  })
 
   return (
     <div>
@@ -280,24 +281,47 @@ const Tasks = (props) => {
                 <input
                   type="file"
                   onChange={(e) => handleFileChange(e)}
-                  name="documentation"
+                  name={currentTaskType}
                   accept=".pdf"
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="name" className="form-label">Link <small>optional</small></label>
+                <label htmlFor="name" className="form-label">Link</label>
                 <input type="text" className="form-control" id="title" name="title" value={link} onChange={handleLink} />
                 {invalidLink && <div style={{ color: "red" }}>Enter a valid Link</div>}
               </div>
               <Modal.Footer className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => { setShow(false); setFile(null) }}>Close</button>
-                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={!file || invalidLink}>
+                <button type="submit" className="btn" style={{ background: "maroon", color: "white" }} disabled={invalidLink}>
                   Upload
                 </button>
               </Modal.Footer>
             </form>
           </Modal.Body>
         </Modal>
+      </div>
+
+      <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Document Detail</h1>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+                <form>
+                  <label htmlFor="">Document</label> <br />
+                  <textarea className='form-control' value={documents.doc} disabled={true} />
+                  <br />
+                  <label htmlFor="">Link</label> <br />
+                  <textarea className='form-control' value={documents.doc} />
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                  </div>
+                </form>
+            </div>
+          </div>
+        </div>
       </div>
 
       {!loading ? (
@@ -333,7 +357,7 @@ const Tasks = (props) => {
                       {remainingTime !== '0d 0h 0m 0s' ? remainingTime : '-----'}
                     </div>
                   </div>
-                  {!group.group.proposal ? (
+                  {(!group.group.proposal && !group.group.proposalLink) ? (
                     <div className='boxes text-center'>
                       <button
                         className="btn"
@@ -348,13 +372,13 @@ const Tasks = (props) => {
                     </div>
                   ) : (
                     <div className="boxes text-center">
-                      <a
-                        style={{ textDecoration: 'none', color: 'white' }}
-                        href={group.group.proposal}
-                        target="_blank"
-                      >
+                      <p style={{ color: "white" }} onClick={() => {
+                        setDocuments({
+                          doc: group.group.proposal, docLink: group.group.proposalLink
+                        })
+                      }}  data-bs-toggle="modal" data-bs-target="#exampleModal1" >
                         View Uploaded Proposal
-                      </a>
+                      </p>
                     </div>
                   )}
                 </div>
@@ -370,7 +394,7 @@ const Tasks = (props) => {
                   <div className="boxes d-flex justify-content-evenly">
                     <div>Submission Status</div>
                     <div>
-                      {group.group.documentation ? 'Submitted' : 'Pending'}
+                      {((group.group.documentation || group.group.documentationLink ))? 'Submitted' : 'Pending'}
                     </div>
                   </div>
                   <div className="boxes d-flex justify-content-evenly">
@@ -391,14 +415,8 @@ const Tasks = (props) => {
                       {remainingTime !== '0d 0h 0m 0s' ? remainingTime : '-----'}
                     </div>
                   </div>
-                  {!group.group.documentation ? (
+                  {(!group.group.documentation && !group.group.documentationLink)? (
                     <div className='boxes text-center'>
-                      <input
-                        type="file"
-                        onChange={(e) => handleFileChange(e)}
-                        name="documentation"
-                        accept=".pdf"
-                      />
                       <button
                         className="btn"
                         type="button"
@@ -412,13 +430,13 @@ const Tasks = (props) => {
                     </div>
                   ) : (
                     <div className="boxes text-center">
-                      <a
-                        style={{ textDecoration: 'none', color: 'white' }}
-                        href={group.group.documentation}
-                        target="_blank"
-                      >
+                      <p style={{ color: "white" }} onClick={() => {
+                        setDocuments({
+                          doc: group.group.documentation, docLink: group.group.documentationLink
+                        })
+                      }}  data-bs-toggle="modal" data-bs-target="#exampleModal1" >
                         View Uploaded Document
-                      </a>
+                      </p>
                     </div>
                   )}
                 </div>

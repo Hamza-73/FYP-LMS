@@ -157,10 +157,39 @@ const EligibleGroup = (props) => {
   }
 
   const [show, setShow] = useState(false);
-  const [supervisor,setSupervisor] = useState("");
+  const [supervisor, setSupervisor] = useState("");
+
+  const [documents, setDocuMents] = useState({
+    doc: "", docLink: ""
+  })
 
   return (
     <div>
+
+      <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">Document</h1>
+            </div>
+            <div className="modal-body">
+              <>
+                <form>
+                  {documents.doc && <> <label htmlFor="">Document</label> <br />
+                    <a target="_blank" href={documents.doc ? documents.doc : ""}>See Document</a> </>}
+                  {documents.docLink && <> <label htmlFor="">Document</label> <br />
+                    <a target="_blank" href={documents.docLink ? documents.docLink : ""}>See Document</a> </>}
+                  <br />
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
+                  </div>
+                </form>
+              </>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="viva">
         <Modal show={show} onHide={() => setShow(false)}>
           <Modal.Header className="modal-header">
@@ -195,13 +224,13 @@ const EligibleGroup = (props) => {
                 <label htmlFor="name" className="form-label">
                   Supervisor
                 </label>
-                <input type="text"  className="form-control" disabled={true} name="supervisor" value={supervisor}  />
+                <input type="text" className="form-control" disabled={true} name="supervisor" value={supervisor} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
                   Chair Person
                 </label>
-                <input type="text"  className="form-control" name="chairperson" value={viva.chairperson} onChange={handleChange1} />
+                <input type="text" className="form-control" name="chairperson" value={viva.chairperson} onChange={handleChange1} />
               </div>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
@@ -247,7 +276,7 @@ const EligibleGroup = (props) => {
               <tbody style={{ textAlign: "center" }}>
                 {group.groups
                   .filter((group) =>
-                    group.proposal && group.documentation && !group.vivaDate
+                   ( (group.proposal || group.proposalLink) && (group.documentatio || group.documentationLink) && !group.vivaDate)
                   )
                   .map((group, groupIndex) => (
                     group.projects.map((project, projectKey) => (
@@ -264,21 +293,29 @@ const EligibleGroup = (props) => {
                         <td>{project.projectTitle}</td>
                         <td>
                           <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                            {(group.proposal ? (
-                              <a href={group.proposal} target="_blank" rel="noopener noreferrer">Proposal</a>
+                            {((group.proposal || group.proposalLink) ? (
+                              <p onClick={() => {
+                                setDocuMents({
+                                  docLink: group.proposalLink, doc: group.proposal
+                                })
+                              }} style={{ color: "blue" }}>Submitted</p>
                             ) : 'Pending')}
                           </div>
                         </td><td>
                           <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
-                            {(group.documentation ? (
-                              <a href={group.documentation} target="_blank" rel="noopener noreferrer">Documentation</a>
+                            {((group.documentation || group.documentationLink) ? (
+                              <p onClick={() => {
+                                setDocuMents({
+                                  docLink: group.documentationLink, doc: group.documentation
+                                })
+                              }} style={{ color: "blue" }}>Submitted</p>
                             ) : 'Pending')}
                           </div>
                         </td>
                         <td>{
                           group.vivaDate ? <>
                             (group.isViva) ? 'Taken' : (<>{new Date(group.vivaDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} </>)
-                          </> : (userData.member.isAdmin && <> <button className='btn btn-sm' data-toggle="modal" data-target="#exampleModal1" style={{ background: "maroon", color: "white" }} onClick={() => {
+                          </> : (userData.member.isAdmin && <> <button className='btn btn-sm' style={{ background: "maroon", color: "white" }} onClick={() => {
                             setSelectedGroupId(group._id);
                             setViva({ projectTitle: project.projectTitle });
                             setShow(true);

@@ -106,19 +106,17 @@ const MyGroup = (props) => {
   const upload = async (e) => {
     e.preventDefault();
     try {
-      if (!file) {
-        console.log('No file selected.');
-        return;
-      }
+
       const formData = new FormData();
-      formData.append('doc', file); // Make sure to match the field name with your backend route
+      if (file) {
+        formData.append('doc', file); // Make sure to match the field name with your backend route
+      }
       formData.append('comment', comment);
       if (link) {
         formData.append('link', link);
       }
-
       // Check if the file size is within the allowed limit
-      if (file.size > maxFileSize) {
+      if (file && file.size > maxFileSize) {
         console.log('File size exceeds the limit of 5 MB.');
         return;
       }
@@ -141,7 +139,7 @@ const MyGroup = (props) => {
         NotificationManager.success('File Uploaded successfully');
         // Update the state with the uploaded file URL
         const newDocument = {
-          docLink: json.url, // Document URL
+          docLink: json.url ? json.url : "", // Document URL
           review: '', // Empty review,
           comment: comment
         };
@@ -248,6 +246,7 @@ const MyGroup = (props) => {
   const [newComment, setnewComment] = useState('');
 
   const [show, setShow] = useState(false);
+  const [links, setLinks] = useState("");
   const [showUpload, setShowUpload] = useState(false);
 
   return (
@@ -262,7 +261,7 @@ const MyGroup = (props) => {
           <>
             <form onSubmit={upload}>
               <div className="mb-3">
-                <label htmlFor="">Link <small>optional</small></label>
+                <label htmlFor="">Link</label>
                 <input type='text' class="form-control" name="link" value={link} onChange={handleLink} ></input>
                 {invalidLink && <div style={{ color: "red" }}>Enter A Valid Link</div>}
               </div>
@@ -277,11 +276,11 @@ const MyGroup = (props) => {
               <br />
               <input type="file" onChange={(e) => { handleFileChange(e) }} accept=".pdf, .png, .jpg, .jpeg, .webp" />
               <Modal.Footer>
-                <button className="btn btn-secondary" onClick={() => {
+                <button className="btn btn-secondary" type='button' onClick={() => {
                   setShowUpload(false);
                 }}>Close</button>
                 <button type="submit" disabled={
-                  !comment || !file
+                  !comment
                 } className="btn" style={{ background: "maroon", color: "white" }}>
                   Submit
                 </button>
@@ -296,7 +295,6 @@ const MyGroup = (props) => {
           <div className="modal-content">
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel">Review</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
               <>
@@ -304,6 +302,8 @@ const MyGroup = (props) => {
                   <textarea className='form-control' value={review ? review : "No Reviews Yet"} disabled={true} />
                   <br />
                   <textarea className='form-control' value={newComment ? newComment : ""} disabled={true} />
+                  <br />
+                  <textarea className='form-control' value={links} />
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
                   </div>
@@ -395,13 +395,13 @@ const MyGroup = (props) => {
 
             <div className="last">
               <div className='d-flex'>
-                {(group.group.meetingDate && new Date(group.group.meetingDate).setHours(0,0,0,0) >= new Date().setHours(0,0,0,0)) && <div>
+                {(group.group.meetingDate && new Date(group.group.meetingDate).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) && <div>
                   <div className="notify">
                     <style>{myStyle}</style>
                     <div>
                       <div>
                         <div>
-                          <div className="meeting-box" style={{height:"210px"}}>
+                          <div className="meeting-box" style={{ height: "210px" }}>
                             <div className="contaner">
                               <h4 className='text-center'>Meeting</h4>
                               <div className="items">
@@ -453,7 +453,7 @@ const MyGroup = (props) => {
                   <div className="notify">
                     <style>{myStyle}</style>
                     <div>
-                      <div className="meeting-box" style={{width:"250px", height:"210px"}}>
+                      <div className="meeting-box" style={{ width: "250px", height: "210px" }}>
                         <div className="contaner">
                           <h4 className='text-center'>Viva</h4>
                           <div className="items">
@@ -485,10 +485,10 @@ const MyGroup = (props) => {
                       <div className="meeting-box" key={grpKey + 1}>
                         <style>{meetingStyle}</style>
                         <div className="item">
-                          <a target="_blank" href={grp.docLink}>
+                          {grp.docLink && <a target="_blank" href={grp.docLink}>
                             View Uploaded Doc
-                          </a>
-                          <button className="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal1" onClick={() => { setReview(grp.review); setnewComment(grp.comment) }}>Review</button>
+                          </a>}
+                          <button className="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal1" onClick={() => { setReview(grp.review); setLinks(grp.link); setnewComment(grp.comment) }}>See Details</button>
                         </div>
                       </div>
                     );
