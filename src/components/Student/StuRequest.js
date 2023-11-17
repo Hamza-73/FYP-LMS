@@ -12,7 +12,6 @@ const StuRequest = (props) => {
         }]
     });
     const [choice, setChoice] = useState({ action: '', id: '' });
-    const [improve, setImprove] = useState({ projectTitle: '', scope: '', description: '' });
     const [loading, setLoading] = useState(false);
 
 
@@ -50,9 +49,6 @@ const StuRequest = (props) => {
 
     const handleRequests = async (e, id, action) => {
         try {
-            if (choice.action === 'improve') {
-                e.preventDefault();
-            }
             console.log('request is started');
             const token = localStorage.getItem('token');
             const response = await fetch(`http://localhost:5000/student/process-request/${id}/${action}`, {
@@ -61,9 +57,6 @@ const StuRequest = (props) => {
                     'Content-Type': 'application/json',
                     "Authorization": token,
                 },
-                body: JSON.stringify({
-                    projectTitle: improve.projectTitle, scope: improve.scope, description: improve.description
-                })
             });
 
             console.log('Response status:', response.status);
@@ -72,7 +65,6 @@ const StuRequest = (props) => {
 
             if (json.message && json.success) {
                 NotificationManager.success(json.message, '', 1000);
-                setShow(false)
             } else {
                 NotificationManager.error(json.message, '', 1000);;
             }
@@ -83,84 +75,8 @@ const StuRequest = (props) => {
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        let trimmedValue = value.replace(/\s+/g, ' '); // Remove consecutive spaces and non-alphabetic characters
-        trimmedValue = trimmedValue.replace(/[^a-zA-Z\s]/g, '')
-        setImprove((prevRegister) => ({
-            ...prevRegister,
-            [name]: trimmedValue,
-        }));
-    };
-
-    const [show, setShow] = useState(false);
-
     return (
         <div>
-            <Modal show={show} onHide={() => setShow(false)}>
-                    <Modal.Header>
-                        <Modal.Title>Register</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <form onSubmit={(e) => handleRequests(e, choice.id, 'improve')}>
-                            <div className="mb-3">
-                                <label htmlFor="name" className="form-label">
-                                    Project Title
-                                </label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="projectTitle"
-                                    name="projectTitle"
-                                    value={improve.projectTitle}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="exampleInputPassword1" className="form-label">
-                                    Scope
-                                </label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="scope"
-                                    name="scope"
-                                    value={improve.scope}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="exampleInputPassword1" className="form-label">
-                                    Description
-                                </label>
-                                <textarea
-                                    className="form-control"
-                                    id="description"
-                                    name="description"
-                                    value={improve.description}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <Modal.Footer>
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={() => setShow(false)}
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="btn"
-                                    style={{ background: 'maroon', color: 'white' }}
-                                    disabled={!improve.projectTitle || !improve.scope || !improve.description}
-                                >
-                                    Add Idea
-                                </button>
-                            </Modal.Footer>
-                        </form>
-                    </Modal.Body>
-            </Modal>
 
             {!loading ? (
                 <>
@@ -176,7 +92,7 @@ const StuRequest = (props) => {
                                                 <th scope="col">Project Title</th>
                                                 <th scope="col">Description</th>
                                                 <th scope="col">Scope</th>
-                                                <th scope="col">Accept/Reject/Improve</th>
+                                                <th scope="col">Accept/Reject</th>
                                             </tr>
                                         </thead>
                                         {requests.requests.map((group, groupKey) => (
@@ -197,10 +113,6 @@ const StuRequest = (props) => {
                                                                     setChoice({ action: 'reject', id: group.projectId });
                                                                     handleRequests(e, group.projectId, 'reject');
                                                                 }}>Reject</button>
-                                                                <button className="btn btn-sm" style={{ background: 'maroon', color: 'white' }} type="button" onClick={(e) => {
-                                                                    setChoice({ action: 'improve', id: group.projectId });
-                                                                    setShow(true);
-                                                                }}>Improve</button>
                                                             </div>
                                                         </div>
                                                     </td>

@@ -317,8 +317,8 @@ const Groups = (props) => {
                           </td>
                           <td>{project.projectTitle}</td>
                           <td>{group.meeting}</td>
-                          <td>{group.proposal ? 'Submitted' : 'Pending'}</td>
-                          <td>{group.documentation ? 'Submitted' : 'Pending'}</td>
+                          <td>{(group.proposal || group.proposalLink) ? 'Submitted' : 'Pending'}</td>
+                          <td>{(group.documentation || group.documentationLink) ? 'Submitted' : 'Pending'}</td>
                           <td><button disabled={project.students.length === 2} onClick={() => { setAddStudent({ projectTitle: project.projectTitle }); setShowStudent(true); }} className="btn btn-sm" style={{ background: "maroon", color: "white" }}>Add Student</button></td>
                           <td>
                             {

@@ -162,33 +162,35 @@ const EligibleGroup = (props) => {
   const [documents, setDocuMents] = useState({
     doc: "", docLink: ""
   })
+  
+  const [ showDoc ,setShowDoc] = useState(false);
 
   return (
     <div>
 
-      <div className="modal fade" id="exampleModal1" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Document</h1>
-            </div>
-            <div className="modal-body">
-              <>
-                <form>
-                  {documents.doc && <> <label htmlFor="">Document</label> <br />
-                    <a target="_blank" href={documents.doc ? documents.doc : ""}>See Document</a> </>}
-                  {documents.docLink && <> <label htmlFor="">Document</label> <br />
-                    <a target="_blank" href={documents.docLink ? documents.docLink : ""}>See Document</a> </>}
-                  <br />
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>
-                  </div>
-                </form>
-              </>
-            </div>
-          </div>
-        </div>
-      </div>
+<Modal show={showDoc} onHide={()=>{
+        setShowDoc(false);
+      }}>
+        <Modal.Header className="modal-header">
+          <Modal.Title className="modal-title fs-5" id="exampleModalLabel">Document</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="modal-body">
+          <>
+            <form>
+              {documents.doc && <> <label htmlFor="">Document</label> <br />
+                <a target="_blank" href={documents.doc ? documents.doc : ""}>See Document</a> </>} <br />
+              {documents.docLink && <> <label htmlFor="">Document Link</label> <br />
+                <a target="_blank" href={documents.docLink ? documents.docLink : ""}>See Document</a> </>}
+              <br />
+              <Modal.Footer className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={()=>{
+                  setShowDoc(false);
+                }}> Close</button>
+              </Modal.Footer>
+            </form>
+          </>
+        </Modal.Body>
+      </Modal>
 
       <div className="viva">
         <Modal show={show} onHide={() => setShow(false)}>
@@ -276,7 +278,7 @@ const EligibleGroup = (props) => {
               <tbody style={{ textAlign: "center" }}>
                 {group.groups
                   .filter((group) =>
-                   ( (group.proposal || group.proposalLink) && (group.documentatio || group.documentationLink) && !group.vivaDate)
+                   ( (group.proposal || group.proposalLink) && (group.documentation || group.documentationLink) && !group.vivaDate)
                   )
                   .map((group, groupIndex) => (
                     group.projects.map((project, projectKey) => (
@@ -292,7 +294,9 @@ const EligibleGroup = (props) => {
                         </td>
                         <td>{project.projectTitle}</td>
                         <td>
-                          <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
+                          <div style={{ cursor: "pointer" }} onClick={()=>{
+                            setShowDoc(true);
+                          }}>
                             {((group.proposal || group.proposalLink) ? (
                               <p onClick={() => {
                                 setDocuMents({
@@ -302,7 +306,9 @@ const EligibleGroup = (props) => {
                             ) : 'Pending')}
                           </div>
                         </td><td>
-                          <div style={{ cursor: "pointer" }} data-toggle="modal" data-target="#exampleModal1">
+                          <div style={{ cursor: "pointer" }} onClick={()=>{
+                            setShowDoc(true);
+                          }}>
                             {((group.documentation || group.documentationLink) ? (
                               <p onClick={() => {
                                 setDocuMents({

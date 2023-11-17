@@ -43,11 +43,6 @@ const Allocate = () => {
                 },
             });
 
-            if (!response.ok) {
-                console.log('error fetching detail', response);
-                return; // Exit early on error
-            }
-
             const json = await response.json();
             console.log('json is in sidebar: ', json);
             if (json) {
@@ -102,7 +97,6 @@ const Allocate = () => {
             console.log('supervisors are ', json); // Log the response data to see its structure
             setData(json);
         } catch (error) {
-            NotificationManager.error('Error in fetching Supervisors');
         }
     }
 
@@ -197,7 +191,7 @@ const Allocate = () => {
                                         <td>{val.groupName}</td>
                                         <td>{val.previousSupervisor[0].name}</td>
                                         <td>{val.newSupervisor[0].name}</td>
-                                        <td>{new Date(val.date).toLocaleDateString('en-GB')}</td>
+                                        <td>{val.date}</td>
                                         <td>{val.time}</td>
                                     </tr>
                                 ))}

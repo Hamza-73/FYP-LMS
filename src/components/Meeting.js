@@ -315,7 +315,7 @@ const Meeting = (props) => {
     if (localStorage.getItem('token')) {
       setTimeout(() => {
         getDetail();
-        // getMeeting();
+        getMeeting();
         getGroups();
       }, 700);
     }

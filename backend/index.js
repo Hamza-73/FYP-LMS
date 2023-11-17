@@ -76,7 +76,7 @@ const userExist = async (user, userType) => {
     if (user && (user.username || user.email)) {
       const external = await External.findOne({
         $or: [
-          { username: user.username },
+          { username: { $regex: new RegExp("^" + user.username.toLowerCase(), "i") } },
           { email: user.email }
         ]
       });
@@ -87,7 +87,7 @@ const userExist = async (user, userType) => {
     if (user && (user.username || user.email)) {
       const external = await Supervisor.findOne({
         $or: [
-          { username: user.username },
+          { username: { $regex: new RegExp("^" + user.username.toLowerCase(), "i") } },
           { email: user.email }
         ]
       });
@@ -98,7 +98,7 @@ const userExist = async (user, userType) => {
     if (user && (user.username || user.email)) {
       const admin = await Admin.findOne({
         $or: [
-          { username: user.username },
+          { username: { $regex: new RegExp("^" + user.username.toLowerCase(), "i") } },
           { email: user.email }
         ]
       });
@@ -109,7 +109,7 @@ const userExist = async (user, userType) => {
     if (user && (user.username || user.email)) {
       const committee = await Committee.findOne({
         $or: [
-          { username: user.username },
+          { username: { $regex: new RegExp("^" + user.username.toLowerCase(), "i") } },
           { email: user.email }
         ]
       });
@@ -162,7 +162,8 @@ app.post('/upload/:userType', async (req, res) => {
           return res.status(400).json({ success: false, message: 'Duplicate email found.' });
         }
         uniqueEmails.add(user.email);
-        if (user.username && /^[a-zA-Z0-9]+$/.test(uniqueUsernames)) {
+        
+        if (user.username &&!/^[a-zA-Z0-9]+$/.test(user.username)) {
           return res.status(400).json({ success: false, message: 'Username should be alphanumeric.' });
         }
         if (user.username && uniqueUsernames.has(user.username.toLowerCase().replace(/\s+/g, ''))) {
@@ -215,6 +216,9 @@ app.post('/upload/:userType', async (req, res) => {
           if ((user.name && user.name.toString().length < 3)) {
             throw new Error('Name be at least 3 characters');
           }
+          if (!/^[a-zA-Z]+$/.test(user.name.trim())) {
+            throw new Error('First name should contain only alphabetic characters');
+          }
         }
 
         if (userType === 'Committee' || userType === 'Admin') {
@@ -227,22 +231,46 @@ app.post('/upload/:userType', async (req, res) => {
           if (user.fname.trim().toLowerCase() === user.lname.trim().toLowerCase()) {
             throw new Error('First name and last name should be different')
           }
+          if (!/^[a-zA-Z]+$/.test(user.fname.trim())) {
+            throw new Error('First name should contain only alphabetic characters');
+          }
+
+          if (!/^[a-zA-Z]+$/.test(user.lname.trim())) {
+            throw new Error('Last name should contain only alphabetic characters');
+          }
         }
         if (userType === 'Admin') {
           if (user.department || user.designation) {
             throw new Error('Department or Designation are not attributes of admin')
           }
         } else if (userType === 'Committee' || userType === 'Supervisor' || userType === 'External') {
-          const validDesignations = ['professor', 'assistant professor', 'lecturer'];
-          const validDepartments = ['computer science', 'other'];
+          const validDesignations = ['Professor', 'Assistant Professor', 'Lecturer'];
+          const validDepartments = ['Computer Science', 'Other'];
 
-          if (user.designation && !validDesignations.includes(user.designation.toLowerCase().trim())) {
-            throw new Error('Invalid designation. Valid designations are Professor, Assistant Professor, Lecturer.');
-          }
-
-          if (user.department && !validDepartments.includes(user.department.toLowerCase().trim())) {
+        if (user.department) {
+          const formattedDepartment = user.department
+            .toLowerCase()
+            .trim()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        
+          if (!validDepartments.includes(formattedDepartment)) {
             throw new Error('Invalid department. Valid departments are Computer Science, Other.');
           }
+        }
+        if (user.designation) {
+          const formatedDesignation = user.designation
+            .toLowerCase()
+            .trim()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        
+          if (!validDesignations.includes(formatedDesignation)) {
+            throw new Error(`Invalid deisgntaion. Valid departments are 'Professor', 'Assistant Professor', 'Lecturer'`);
+          }
+        } 
         }
         if (userType === 'Supervisor') {
           if (!user.slots) {
@@ -298,15 +326,26 @@ app.post('/upload/:userType', async (req, res) => {
     } else if (userType === 'User') {
       // For users, hash 'cnic' and add it to 'password'
       excelData = excelData.map((user) => {
-        if (!user.name || !user.email || !user.cnic || !user.rollNo || !user.father || !user.semester ||!user.department) {
+        if (!user.name || !user.email || !user.cnic || !user.rollNo || !user.father || !user.semester || !user.department) {
           throw new Error('Check every field no entry should be null');
         }
-        
-        const validDepartments = ['computer science', 'other'];
+        const validDepartments = ['Computer Science', 'Other'];
 
-        if (user.department && !validDepartments.includes(user.department.toLowerCase().trim())) {
-          throw new Error('Invalid department. Valid departments are Computer Science, Other.');
+        if (!/^[a-zA-Z]+$/.test(user.name.trim())) {
+          throw new Error('First name should contain only alphabetic characters');
         }
+        if (user.department) {
+          const formattedDepartment = user.department
+            .toLowerCase()
+            .trim()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        
+          if (!validDepartments.includes(formattedDepartment)) {
+            throw new Error('Invalid department. Valid departments are Computer Science, Other.');
+          }
+        }    
 
         const rollNoPattern = /^[0-9]{4}-BSCS-[0-9]{2}$/;
         if (!rollNoPattern.test(user.rollNo)) {
@@ -332,7 +371,7 @@ app.post('/upload/:userType', async (req, res) => {
           throw new Error('Semester should be between 1 and 8.');
         }
 
-        if (user.cnic) {
+        if (user.cnic && user.cnic===13) {
           // Hash the 'cnic' using bcrypt and add it to 'password'
           const saltRounds = 10;
           const cnic = user.cnic.toString();
@@ -341,6 +380,8 @@ app.post('/upload/:userType', async (req, res) => {
             ...user,
             password: hashedCnic,
           };
+        }else{
+          throw new Error('CNIC can not be empty or less/greater than 13 digits');
         }
 
       });

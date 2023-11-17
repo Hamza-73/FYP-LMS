@@ -16,7 +16,7 @@ const moment = require('moment');
 router.post('/meeting', authenticateUser, async (req, res) => {
   try {
     const { meetingLink, projectTitle, date, time, type, purpose } = req.body;
-    
+
     // Check if a meeting with the same projectTitle and future meeting time exists
     const existingMeeting = await Meeting.findOne({ projectTitle: projectTitle });
 
@@ -126,7 +126,7 @@ router.put('/edit-meeting/:id', async (req, res) => {
     }
 
     group.meetingDate = updatedMeetingData.date ? updatedMeetingData.date : group.meetingDate;
-    group.meetingTime = updatedMeetingData.time ?  updatedMeetingData.time : group.meetingTime
+    group.meetingTime = updatedMeetingData.time ? updatedMeetingData.time : group.meetingTime
     group.meetingLink = updatedMeetingData.meetingLink ? updatedMeetingData.meetingLink : group.meetingLink;
     await group.save();
 
@@ -140,6 +140,18 @@ router.put('/edit-meeting/:id', async (req, res) => {
     if (!updatedMeeting) {
       return res.status(404).json({ message: 'Meeting not found' });
     }
+
+    group.projects[0].students.map(async st => {
+      const studentObj = await User.findById(st.userId);
+      studentObj.unseenNotifications.push({
+        type: "Important", message: `Meeting has been re-scheduled by the supervisor see MyGroup for details`
+      });
+      await studentObj.save();
+    });
+    
+    const superviors = await Supervisor.findById(group.supervisorId);
+    superviors.unseenNotifications.push({ type: "Reminder", message: `A meeting of ${group.projects[0].projectTitle} was re-scheduled` });
+    await superviors.save()
 
     return res.json({ success: true, meeting: updatedMeeting });
   } catch (error) {
@@ -244,7 +256,7 @@ router.put('/meeting-review/:meetingId/:review', authenticateUser, async (req, r
     if (!meeting) {
       return res.status(404).json({ message: 'Meeting not found' });
     }
-    
+
     const group = await Group.findOne({
       'projects.projectTitle': meeting.projectTitle
     });

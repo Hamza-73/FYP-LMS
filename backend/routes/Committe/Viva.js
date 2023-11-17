@@ -259,7 +259,7 @@ router.get('/vivas', async (req, res) => {
     const vivaPromises = vivas.map(async (viva) => {
       const group = await Group.findById(viva.group);
       if (!group) {
-        return res.status(500).json({ success: false, message: 'Group not found' });
+        return { success: false, message: 'Group not found' };
       }
       // Add isProps and isDoc to the viva object
       return {
@@ -278,9 +278,10 @@ router.get('/vivas', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching scheduled vivas ', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    res.status(404).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 //get my detail
 router.get('/detail', authenticateUser, async (req, res) => {

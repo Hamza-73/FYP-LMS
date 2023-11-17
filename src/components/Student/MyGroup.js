@@ -141,7 +141,7 @@ const MyGroup = (props) => {
         const newDocument = {
           docLink: json.url ? json.url : "", // Document URL
           review: '', // Empty review,
-          comment: comment
+          comment: comment, link: json.link ? json.link : ""
         };
         setnewComment(comment)
         setGroupDetails((prevGroup) => ({
@@ -153,6 +153,8 @@ const MyGroup = (props) => {
         }));
         setFile(null);
         setComment('')
+        setLink("");
+        setFile(null);
       }
     } catch (error) {
       console.log('error in uploading file', error);
@@ -280,7 +282,7 @@ const MyGroup = (props) => {
                   setShowUpload(false);
                 }}>Close</button>
                 <button type="submit" disabled={
-                  !comment
+                  (!link && !file) || !comment
                 } className="btn" style={{ background: "maroon", color: "white" }}>
                   Submit
                 </button>
@@ -299,10 +301,13 @@ const MyGroup = (props) => {
             <div className="modal-body">
               <>
                 <form>
+                  <label htmlFor="">Review</label> <br />
                   <textarea className='form-control' value={review ? review : "No Reviews Yet"} disabled={true} />
                   <br />
+                  <label htmlFor="">Comment</label> <br />
                   <textarea className='form-control' value={newComment ? newComment : ""} disabled={true} />
                   <br />
+                  <label htmlFor="">Link</label> <br />
                   <textarea className='form-control' value={links} />
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"> Close</button>

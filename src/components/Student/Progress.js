@@ -348,13 +348,13 @@ const Progress = (props) => {
                                             <td>Proposal</td>
                                             <td>{groupDetails.group.proposal ? 'Submitted' : 'Pending'}</td>
                                             <td>{groupDetails.group.propDate ? new Date(groupDetails.group.propDate).toLocaleDateString('en-US') : '---'}</td>
-                                            <td>{groupDetails.group.propSub ? new Date(groupDetails.group.propSub).toLocaleDateString('en-US') : '---'}</td>
+                                            <td>{groupDetails.group.propSub ? groupDetails.group.propSub : '---'}</td>
                                         </tr>
                                         <tr>
                                             <td>Project Documentation</td>
                                             <td>{groupDetails.group.documentation ? 'Submitted' : 'Pending'}</td>
                                             <td>{groupDetails.group.docDate ? new Date(groupDetails.group.docDate).toLocaleDateString('en-US') : '---'}</td>
-                                            <td>{groupDetails.group.docSub ? new Date(groupDetails.group.docSub).toLocaleDateString('en-US') : '---'}</td>
+                                            <td>{groupDetails.group.docSub ? groupDetails.group.docSub : '---'}</td>
                                         </tr>
                                         <tr>
                                             <td>Viva</td>

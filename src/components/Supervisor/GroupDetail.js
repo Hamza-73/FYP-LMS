@@ -250,7 +250,7 @@ const GroupDetail = () => {
                       <div className="meeting-box" key={docKey}>
                         <style>{meetingStyle}</style>
                         <div className='item'>
-                          <a target='_blank' href={doc.docLink}>View Uploaded Doc</a>
+                          {doc.docLink && <a target='_blank' href={doc.docLink}>View Uploaded Doc</a>}
                           <button className="btn btn-sm btn-danger" data-bs-toggle="modal"
                             data-bs-target="#exampleModal"
                             onClick={() => {

@@ -861,7 +861,7 @@ router.put('/give-marks/:groupId', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group not found' })
     }
 
-    if (!group.proposal || !group.documentation) {
+    if ((!group.proposal && !group.proposalLink) || (!group.documentation && !group.documentationLink)) {
       return res.status(500).json({ success: false, message: 'One of the Documentation is Pending' });
     }
 

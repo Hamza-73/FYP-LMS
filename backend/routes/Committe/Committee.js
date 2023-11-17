@@ -538,20 +538,42 @@ router.post('/dueDate', authenticateUser, async (req, res) => {
     await Promise.all(promiseArray);
 
     const committeeMembers = await Committee.find();
-    const supervisors = await Supervisor.find({ isAdmin: true });
+    const supervisorsAdmin = await Supervisor.find({ isAdmin: true });
+    const supervisorComittee = await Supervisor.find({ isCommittee: true });
+    const notificationMessage = `Deadline for ${type} has been added`
     committeeMembers.forEach(async member => {
       if (type === 'proposal')
         member.propDate = newDate;
       else
         member.docDate = newDate;
+
+      member.unseenNotifications.push({
+        type: "Important", message: notificationMessage
+      })
       await member.save();
     });
 
-    supervisors.forEach(async member => {
+    supervisorsAdmin.forEach(async member => {
       if (type === 'proposal')
         member.propDate = newDate;
       else
         member.docDate = newDate;
+
+      member.unseenNotifications.push({
+        type: "Important", message: notificationMessage
+      })
+      await member.save();
+    });
+
+    supervisorComittee.forEach(async member => {
+      if (type === 'proposal')
+        member.propDate = newDate;
+      else
+        member.docDate = newDate;
+
+      member.unseenNotifications.push({
+        type: "Important", message: notificationMessage
+      })
       await member.save();
     });
 
@@ -599,16 +621,20 @@ router.put('/allocate-group', async (req, res) => {
     }
 
     // Move the meeting from the current supervisor to the new supervisor
-    const groupMeetingId = group.meetingid;
+    if (group.meetingid) {
+      const groupMeetingId = group.meetingid;
 
-    // Remove the meeting from the current supervisor's meetings
-    const filteredMeeting = previousSupervisor.meeting.filter(meet => {
-      return !meet.equals(groupMeetingId)
-    });
-    previousSupervisor.meeting = filteredMeeting;
+      if (previousSupervisor.meeting.length > 0) {
+        // Remove the meeting from the current supervisor's meetings
+        const filteredMeeting = previousSupervisor.meeting.filter(meet => {
+          return !meet.equals(groupMeetingId)
+        });
+        previousSupervisor.meeting = filteredMeeting;
+      }
 
-    // Add the meeting to the new supervisor's meetings
-    supervisor.meeting.push(groupMeetingId);
+      // Add the meeting to the new supervisor's meetings
+      supervisor.meeting.push(groupMeetingId);
+    }
 
     // Remove the group ID from the previous supervisor's groups
     previousSupervisor.groups = previousSupervisor.groups.filter(groupId => { return !groupId.equals(group._id.toHexString()) });
@@ -661,12 +687,7 @@ router.put('/allocate-group', async (req, res) => {
       })
     }
 
-    // Create an allocation object
-    const currentDateTime = new Date();
-
     // Extract date and time from the current date and time object
-    const currentDate = currentDateTime.toISOString().split('T')[0];
-    const currentTime = currentDateTime.toISOString().split('T')[1].split('.')[0];
     const allocation = new Allocation({
       previousSupervisor: [{
         id: previousSupervisor._id,
@@ -677,8 +698,8 @@ router.put('/allocate-group', async (req, res) => {
         name: supervisor.name
       }],
       groupName: projectRequest.projectTitle,
-      date: currentDate,
-      time: currentTime
+      date: new Date().toLocaleDateString('en-GB'),
+      time: new Date().toLocaleTimeString('en-US', { hour12: false })
     });
 
     // Save the allocation object to the database
@@ -793,13 +814,68 @@ router.get('/notification', authenticateUser, async (req, res) => {
     const userId = req.user.id;
     const user = await Committee.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'Committee not found' });
+      const supervisor = await Supervisor.findById(userId);
+      if (!supervisor) {
+        return res.json({ success: false, message: "Committe Not Found" });
+      }
+      const notification = supervisor.unseenNotifications;
+      return res.json({ success: true, notification })
     }
     const notification = user.unseenNotifications;
     return res.json({ success: true, notification })
   } catch (error) {
     console.error('error is ', error);
     return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Mark a notification as seen
+router.post('/mark-notification-seen/:notificationIndex', authenticateUser, async (req, res) => {
+  const userId = req.user.id; // Get the user ID from the authenticated user
+  const notificationIndex = req.params; // Assuming you send the notification index in the request body
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      const supervisor = await Supervisor.findById(userId);
+      if (!supervisor) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      // Check if the notification index is within the bounds of 'unseenNotifications'
+      if (notificationIndex < 0 || notificationIndex >= user.unseenNotifications.length) {
+        return res.status(404).json({ message: 'Invalid notification index' });
+      }
+
+      // Remove the notification from 'unseenNotifications' and push it to 'seenNotifications'
+      const notification = user.unseenNotifications.splice(notificationIndex, 1)[0];
+      console.log('notification is ', notification);
+      supervisor.seenNotifications.push(notification);
+
+      // Save the updated user document
+      await supervisor.save();
+
+      res.status(200).json({ message: 'Notification marked as seen' });
+    }
+
+    // Check if the notification index is within the bounds of 'unseenNotifications'
+    if (notificationIndex < 0 || notificationIndex >= user.unseenNotifications.length) {
+      return res.status(404).json({ message: 'Invalid notification index' });
+    }
+
+    // Remove the notification from 'unseenNotifications' and push it to 'seenNotifications'
+    const notification = user.unseenNotifications.splice(notificationIndex, 1)[0];
+    console.log('notification is ', notification);
+    user.seenNotifications.push(notification);
+
+    // Save the updated user document
+    await user.save();
+
+    res.status(200).json({ message: 'Notification marked as seen' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

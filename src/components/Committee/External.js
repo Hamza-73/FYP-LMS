@@ -546,6 +546,8 @@ const External = (props) => {
                                         <th scope="col">Name</th>
                                         <th scope="col">Username</th>
                                         <th scope="col">Email</th>
+                                        <th scope="col">Department</th>
+                                        <th scope="col">Designation</th>
                                         {(!showSidebar || userData.member.isAdmin) && <>
                                             <th scope="col">Edit</th>
                                             <th scope="col">Remove</th>
@@ -558,6 +560,8 @@ const External = (props) => {
                                             <td>{val.name}</td>
                                             <td>{val.username}</td>
                                             <td>{val.email}</td>
+                                            <td>{val.department?val.department:""}</td>
+                                            <td>{val.designation?val.designation:""}</td>
                                             {(userData.member.isAdmin) &&
                                                 <>
                                                     <td data-toggle="modal" data-target="#exampleModal">

@@ -37,8 +37,8 @@ const nodemailer = require('nodemailer')
 
 router.post('/upload', authenticateUser, async (req, res) => {
   try {
-    const { type, link } = req.body;
-    // Check if the user belongs to the specified group
+    const { type ,link } = req.body;
+    console.log('doc start')
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: 'Student Not Found' });
@@ -49,7 +49,6 @@ router.post('/upload', authenticateUser, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Group Not Found' });
     }
 
-    console.log('type is ', type);
 
     if (type === 'proposal' && !groupUpdate.propDate) {
       return res.status(500).json({ success: false, message: 'Deadline for Proposal Has Not Been Announced Yet.' });
@@ -60,67 +59,71 @@ router.post('/upload', authenticateUser, async (req, res) => {
     }
 
     let file = req.files;
-    console.log('file is ', file);
+    console.log('file is outside', file)
     if (file) {
+      console.log('if start')
       file = req.files[type]
-      cloudinary.uploader.upload(file.tempFilePath, async (error, result) => {
-        if (error) {
-          console.error('Error uploading PDF:', error);
-          return res.status(500).json({ success: false, message: 'Error uploading PDF' });
-        }
+      console.log('file is ', file);
 
-        // Update the group with the uploaded file URL
-        if (type === 'proposal') {
-          groupUpdate.proposal = result.url;
-          groupUpdate.proposalLink = link ? link : "";
-          groupUpdate.propSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
-        } else if (type === 'documentation') {
-          groupUpdate.documentation = result.url;
-          groupUpdate.documentationLink = link ? link : "";
-          groupUpdate.docSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
-        } else {
-          return res.status(400).json({ success: false, message: 'Invalid file type' });
-        }
-
-        groupUpdate.projects[0].students.map(async stu => {
-          const studentObj = await User.findById(stu.userId);
-          studentObj.unseenNotifications.push({
-            type: "Important", message: `${type} has been submitted`
-          });
-          await studentObj.save();
-        })
-
-        // Save groupUpdate object after the update
-        await groupUpdate.save();
-
-        // Respond with the uploaded file URL
-        return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
-      });
-    } else {
-      console.log('else part')
+      const result = await cloudinary.uploader.upload(file.tempFilePath);
+      // Update the group with the final URL
       if (type === 'proposal') {
+        console.log('at proposal');
+        groupUpdate.proposal = result.url;
         groupUpdate.proposalLink = link ? link : "";
-        groupUpdate.propSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
+        groupUpdate.propSub = new Date().toLocaleDateString('en-GB');
       } else if (type === 'documentation') {
+        groupUpdate.documentation = result.url;
         groupUpdate.documentationLink = link ? link : "";
-        groupUpdate.docSub = moment.utc(new Date(), 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
+        groupUpdate.docSub = new Date().toLocaleDateString('en-GB');
       } else {
         return res.status(400).json({ success: false, message: 'Invalid file type' });
       }
-
       groupUpdate.projects[0].students.map(async stu => {
         const studentObj = await User.findById(stu.userId);
         studentObj.unseenNotifications.push({
-          type: "Important", message: `${type} has been submitted`
-        });
+          type: "Important", message: `${type} has been uploaded`
+        })
+        await studentObj.save();
+      })
+      const Superisor = await Supervisor.findById(groupUpdate.supervisorId);
+      Superisor.unseenNotifications.push({
+        type: "Reminder", message: `${type} uploaded by group : ${groupUpdate.projects[0].projectTitle}`
+      })
+      await Promise.all([Superisor.save(), groupUpdate.save()]);
+
+      // Return the Cloudinary URL in the response
+      return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url, link: link ? link : "" });
+
+    } else {
+      console.log('else part')
+      if (type === 'proposal') {
+        console.log('at proposal');
+        groupUpdate.proposalLink = link ;
+        groupUpdate.propSub = new Date().toLocaleDateString('en-GB');
+      } else if (type === 'documentation') {
+        groupUpdate.documentationLink = link;
+        groupUpdate.docSub = new Date().toLocaleDateString('en-GB');
+      } else {
+        return res.status(400).json({ success: false, message: 'Invalid file type' });
+      }
+      
+      groupUpdate.projects[0].students.map(async stu => {
+        const studentObj = await User.findById(stu.userId);
+        studentObj.unseenNotifications.push({
+          type: "Important", message: `${type} has been uploaded`
+        })
         await studentObj.save();
       })
 
-      // Save groupUpdate object after the update
-      await groupUpdate.save();
+      const Superisor = await Supervisor.findById(groupUpdate.supervisorId);
+      Superisor.unseenNotifications.push({
+        type: "Reminder", message: `${type} uploaded by group : ${groupUpdate.projects[0].projectTitle}`
+      })
+      await Promise.all([Superisor.save(), groupUpdate.save()]);
 
-      // Respond with the uploaded file URL
-      return res.status(201).json({ success: true, message: 'File uploaded successfully'});
+      // Return the Cloudinary URL in the response
+      return res.status(201).json({ success: true, message: 'Link uploaded successfully', link: link });
     }
 
   } catch (error) {
@@ -128,6 +131,7 @@ router.post('/upload', authenticateUser, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 router.post('/doc', authenticateUser, async (req, res) => {
   try {
@@ -172,7 +176,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
       await Promise.all([Superisor.save(), groupUpdate.save()]);
 
       // Return the Cloudinary URL in the response
-      return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url });
+      return res.status(201).json({ success: true, message: 'PDF uploaded successfully', url: result.url, link: link ? link : "" });
 
     } else {
       console.log('else part')
@@ -182,7 +186,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
       groupUpdate.projects[0].students.map(async stu => {
         const studentObj = await User.findById(stu.userId);
         studentObj.unseenNotifications.push({
-          type: "Important", message: `Document has been uploaded`
+          type: "Important", message: `Document has been uploaded`, link: link ? link : ""
         })
         await studentObj.save();
       })
@@ -194,7 +198,7 @@ router.post('/doc', authenticateUser, async (req, res) => {
       await Promise.all([Superisor.save(), groupUpdate.save()]);
 
       // Return the Cloudinary URL in the response
-      return res.status(201).json({ success: true, message: 'Link uploaded successfully', });
+      return res.status(201).json({ success: true, message: 'Link uploaded successfully', link: link ? link : "" });
     }
 
   } catch (error) {
@@ -772,7 +776,7 @@ router.get('/my-group', authenticateUser, async (req, res) => {
       viva: viva, meetingReport: group.meetingReport,
       meetings: group.meetings,
       instructions: group.instructions, purpose: group.meetingPurpose,
-      docs: group.docs, proposalLink : group.proposalLink, documentationLink : group.documentationLink,
+      docs: group.docs, proposalLink: group.proposalLink, documentationLink: group.documentationLink,
       externalMarks: group.externalMarks,
       marks: group.marks, hodMarks: group.hodMarks,
       meetingDate: group.meetingDate,
@@ -1146,7 +1150,7 @@ router.post('/request-meeting', authenticateUser, async (req, res) => {
     });
     group.projects[0].students.map(async stu => {
       let s = await User.findById(stu.userId);
-      s.unseenNotifications.push({ type: "Important", message: `Request sent to supervisor for meeting on ${new Date().getDate()}` });
+      s.unseenNotifications.push({ type: "Important", message: `Request sent to supervisor for meeting on ${new Date().toLocaleDateString('en-GB')}` });
       await s.save();
     })
     await supervisor.save();
